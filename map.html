@@ -1,0 +1,87 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
+	<title> Serverless ArcGIS </title>
+    <link rel="stylesheet" href="https://js.arcgis.com/4.16/esri/themes/light/main.css" />
+    <script src="https://js.arcgis.com/4.16/"></script>
+
+    <style>
+      html,
+      body,
+      #viewDiv {
+        padding: 0;
+        margin: 0;
+        height: 100%;
+        width: 100%;
+      }
+    </style>
+
+    <script>
+	
+      require([
+        "esri/Map",
+        "esri/views/MapView",
+		"esri/Graphic",
+		"esri/layers/GraphicsLayer",
+        "esri/layers/FeatureLayer"
+      ], function (
+	Map, 
+	MapView, 
+	Graphic, 
+	GraphicsLayer, 
+	FeatureLayer
+	  ) {
+        var map = new Map({
+          basemap: "streets-night-vector"
+        });
+
+        var view = new MapView({
+          container: "viewDiv",
+          map: map,
+          center: [-101, 32],
+          zoom: 6
+        });
+var graphicsLayer = new GraphicsLayer();var cr = 226;var cg = 119;var cb = 40;
+var simpleMarkerSymbol = { type: "simple-marker",  color: [cr, cg, cb]  };
+var request = new XMLHttpRequest();
+//var url = "https://darwin-decathlon.s3.amazonaws.com/Unsaved/2021/03/10/b7b66773-7876-4fcb-a395-35224a352956.csv"; // Cinco Ranch restaurants and bars
+var url = "https://darwin-decathlon.s3.amazonaws.com/Texas/TexasWells.csv" // Texas wells
+
+request.open('GET', url, true)
+request.onload = function() 
+{
+    var RawData = this.response;
+    var data = RawData.split(/\r?\n/);
+	var lines = [];
+	for(var i = 1; i < data.length; i++)
+	{
+		lines.push(data[i].split(","));
+	}
+
+	for(var i = 0; i < lines.length - 1; i++){
+		console.log(parseFloat(String(lines[i][0]).replace('"','').replace('"','')));
+		console.log(parseFloat(String(lines[i][1]).replace('"','').replace('"','')));
+		console.log(lines[i][2]);
+		var fltLat = parseFloat(String(lines[i][0]).replace('"','').replace('"',''))
+		var fltLong = parseFloat(String(lines[i][1]).replace('"','').replace('"',''))
+		var point = { type: "point", longitude: fltLong, latitude: fltLat };
+		var pointGraphic = new Graphic({ geometry: point, symbol: simpleMarkerSymbol });
+    pointGraphic.symbol.size = 10
+		graphicsLayer.add(pointGraphic);
+		var textSymbol = { type: "text",  color: "orange", haloColor: "black", haloSize: "1px", text: String(lines[i][2]).replace('"','').replace('"',''), xoffset: 3, yoffset: 3,  font: {  size: 8, family: "Arial", weight: "bold" }};
+		var point = { type: "point", longitude: fltLong, latitude: fltLat };
+		var pointGraphic = new Graphic({ geometry: point, symbol: textSymbol });
+		graphicsLayer.add(pointGraphic);
+	}
+}
+request.send();
+map.add(graphicsLayer);
+});
+    </script>
+  </head>
+
+  <body>
+    <div id="viewDiv"></div>
+  </body>
+</html>
