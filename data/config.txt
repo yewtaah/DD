@@ -1,0 +1,6 @@
+Aurora PostgreSQL Cluster: DD
+Master Username: pgadmin
+Master Password: PgDD2021
+Database: DarwinDecathlon
+Endpoint: dd.cluster-cx4o5fhondfo.us-east-1.rds.amazonaws.com
+Port: 5432
