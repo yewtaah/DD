@@ -5,8 +5,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function getTimeRemaining(endtime){
         const total = Date.parse(endtime) - Date.parse(new Date());
-        const seconds = Math.floor( (total/1000) % 60 );
-        const minutes = Math.floor( (total/1000/60) % 60 );
+        const seconds = pad(Math.floor( (total/1000) % 60 ), 2);
+        const minutes = pad(Math.floor( (total/1000/60) % 60 ), 2);
         const hours = Math.floor( (total/(1000*60*60)) % 24 );
         const days = Math.floor( total/(1000*60*60*24) );
       
@@ -33,5 +33,11 @@ document.addEventListener('DOMContentLoaded', () => {
             clearInterval(timeinterval);
           }
         },1000);
+      }
+
+      function pad(n, width, z) {
+        z = z || '0';
+        n = n + '';
+        return n.length >= width ? n : new Array(width - n.length + 1).join(z) + n;
       }
 })
