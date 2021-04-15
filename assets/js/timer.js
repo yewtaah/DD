@@ -28,9 +28,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //                            'minutes: ' + t.minutes + '<br>' +
 //                            'seconds: ' + t.seconds;
           clock.innerHTML = 'days: ' + t.days + ' <br>' +
-                            'hours: '+ t.hours + '<br>' +
-                            'minutes: ' + t.minutes + '<br>' +
-                            'seconds: ' + t.seconds;
+                            'hours: '+ t.hours + ':' + t.minutes + ':' + t.seconds;
           if (t.total <= 0) {
             clearInterval(timeinterval);
           }
