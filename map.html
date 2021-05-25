@@ -39,14 +39,16 @@
         var view = new MapView({
           container: "viewDiv",
           map: map,
-          center: [-101, 32],
-          zoom: 6
+          center: [-95.5, 30],
+//          center: [-101, 32],
+          zoom: 9
+//          zoom: 6
         });
 var graphicsLayer = new GraphicsLayer();var cr = 226;var cg = 119;var cb = 40;
 var simpleMarkerSymbol = { type: "simple-marker",  color: [cr, cg, cb]  };
 var request = new XMLHttpRequest();
-//var url = "https://darwin-decathlon.s3.amazonaws.com/Unsaved/2021/03/10/b7b66773-7876-4fcb-a395-35224a352956.csv"; // Cinco Ranch restaurants and bars
-var url = "https://darwin-decathlon.s3.amazonaws.com/Texas/TexasWells.csv" // Texas wells
+var url = "https://darwin-decathlon.s3.amazonaws.com/Unsaved/2021/03/10/b7b66773-7876-4fcb-a395-35224a352956.csv"; // Cinco Ranch restaurants and bars
+//var url = "https://darwin-decathlon.s3.amazonaws.com/Texas/TexasWells.csv" // Texas wells
 
 request.open('GET', url, true)
 request.onload = function() 
