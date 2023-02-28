@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const deadline = 'April 8 2022 10:00:00 GMT-0600'
+    const deadline = 'March 21 2023 10:00:00 GMT-0600'
     getTimeRemaining(deadline).minutes
     initializeClock('clockdiv', deadline);
 
