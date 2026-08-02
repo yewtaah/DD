@@ -25,17 +25,6 @@
         <link rel="stylesheet" href="assets/css/main.css" />
 		<noscript><link rel="stylesheet" href="assets/css/noscript.css" /></noscript>
         
-        <script>
-            var close = document.getElementsByClassName("closebtn");
-            var i;
-                for (i = 0; i < close.length; i++) {
-                    close[i].onclick = function(){
-                    var div = this.parentElement;
-                    div.style.opacity = "0";
-                    setTimeout(function(){ div.style.display = "none"; }, 600);
-                }
-                }
-        </script>        
 	</head>
 	
     <body class="is-preload">
@@ -49,7 +38,7 @@
 				</header>
 
 				<!-- Nav -->
-				<div id="nav">
+				<nav id="nav">
 					<ul>
 						<li><a href="index.html#intro" class="active">Overview</a></li>
 						<li><a href="index.html#schedule">Schedule</a></li>
@@ -57,7 +46,7 @@
 						<li><a href="Weather.html">Weather</a></li>
 						<li><a href="Champs.html">Champions</a></li>
 					</ul>
-				</div>
+				</nav>
 
 				<!-- Main -->
 				<div id="main">
@@ -119,9 +108,7 @@
 						<h2>Social Media Presence</h2>
 						<p>Keep up to date on event changes and upcoming activities</p>											
 						<ul class="icons">
-							<li><a href="https://twitter.com/" class="icon brands fa-twitter alt"><span class="label">Twitter</span></a></li>
-							<li><a href="https://www.facebook.com/" class="icon brands fa-facebook-f alt"><span class="label">Facebook</span></a></li>
-							<li><a href="https://www.instagram.com/" class="icon brands fa-instagram alt"><span class="label">Instagram</span></a></li>
+							<li><a href="https://www.instagram.com/decathmaster/" class="icon brands fa-instagram alt"><span class="label">Instagram</span></a></li>
 						</ul>
 						
 					</section>
@@ -132,7 +119,7 @@
 							<br>scott@darwindecathlon.com</p>
 						</dl>
 					</section>					
-					<p class="copyright">&copy; 2023, Cinco Ranch Gaming Commission or its affiliates. All rights reserved.</p>
+					<p class="copyright">&copy; <span id="copyyear">2023</span>, Cinco Ranch Gaming Commission or its affiliates. All rights reserved.</p>
 				</footer>
 
 		</div>
@@ -145,5 +132,6 @@
 			<script src="assets/js/breakpoints.min.js"></script>
 			<script src="assets/js/util.js"></script>
 			<script src="assets/js/main.js"></script>
+			<script src="assets/js/copyright.js"></script>
 	</body>
 </html>
