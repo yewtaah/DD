@@ -126,7 +126,7 @@ header.bar{
 .brand{display:flex;align-items:center;gap:11px;font-weight:800;letter-spacing:.04em}
 .brand .dot{width:9px;height:9px;border-radius:50%;background:#e34948;box-shadow:0 0 0 0 rgba(227,73,72,.7);animation:pulse 1.8s infinite}
 @keyframes pulse{70%{box-shadow:0 0 0 9px rgba(227,73,72,0)}100%{box-shadow:0 0 0 0 rgba(227,73,72,0)}}
-.brand small{color:var(--gold);letter-spacing:.24em;font-size:11px;font-weight:700}
+.brand small{color:var(--gold);letter-spacing:.24em;font-size:13.5px;font-weight:700}
 nav.tabs{display:flex;gap:2px;margin-left:auto;flex-wrap:wrap}
 nav.tabs button{
   background:transparent;border:0;border-bottom:3px solid transparent;color:var(--ink-2);
@@ -147,7 +147,7 @@ nav.tabs button:focus-visible{outline:2px solid var(--gold);outline-offset:-2px}
 .ticker{background:#151514;border-bottom:1px solid var(--grid);overflow:hidden;white-space:nowrap}
 .ticker-track{display:inline-block;padding:7px 0;animation:tick 44s linear infinite}
 .ticker:hover .ticker-track{animation-play-state:paused}
-.ticker span{color:var(--ink-2);font-size:12.5px;letter-spacing:.05em;padding:0 22px}
+.ticker span{color:var(--ink-2);font-size:14.5px;letter-spacing:.05em;padding:0 22px}
 .ticker b{color:var(--gold)}
 @keyframes tick{from{transform:translateX(0)}to{transform:translateX(-50%)}}
 
@@ -164,7 +164,7 @@ main{max-width:1240px;margin:0 auto;padding:22px 18px 70px}
   background:rgba(13,13,13,.93);backdrop-filter:blur(9px);
   border-bottom:1px solid var(--grid);border-radius:0 0 10px 10px;
 }
-.filters .lab{font-size:11px;letter-spacing:.2em;color:var(--muted);font-weight:700}
+.filters .lab{font-size:13.5px;letter-spacing:.2em;color:var(--muted);font-weight:700}
 .chip{
   background:#1f1f1e;border:1px solid var(--axis);color:var(--ink-2);
   font:700 13px/1 var(--sans);padding:9px 15px;border-radius:999px;cursor:pointer;
@@ -183,10 +183,10 @@ main{max-width:1240px;margin:0 auto;padding:22px 18px 70px}
   border:1px solid var(--ring);border-left:3px solid var(--gold);
   border-radius:10px;padding:14px 16px;
 }
-.stat .k{font-size:10.5px;letter-spacing:.19em;color:var(--muted);font-weight:700}
+.stat .k{font-size:13px;letter-spacing:.19em;color:var(--muted);font-weight:700}
 .stat .v{font-size:clamp(20px,3.2vw,30px);font-weight:800;margin-top:5px;line-height:1.1}
 .stat .v.gold{color:var(--gold)}
-.stat .sub{font-size:11.5px;color:var(--ink-2);margin-top:3px}
+.stat .sub{font-size:14px;color:var(--ink-2);margin-top:3px}
 
 /* ---------- event tiles ----------
    Two asset generations coexist: the illustrated hex BADGES (which already
@@ -209,39 +209,39 @@ main{max-width:1240px;margin:0 auto;padding:22px 18px 70px}
 }
 .tile:hover::after{transform:translateX(120%)}
 .tile .num{
-  position:absolute;top:7px;left:9px;z-index:2;font-size:10px;font-weight:800;color:var(--gold);
+  position:absolute;top:7px;left:9px;z-index:2;font-size:12.5px;font-weight:800;color:var(--gold);
   letter-spacing:.1em;text-shadow:0 1px 3px rgba(0,0,0,.9);
 }
 .tile.badge img{width:100%;height:auto;display:block;border-radius:8px;
   filter:drop-shadow(0 2px 6px rgba(0,0,0,.45));transition:filter .2s}
 .tile.badge:hover img{filter:drop-shadow(0 4px 12px rgba(232,179,58,.3))}
 .tile.legacy img{width:56px;height:56px;object-fit:contain;border-radius:6px;opacity:.96;margin-top:6px}
-.tile .nm{font-size:12.5px;font-weight:700;margin-top:8px;line-height:1.25}
-.tile .mt{font-size:10.5px;color:var(--muted);margin-top:3px}
-.tile .pair{display:inline-block;font-size:9px;letter-spacing:.1em;color:var(--gold);border:1px solid var(--gold-dim);border-radius:3px;padding:1px 4px;margin-top:5px}
+.tile .nm{font-size:14.5px;font-weight:700;margin-top:8px;line-height:1.25}
+.tile .mt{font-size:13px;color:var(--muted);margin-top:3px}
+.tile .pair{display:inline-block;font-size:11.5px;letter-spacing:.1em;color:var(--gold);border:1px solid var(--gold-dim);border-radius:3px;padding:1px 4px;margin-top:5px}
 
 /* ---------- chart card ---------- */
 .card{background:var(--surface);border:1px solid var(--ring);border-radius:12px;padding:18px 16px 12px;margin-bottom:22px}
-.card h2{margin:0;font-size:15px;letter-spacing:.13em;text-transform:uppercase}
+.card h2{margin:0;font-size:17px;letter-spacing:.13em;text-transform:uppercase}
 .card h2 .accent{color:var(--gold)}
-.card .desc{color:var(--ink-2);font-size:12.5px;margin:7px 0 0;max-width:76ch;line-height:1.55}
+.card .desc{color:var(--ink-2);font-size:14.5px;margin:7px 0 0;max-width:76ch;line-height:1.55}
 .card .note{
-  color:var(--muted);font-size:11.5px;margin-top:9px;padding-left:10px;
+  color:var(--muted);font-size:14px;margin-top:9px;padding-left:10px;
   border-left:2px solid var(--axis);line-height:1.5;max-width:76ch;
 }
 .legend{display:flex;flex-wrap:wrap;gap:12px;margin:14px 0 4px}
-.legend .li{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--ink-2);cursor:pointer;padding:2px 4px;border-radius:5px}
+.legend .li{display:flex;align-items:center;gap:6px;font-size:14px;color:var(--ink-2);cursor:pointer;padding:2px 4px;border-radius:5px}
 .legend .li:hover{background:rgba(255,255,255,.05);color:var(--ink)}
 .legend .sw{width:13px;height:3px;border-radius:2px;flex:none}
 .legend .li.off{opacity:.42}
 svg{display:block;width:100%;height:auto;overflow:visible}
 .tt{
   position:fixed;z-index:60;pointer-events:none;background:#101010;border:1px solid var(--gold-dim);
-  border-radius:8px;padding:9px 11px;font-size:12px;min-width:170px;opacity:0;transition:opacity .12s;
+  border-radius:8px;padding:9px 11px;font-size:14px;min-width:170px;opacity:0;transition:opacity .12s;
   box-shadow:0 8px 26px rgba(0,0,0,.6);
 }
 .tt.on{opacity:1}
-.tt .h{color:var(--gold);font-weight:800;letter-spacing:.06em;font-size:11px;margin-bottom:6px}
+.tt .h{color:var(--gold);font-weight:800;letter-spacing:.06em;font-size:13.5px;margin-bottom:6px}
 .tt .r{display:flex;justify-content:space-between;gap:14px;padding:2px 0;color:var(--ink-2)}
 .tt .r b{color:var(--ink);font-variant-numeric:tabular-nums}
 .tt .r .sw{width:9px;height:9px;border-radius:2px;display:inline-block;margin-right:6px}
@@ -250,11 +250,11 @@ svg{display:block;width:100%;height:auto;overflow:visible}
 .linkbtn{background:none;border:1px solid var(--axis);color:var(--ink-2);font:600 11.5px var(--sans);
   padding:6px 11px;border-radius:6px;cursor:pointer;letter-spacing:.06em}
 .linkbtn:hover{border-color:var(--gold-dim);color:var(--ink)}
-table.dv{width:100%;border-collapse:collapse;margin-top:12px;font-size:12px}
+table.dv{width:100%;border-collapse:collapse;margin-top:12px;font-size:14px}
 table.dv th,table.dv td{border-bottom:1px solid var(--grid);padding:6px 8px;text-align:right;font-variant-numeric:tabular-nums}
 table.dv th:first-child,table.dv td:first-child{text-align:left}
-table.dv th{color:var(--muted);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase}
-table.dv caption{text-align:left;color:var(--muted);font-size:11.5px;padding-bottom:6px}
+table.dv th{color:var(--muted);font-size:13px;letter-spacing:.1em;text-transform:uppercase}
+table.dv caption{text-align:left;color:var(--muted);font-size:14px;padding-bottom:6px}
 
 /* ============================================================
    PER-TAB THEMING
@@ -318,11 +318,11 @@ table.dv caption{text-align:left;color:var(--muted);font-size:11.5px;padding-bot
 .live-hero .tag{
   font-size:clamp(10px,1.5vw,12px);letter-spacing:.34em;color:var(--cyan);font-weight:700;
 }
-.live-hero .sub{font-size:12.5px;color:var(--ink-2);margin-top:5px;max-width:62ch;line-height:1.55}
+.live-hero .sub{font-size:14.5px;color:var(--ink-2);margin-top:5px;max-width:62ch;line-height:1.55}
 .onair{
   display:inline-flex;align-items:center;gap:8px;background:rgba(0,0,0,.55);
   border:1px solid var(--cyan);border-radius:999px;padding:6px 13px;
-  font-size:10.5px;font-weight:800;letter-spacing:.19em;color:var(--cyan);white-space:nowrap;
+  font-size:13px;font-weight:800;letter-spacing:.19em;color:var(--cyan);white-space:nowrap;
 }
 .onair .bulb{width:8px;height:8px;border-radius:50%;background:#28d17c;
   box-shadow:0 0 0 0 rgba(40,209,124,.75);animation:pulse 1.9s infinite}
@@ -336,9 +336,9 @@ table.dv caption{text-align:left;color:var(--muted);font-size:11.5px;padding-bot
   border:1px solid rgba(120,200,255,.18);border-left:3px solid var(--cyan);
   border-radius:10px;padding:13px 14px;
 }
-.seg .k{font-size:9.5px;letter-spacing:.2em;color:var(--cyan);font-weight:800}
-.seg .v{font-size:15px;font-weight:800;margin-top:6px;line-height:1.3}
-.seg .s{font-size:11.5px;color:var(--ink-2);margin-top:4px;line-height:1.5}
+.seg .k{font-size:12px;letter-spacing:.2em;color:var(--cyan);font-weight:800}
+.seg .v{font-size:17px;font-weight:800;margin-top:6px;line-height:1.3}
+.seg .s{font-size:14px;color:var(--ink-2);margin-top:4px;line-height:1.5}
 
 /* ---------- FIELD NOTES: country / kraft ---------- */
 #p-notes{
@@ -382,57 +382,108 @@ table.dv caption{text-align:left;color:var(--muted);font-size:11.5px;padding-bot
   box-shadow:0 12px 28px rgba(0,0,0,.5);
 }
 .guide-card img{width:100%;max-width:132px;height:auto;display:block;margin:0 auto}
-.guide-card .gname{font-size:13.5px;font-weight:800;margin-top:8px;color:var(--ink)}
-.guide-card .gmeta{font-size:11px;color:var(--muted);margin-top:4px;line-height:1.5}
-.guide-card .gyears{font-size:10px;letter-spacing:.08em;color:var(--gold-dim);margin-top:5px}
-.guide-card .retired{
-  position:absolute;top:8px;right:8px;font-size:8.5px;letter-spacing:.12em;font-weight:800;
+.guide-card .gname{font-size:15.5px;font-weight:800;margin-top:8px;color:var(--ink)}
+.guide-card .gmeta{font-size:13.5px;color:var(--muted);margin-top:4px;line-height:1.5}
+.guide-card .gyears{font-size:12.5px;letter-spacing:.08em;color:var(--gold-dim);margin-top:5px}
+.guide-card .inactive{
+  position:absolute;top:8px;right:8px;font-size:11px;letter-spacing:.12em;font-weight:800;
   color:#e8b33a;border:1px solid var(--gold-dim);border-radius:3px;padding:2px 5px;background:rgba(0,0,0,.45);
 }
 .guide-card .active-badge{
-  position:absolute;top:8px;right:8px;font-size:8.5px;letter-spacing:.12em;font-weight:800;
+  position:absolute;top:8px;right:8px;font-size:11px;letter-spacing:.12em;font-weight:800;
   color:#0e1f33;background:#28d17c;border-radius:3px;padding:2px 5px;
 }
 
 /* --- single event guide --- */
-.gback{background:none;border:1px solid var(--axis);color:var(--ink-2);font:700 12px var(--sans);
-  padding:8px 14px;border-radius:7px;cursor:pointer;letter-spacing:.08em;margin-bottom:14px}
-.gback:hover{border-color:var(--gold);color:var(--ink)}
+/* Guide navigation - prev / all events / next. Tooled brass-and-leather plates
+   to sit with the country Field Notes theme, rather than default buttons. */
+.gnav{display:grid;grid-template-columns:1fr auto 1fr;gap:10px;align-items:stretch;margin:0 0 18px}
+.gnav:last-child{margin:22px 0 0}
+.gnavbtn{
+  display:flex;flex-direction:column;justify-content:center;gap:3px;min-width:0;
+  text-align:left;cursor:pointer;font-family:var(--sans);color:var(--ink-2);
+  background:linear-gradient(150deg,#33291d,#241c13);
+  border:1px solid rgba(232,179,58,.28);border-radius:11px;padding:11px 15px;
+  transition:transform .16s cubic-bezier(.2,.7,.2,1),border-color .16s,box-shadow .16s,background .16s;
+}
+.gnavbtn.right{text-align:right;align-items:flex-end}
+.gnavbtn:hover,.gnavbtn:focus-visible{
+  background:linear-gradient(150deg,#3d3123,#2a2118);border-color:var(--gold);color:var(--ink);
+  outline:none;transform:translateY(-2px);box-shadow:0 8px 20px rgba(0,0,0,.45);
+}
+.gnavbtn .dir{font-size:10.5px;font-weight:800;letter-spacing:.22em;color:var(--gold);white-space:nowrap}
+.gnavbtn .nm{font-size:14.5px;font-weight:700;line-height:1.25;overflow:hidden;
+  text-overflow:ellipsis;white-space:nowrap;max-width:100%}
+.gback{
+  align-self:stretch;display:flex;align-items:center;justify-content:center;gap:7px;
+  background:linear-gradient(150deg,#2a2118,#1d160f);
+  border:1px solid rgba(232,179,58,.28);border-radius:11px;
+  color:var(--gold);font:800 12px var(--sans);letter-spacing:.16em;
+  padding:11px 20px;cursor:pointer;white-space:nowrap;
+  transition:transform .16s cubic-bezier(.2,.7,.2,1),border-color .16s,background .16s,color .16s;
+}
+.gback::before{content:"\2630";font-size:13px;opacity:.85}
+.gback:hover,.gback:focus-visible{
+  background:var(--gold);color:#241d16;border-color:var(--gold);outline:none;transform:translateY(-2px);
+}
+@media(max-width:620px){
+  .gnav{grid-template-columns:1fr 1fr;grid-template-areas:"prev next" "back back"}
+  .gnavbtn:not(.right){grid-area:prev}
+  .gnavbtn.right{grid-area:next}
+  .gback{grid-area:back}
+  .gnavbtn .nm{font-size:13px}
+}
 .gbanner{position:relative;border-radius:14px;overflow:hidden;border:1px solid rgba(232,179,58,.25);margin-bottom:18px}
 .gbanner img{width:100%;display:block}
 .gbanner .gscrim{position:absolute;inset:0;background:linear-gradient(180deg,transparent 40%,rgba(20,15,9,.94) 100%)}
 .gbanner .gcap{position:absolute;left:0;right:0;bottom:0;padding:18px 20px}
 .gbanner h2{margin:0;font-size:clamp(26px,5vw,44px);font-weight:800;letter-spacing:-.01em;line-height:1}
-.gbanner .gsub{color:var(--gold);font-size:12px;letter-spacing:.2em;font-weight:700;margin-bottom:6px}
-.gbanner .gtag{color:var(--ink-2);font-size:13px;margin-top:7px}
+.gbanner .gsub{color:var(--gold);font-size:14px;letter-spacing:.2em;font-weight:700;margin-bottom:6px}
+.gbanner .gtag{color:var(--ink-2);font-size:15px;margin-top:7px}
 .gbanner.nobanner{background:linear-gradient(150deg,#2e251b,#1a140e);min-height:190px}
 .gbanner.nobanner .gbadge{position:absolute;right:22px;top:50%;transform:translateY(-50%);width:150px;opacity:.95}
 
 .gstats{display:grid;grid-template-columns:repeat(auto-fit,minmax(158px,1fr));gap:11px;margin-bottom:18px}
 .gstat{background:linear-gradient(160deg,#2b2219,#211a12);border:1px solid rgba(232,179,58,.18);
   border-left:3px solid var(--gold);border-radius:10px;padding:12px 14px}
-.gstat .k{font-size:9.5px;letter-spacing:.18em;color:var(--muted);font-weight:800}
-.gstat .v{font-size:19px;font-weight:800;margin-top:5px;line-height:1.2;color:var(--gold)}
-.gstat .s{font-size:11px;color:var(--ink-2);margin-top:4px;line-height:1.45}
+.gstat .k{font-size:12px;letter-spacing:.18em;color:var(--muted);font-weight:800}
+.gstat .v{font-size:20px;font-weight:800;margin-top:5px;line-height:1.2;color:var(--gold)}
+.gstat .s{font-size:13.5px;color:var(--ink-2);margin-top:4px;line-height:1.45}
 
 .gedge{background:linear-gradient(150deg,rgba(40,209,124,.10),rgba(20,15,9,.6));
   border:1px solid rgba(40,209,124,.35);border-left:3px solid #28d17c;border-radius:12px;
   padding:15px 17px;margin-bottom:18px}
-.gedge h3{margin:0 0 8px;font-size:12px;letter-spacing:.2em;color:#28d17c;text-transform:uppercase}
+.gedge h3{margin:0 0 8px;font-size:14px;letter-spacing:.2em;color:#28d17c;text-transform:uppercase}
 .gedge ul{margin:0;padding-left:18px}
-.gedge li{font-size:13px;color:var(--ink-2);line-height:1.65;margin-bottom:5px}
+.gedge li{font-size:15px;color:var(--ink-2);line-height:1.65;margin-bottom:5px}
 .gedge li strong{color:var(--ink)}
 
 .gsection{background:linear-gradient(160deg,#2b2219,#211a12);border:1px solid rgba(232,179,58,.18);
   border-radius:12px;padding:16px 18px;margin-bottom:16px}
-.gsection h3{margin:0 0 10px;font-size:12.5px;letter-spacing:.16em;color:var(--gold);text-transform:uppercase}
-.gsection p{font-size:13px;color:var(--ink-2);line-height:1.65;margin:0 0 9px}
+.gsection h3{margin:0 0 10px;font-size:14.5px;letter-spacing:.16em;color:var(--gold);text-transform:uppercase}
+.gsection p{font-size:15px;color:var(--ink-2);line-height:1.65;margin:0 0 9px}
 .gyear{border-left:2px solid var(--axis);padding:2px 0 2px 12px;margin-bottom:12px}
-.gyear .gy{font-weight:800;color:var(--ink);font-size:13px}
-.gyear .gv{font-size:11px;color:var(--muted);letter-spacing:.05em;margin-left:6px}
-.gsnafu{color:var(--gold-dim);font-size:12.5px;margin-top:5px}
+.gyear .gy{font-weight:800;color:var(--ink);font-size:15px}
+.gyear .gv{font-size:13.5px;color:var(--muted);letter-spacing:.05em;margin-left:6px}
+.gsnafu{color:var(--gold-dim);font-size:14.5px;margin-top:5px}
 .gphotos{border:1px dashed var(--axis);border-radius:10px;padding:22px;text-align:center;
-  color:var(--muted);font-size:12.5px;line-height:1.6}
+  color:var(--muted);font-size:14.5px;line-height:1.6}
+.gphotos code{color:var(--gold-dim);font-size:13.5px}
+.upbtn{background:var(--gold);color:#241d16;border:0;border-radius:9px;
+  font:800 13px var(--sans);letter-spacing:.1em;padding:11px 22px;cursor:pointer;
+  transition:transform .16s,filter .16s}
+.upbtn:hover{transform:translateY(-2px);filter:brightness(1.08)}
+.upnote{font-size:12.5px;color:var(--muted);margin-top:10px}
+/* photo gallery */
+.gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:13px}
+.shot{margin:0;background:#1d160f;border:1px solid rgba(232,179,58,.18);border-radius:11px;overflow:hidden}
+.shot img{width:100%;height:230px;object-fit:cover;display:block;transition:transform .35s}
+.shot:hover img{transform:scale(1.04)}
+.shot figcaption{padding:11px 13px;font-size:14px;color:var(--ink-2);line-height:1.55}
+.shot .shotmeta{display:block;margin-top:7px;font-size:12px;color:var(--muted);letter-spacing:.05em}
+.shot .take{display:block;margin-top:8px;padding-left:10px;border-left:2px solid var(--gold-dim);
+  font-size:13.5px;color:var(--gold-dim);line-height:1.6;font-style:italic}
+.shot .take strong{color:var(--gold);font-style:normal}
 
 /* ---------- Alex, the host ---------- */
 .host{display:grid;grid-template-columns:minmax(230px,300px) 1fr;gap:22px;align-items:center;
@@ -445,26 +496,26 @@ table.dv caption{text-align:left;color:var(--muted);font-size:11.5px;padding-bot
 .host-avatar{width:82px;height:82px;border-radius:50%;display:grid;place-items:center;
   background:linear-gradient(150deg,var(--gold),var(--gold-dim));color:#1a1a19;
   font:800 34px var(--sans)}
-.host-slotnote{color:var(--muted);font-size:11px;letter-spacing:.14em;margin:0}
+.host-slotnote{color:var(--muted);font-size:13.5px;letter-spacing:.14em;margin:0}
 .ai-badge{position:absolute;top:9px;right:9px;background:rgba(13,13,13,.86);border:1px solid var(--gold-dim);
-  color:var(--gold);font-size:9px;font-weight:800;letter-spacing:.13em;padding:3px 7px;border-radius:4px}
-.host-kicker{font-size:10.5px;letter-spacing:.24em;color:var(--gold);font-weight:700}
+  color:var(--gold);font-size:11.5px;font-weight:800;letter-spacing:.13em;padding:3px 7px;border-radius:4px}
+.host-kicker{font-size:13px;letter-spacing:.24em;color:var(--gold);font-weight:700}
 .host-name{margin:6px 0 2px;font-size:clamp(28px,5vw,42px);font-weight:800;letter-spacing:-.01em}
-.host-role{color:var(--ink-2);font-size:13px;letter-spacing:.06em}
-.host-quote{margin:14px 0 0;font-size:14.5px;line-height:1.65;color:var(--ink);max-width:62ch}
+.host-role{color:var(--ink-2);font-size:15px;letter-spacing:.06em}
+.host-quote{margin:14px 0 0;font-size:16.5px;line-height:1.65;color:var(--ink);max-width:62ch}
 
 /* ---------- generic content ---------- */
 .empty{background:var(--surface);border:1px dashed var(--axis);border-radius:12px;padding:34px 22px;text-align:center}
-.empty h3{margin:0 0 8px;color:var(--gold);letter-spacing:.1em;font-size:14px;text-transform:uppercase}
-.empty p{color:var(--ink-2);font-size:13px;margin:0 auto;max-width:56ch;line-height:1.6}
+.empty h3{margin:0 0 8px;color:var(--gold);letter-spacing:.1em;font-size:16px;text-transform:uppercase}
+.empty p{color:var(--ink-2);font-size:15px;margin:0 auto;max-width:56ch;line-height:1.6}
 .notes{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px}
 .note-card{background:var(--surface);border:1px solid var(--ring);border-radius:10px;padding:15px 16px}
-.note-card h3{margin:0 0 4px;font-size:13.5px;color:var(--gold);letter-spacing:.06em}
-.note-card .meta{font-size:11px;color:var(--muted);margin-bottom:9px;letter-spacing:.05em}
-.note-card p{margin:0 0 8px;font-size:12.5px;color:var(--ink-2);line-height:1.6}
-.note-card .tag{display:inline-block;font-size:10px;letter-spacing:.1em;color:#1a1a19;background:var(--gold);
+.note-card h3{margin:0 0 4px;font-size:15.5px;color:var(--gold);letter-spacing:.06em}
+.note-card .meta{font-size:13.5px;color:var(--muted);margin-bottom:9px;letter-spacing:.05em}
+.note-card p{margin:0 0 8px;font-size:14.5px;color:var(--ink-2);line-height:1.6}
+.note-card .tag{display:inline-block;font-size:12.5px;letter-spacing:.1em;color:#1a1a19;background:var(--gold);
   border-radius:3px;padding:2px 6px;font-weight:800;margin-bottom:8px}
-footer{border-top:1px solid var(--grid);color:var(--muted);font-size:11.5px;text-align:center;padding:22px 18px 40px;line-height:1.7}
+footer{border-top:1px solid var(--grid);color:var(--muted);font-size:14px;text-align:center;padding:22px 18px 40px;line-height:1.7}
 footer a{color:var(--gold-dim)}
 
 @media (prefers-reduced-motion:reduce){
@@ -624,6 +675,7 @@ footer a{color:var(--gold-dim)}
 <div class="tt" id="tt" role="status" aria-live="polite"></div>
 
 <script src="data/tournaments.js"></script>
+<script src="data/media.js"></script>
 <script>
 (function(){
 "use strict";
@@ -857,10 +909,10 @@ function renderWP(){
       svg.appendChild(el('line',{x1:padL,x2:W-padR,y1:yOf(bi,p),y2:yOf(bi,p),
         stroke:p===0?'var(--axis)':'var(--grid)','stroke-width':1}));
       svg.appendChild(el('text',{x:padL-9,y:yOf(bi,p)+4,'text-anchor':'end',
-        fill:'var(--muted)','font-size':10.5},Math.round(p*100)+'%'));
+        fill:'var(--muted)','font-size':12.5},Math.round(p*100)+'%'));
     });
     // day label
-    svg.appendChild(el('text',{x:padL,y:top-8,fill:'var(--gold)','font-size':11,
+    svg.appendChild(el('text',{x:padL,y:top-8,fill:'var(--gold)','font-size':13,
       'font-weight':800,'letter-spacing':'.18em'},d.day.toUpperCase()));
 
     // Event gridlines + labels. Concurrent events sit close together, so the
@@ -873,7 +925,7 @@ function renderWP(){
       row = (x-lastLabelX < 58) ? (row+1)%2 : 0;
       lastLabelX = x;
       svg.appendChild(el('text',{x:x,y:top+bandH+15+row*11,'text-anchor':'middle',
-        fill:'var(--muted)','font-size':9.5},o.e.short));
+        fill:'var(--muted)','font-size':11.5},o.e.short));
     });
   });
 
@@ -932,7 +984,7 @@ function renderWP(){
     if(under>0) endLabels.forEach(l=>l.y+=under);
   }
   endLabels.forEach(l=>{
-    svg.appendChild(el('text',{x:l.x,y:l.y+3.5,fill:l.col,'font-size':11,
+    svg.appendChild(el('text',{x:l.x,y:l.y+3.5,fill:l.col,'font-size':13,
       'font-weight':700,opacity:l.op},l.text));
   });
 
@@ -961,7 +1013,7 @@ function renderWP(){
     const probs=ranked.map(rr=>({name:rr.name,p:wp[best.i+1][rr.idx],c:colorOf[rr.name]}))
       .sort((a,b)=>b.p-a.p).slice(0,5);
     tt.innerHTML=`<div class="h">${best.e.name.toUpperCase()} &middot; ${best.e.day} ${best.e.time}</div>`+
-      `<div class="r" style="color:var(--muted);font-size:11px"><span>${best.e.venue}</span></div>`+
+      `<div class="r" style="color:var(--muted);font-size:13.5px"><span>${best.e.venue}</span></div>`+
       probs.map(o=>`<div class="r"><span><i class="sw" style="background:${o.c}"></i>${o.name}</span><b>${(o.p*100).toFixed(1)}%</b></div>`).join('');
     tt.classList.add('on');
     const pad=14; let L=ev.clientX+pad, T=ev.clientY+pad;
@@ -1011,15 +1063,15 @@ function renderWPAll(){
     svg.appendChild(el('line',{x1:padL,x2:W-padR,y1:y(p),y2:y(p),
       stroke:g===0?'var(--axis)':'var(--grid)','stroke-width':1}));
     svg.appendChild(el('text',{x:padL-9,y:y(p)+4,'text-anchor':'end',
-      fill:'var(--muted)','font-size':10.5},Math.round(p)));
+      fill:'var(--muted)','font-size':12.5},Math.round(p)));
   }
   for(let i=1;i<=maxEv;i++){
     svg.appendChild(el('line',{x1:x(i),x2:x(i),y1:padT,y2:H-padB,stroke:'var(--grid)','stroke-width':1}));
     svg.appendChild(el('text',{x:x(i),y:H-padB+16,'text-anchor':'middle',
-      fill:'var(--muted)','font-size':10},'E'+i));
+      fill:'var(--muted)','font-size':12},'E'+i));
   }
   svg.appendChild(el('text',{x:(padL+W-padR)/2,y:H-6,'text-anchor':'middle',
-    fill:'var(--muted)','font-size':10.5,'letter-spacing':'.12em'},'EVENT NUMBER'));
+    fill:'var(--muted)','font-size':12.5,'letter-spacing':'.12em'},'EVENT NUMBER'));
 
   const labels=[];
   list.forEach((t,si)=>{
@@ -1044,7 +1096,7 @@ function renderWPAll(){
     if(labels[i].y-labels[i-1].y<13) labels[i].y=labels[i-1].y+13;
   }
   labels.forEach(l=>svg.appendChild(el('text',{x:l.x,y:l.y+3.5,fill:l.col,
-    'font-size':11,'font-weight':700,opacity:l.op},l.text)));
+    'font-size':13,'font-weight':700,opacity:l.op},l.text)));
 
   host.appendChild(svg);
 
@@ -1123,16 +1175,16 @@ function renderCA(){
   ticks.forEach(p=>{
     svg.appendChild(el('line',{x1:padL,x2:W-padR,y1:yy(p),y2:yy(p),
       stroke:p===1?'var(--gold-dim)':'var(--grid)','stroke-width':1,opacity:p===1?.55:1}));
-    svg.appendChild(el('text',{x:padL-10,y:yy(p)+4,'text-anchor':'end',fill:'var(--muted)','font-size':10.5},
+    svg.appendChild(el('text',{x:padL-10,y:yy(p)+4,'text-anchor':'end',fill:'var(--muted)','font-size':12.5},
       p===1?'CHAMP':ordinal(p)));
   });
   years.forEach(y=>{
     svg.appendChild(el('line',{x1:x(y),x2:x(y),y1:padT,y2:H-padB,stroke:'var(--grid)','stroke-width':1}));
     svg.appendChild(el('text',{x:x(y),y:H-padB+18,'text-anchor':'middle',
-      fill:'var(--ink-2)','font-size':11,'font-weight':700},String(y)));
+      fill:'var(--ink-2)','font-size':13,'font-weight':700},String(y)));
     const t=D.tournaments.find(tt=>tt.year===y);
     if(t) svg.appendChild(el('text',{x:x(y),y:H-padB+31,'text-anchor':'middle',
-      fill:'var(--muted)','font-size':8.5},t.players.length+' players'));
+      fill:'var(--muted)','font-size':10.5},t.players.length+' players'));
   });
 
   // Every multi-appearance competitor gets their own line and legend row.
@@ -1181,7 +1233,7 @@ function renderCA(){
   endLab.sort((a,b)=>a.y-b.y);
   for(let i=1;i<endLab.length;i++){ if(endLab[i].y-endLab[i-1].y<13) endLab[i].y=endLab[i-1].y+13; }
   endLab.forEach(l=>svg.appendChild(el('text',{x:l.x,y:l.y+3.5,fill:l.col,
-    'font-size':11,'font-weight':700,opacity:l.op},l.text)));
+    'font-size':13,'font-weight':700,opacity:l.op},l.text)));
 
   host.appendChild(svg);
   $('#caNote').innerHTML =
@@ -1379,7 +1431,7 @@ function renderFieldNotes(){
     (a.retired?1:0)-(b.retired?1:0) || b.years.length-a.years.length || a.name.localeCompare(b.name));
   list.forEach(g=>{
     const d=document.createElement('button'); d.type='button'; d.className='guide-card';
-    d.innerHTML=`${g.retired?'<span class="retired">RETIRED</span>':'<span class="active-badge">ACTIVE</span>'}
+    d.innerHTML=`${g.retired?'<span class="inactive">INACTIVE</span>':'<span class="active-badge">ACTIVE</span>'}
       <img src="${g.icon}" alt="${g.name}" loading="lazy">
       <div class="gname">${g.name}</div>
       <div class="gmeta">${g.years.length} tournament${g.years.length===1?'':'s'} &middot; ${g.isPair?'Pairs':'Individual'}</div>
@@ -1389,9 +1441,62 @@ function renderFieldNotes(){
   });
 }
 
+/* Photos for an event, newest first. Sourced from live/data/media.js, matched
+   on the CANONICAL event name so a photo tagged "Chinese Stars" still lands on
+   the Shuriken guide. */
+function photosFor(g){
+  const all = window.DD_MEDIA || [];
+  return all.filter(m => canonical(m.event) === g.name)
+            .sort((a,b) => (b.year||0) - (a.year||0));
+}
+
+/* Photo commentary, written from the scorecard rather than hand-typed.
+   Looks up how each tagged competitor ACTUALLY did in that event that year and
+   picks a line to match. The ribbing is aimed at the performance, never the
+   person - these are somebody's friends, and the data does the teasing. */
+function photoTake(g, m){
+  if(!m.people || !m.people.length || !m.year) return '';
+  const app = g.appearances.find(a => a.year === m.year);
+  if(!app) return '';
+  const field = app.rows.length;
+
+  const bits = m.people.map(person => {
+    const idx = app.rows.findIndex(r => r.player === person);
+    if(idx < 0) return `${person} doesn't appear on the ${m.year} card for this one.`;
+    const row = app.rows[idx], place = idx + 1, pts = row.pts;
+    const won = app.winners && app.winners.includes(person);
+
+    // How does this compare to their own record at this event?
+    const mine = g.playerAvg.find(p => p.player === person);
+    const vsSelf = mine ? +(pts - mine.avg).toFixed(1) : null;
+
+    if(won) return `<strong>${person}</strong> took the whole thing that year &mdash; ${pts} points. The photo is basically a victory portrait.`;
+    if(place <= 3) return `<strong>${person}</strong> finished ${ordinal(place)} of ${field} here in ${m.year} on ${pts} points. Genuinely one of the good ones at this event.`;
+    if(place > field * 0.75){
+      const extra = vsSelf != null && vsSelf < -1
+        ? ` Even by his own standards that was rough &mdash; ${Math.abs(vsSelf)} points below his career average at this event.`
+        : '';
+      return `<strong>${person}</strong> looks tremendously confident here for a man who went on to finish ${ordinal(place)} of ${field} with ${pts} points.${extra}`;
+    }
+    return `<strong>${person}</strong> landed ${ordinal(place)} of ${field} on ${pts} points &mdash; respectable, unspectacular, no beer owed.`;
+  });
+
+  return bits.join(' ');
+}
+
+/* Guide order matches the index grid so prev/next cycles in the same sequence
+   the user just saw: active events first, then by number of appearances. */
+function guideOrder(){
+  return Object.values(GUIDE).sort((a,b)=>
+    (a.retired?1:0)-(b.retired?1:0) || b.years.length-a.years.length || a.name.localeCompare(b.name));
+}
+
 function openGuide(slug,push){
   const g=Object.values(GUIDE).find(x=>x.slug===slug);
   if(!g){ closeGuide(false); return; }
+  const order=guideOrder(), gi=order.findIndex(x=>x.slug===g.slug);
+  const prev=order[(gi-1+order.length)%order.length];   // wraps, so it never dead-ends
+  const next=order[(gi+1)%order.length];
   const box=$('#notesDetail');
   $('#notesIndex').hidden=true; box.hidden=false;
   if(push) history.replaceState(null,'',`?event=${slug}#notes`);
@@ -1419,16 +1524,25 @@ function openGuide(slug,push){
   if(g.isPair) edge.push(`Pair event: your partner is half your score. The standings leader picks first, so climbing the table before this event buys you a better teammate.`);
   const snafus=[...new Set(g.appearances.map(a=>a.event.snafu).filter(Boolean))];
   if(snafus.length) edge.push(`Avoid the SNAFU: ${snafus[0]}`);
-  if(g.retired) edge.push(`<strong>Retired.</strong> Last contested in ${g.lastYear}. A champion can always bring it back.`);
+  if(g.retired) edge.push(`<strong>Inactive.</strong> Last contested in ${g.lastYear}. A champion can always bring it back.`);
+
+  const navBar=`
+    <div class="gnav">
+      <button class="gnavbtn" data-go="${prev.slug}" title="${prev.name}">
+        <span class="dir">&larr; PREV</span><span class="nm">${prev.name}</span></button>
+      <button class="gback" id="gback">All events</button>
+      <button class="gnavbtn right" data-go="${next.slug}" title="${next.name}">
+        <span class="dir">NEXT &rarr;</span><span class="nm">${next.name}</span></button>
+    </div>`;
 
   box.innerHTML=`
-    <button class="gback" id="gback">&larr; All events</button>
+    ${navBar}
     <div class="gbanner" id="gban">
       <img src="${banner}" alt="" onerror="this.closest('.gbanner').classList.add('nobanner');this.remove();">
       <img class="gbadge" src="${g.icon}" alt="" style="display:none">
       <div class="gscrim"></div>
       <div class="gcap">
-        <div class="gsub">${g.isPair?'PAIR EVENT':'INDIVIDUAL EVENT'}${g.retired?' &middot; RETIRED':''}</div>
+        <div class="gsub">${g.isPair?'PAIR EVENT':'INDIVIDUAL EVENT'}${g.retired?' &middot; INACTIVE':''}</div>
         <h2>${g.name}</h2>
         <div class="gtag">${latest.event.basis||''}${g.aliases.size?` &middot; also played as ${[...g.aliases].join(', ')}`:''}</div>
       </div>
@@ -1452,7 +1566,7 @@ function openGuide(slug,push){
           <span class="gv">${[a.event.name!==g.name?`as "${a.event.name}"`:'',a.event.day||'',a.event.time||'',a.event.venue||''].filter(Boolean).join(' · ')}</span>
           ${a.event.basis?`<p style="margin:5px 0 0"><strong style="color:var(--ink)">${a.event.basis}.</strong> ${a.event.rules||''}</p>`:''}
           ${a.event.snafu?`<div class="gsnafu"><strong>SNAFU:</strong> ${a.event.snafu}</div>`:''}
-          ${a.winners?`<div style="font-size:12px;color:var(--muted);margin-top:5px">Won by <strong style="color:var(--gold)">${a.winners.join(' & ')}</strong> (${a.topScore} pts)${a.margin!=null?` &middot; margin ${a.margin}`:''}</div>`:''}
+          ${a.winners?`<div style="font-size:14px;color:var(--muted);margin-top:5px">Won by <strong style="color:var(--gold)">${a.winners.join(' & ')}</strong> (${a.topScore} pts)${a.margin!=null?` &middot; margin ${a.margin}`:''}</div>`:''}
         </div>`).join('')}
     </div>
 
@@ -1465,14 +1579,47 @@ function openGuide(slug,push){
     </div>
 
     <div class="gsection">
-      <h3>Conditions &amp; photos</h3>
-      <div class="gphotos">
-        No conditions report filed for the next tournament yet.<br>
-        Event photos and competitor commentary will land here once the media feed is wired up.
-      </div>
-    </div>`;
+      <h3>From the field</h3>
+      ${photosFor(g).length ? `<div class="gallery">${photosFor(g).map(m=>`
+          <figure class="shot">
+            <img src="${m.file}" alt="${m.caption||g.name}" loading="lazy"
+                 onerror="this.closest('.shot').remove()">
+            <figcaption>
+              ${m.caption||''}
+              ${photoTake(g,m) ? `<span class="take">${photoTake(g,m)}</span>` : ''}
+              <span class="shotmeta">${[m.year,m.venue,(m.people&&m.people.length)?m.people.join(' &amp; '):''].filter(Boolean).join(' &middot; ')}</span>
+            </figcaption>
+          </figure>`).join('')}</div>`
+        : `<div class="gphotos">
+             <div style="font-size:15px;color:var(--ink-2);margin-bottom:12px">No photos filed for this event yet.</div>
+             <button class="upbtn" data-upload="${g.slug}">Add a photo</button>
+             <div class="upnote">Uploads need the media service switched on &mdash; see below.</div>
+           </div>`}
+      <p style="font-size:13px;color:var(--muted);margin:12px 0 0;line-height:1.6">
+        No conditions report filed for the next tournament yet. Competitor commentary
+        and live conditions land here once a tournament is scheduled.</p>
+    </div>
+    ${navBar}`;
 
-  $('#gback').onclick=()=>closeGuide(true);
+  box.querySelectorAll('#gback').forEach(b=>b.onclick=()=>closeGuide(true));
+  box.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>openGuide(b.dataset.go,true));
+  box.querySelectorAll('[data-upload]').forEach(b=>b.onclick=()=>{
+    // Deliberately does NOT pretend to upload. A static site has nowhere to put
+    // the file: this needs the Azure Static Web Apps managed Functions API plus
+    // Blob Storage (the `media` table in data/schema.sql is already shaped for
+    // it, including upload_source='qr_feed' for the on-site QR feed). Auto
+    // captioning needs a vision call on top of that. Until both exist, tell the
+    // truth rather than ship a button that silently drops photos.
+    alert(
+      "Photo upload isn't switched on yet.\n\n"+
+      "It needs two pieces that aren't built:\n"+
+      "  1. An upload endpoint + Blob Storage to hold the file\n"+
+      "  2. A vision call to draft the caption automatically\n\n"+
+      "Until then: drop the image into images/ and add an entry to "+
+      "live/data/media.js. Tag the people in it and the site writes the "+
+      "commentary from their actual scores."
+    );
+  });
   window.scrollTo({top:0,behavior:'smooth'});
 }
 
