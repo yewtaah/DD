@@ -135,6 +135,12 @@ nav.tabs button{
 }
 nav.tabs button:hover{color:var(--ink);background:rgba(255,255,255,.04)}
 nav.tabs button[aria-selected="true"]{color:var(--gold);border-bottom-color:var(--gold)}
+/* Each tab carries its own accent, so switching feels like changing channels. */
+nav.tabs button#tab-live[aria-selected="true"]{color:#38d9f0;border-bottom-color:#38d9f0}
+body[data-seg="live"] header.bar{border-bottom-color:#38d9f0;
+  background:linear-gradient(180deg,#12283f,#0e1f33)}
+body[data-seg="live"] .brand small{color:#38d9f0}
+body[data-seg="notes"] header.bar{background:linear-gradient(180deg,#2e251b,#241d16)}
 nav.tabs button:focus-visible{outline:2px solid var(--gold);outline-offset:-2px}
 
 /* ---------- ticker ---------- */
@@ -242,6 +248,120 @@ table.dv th:first-child,table.dv td:first-child{text-align:left}
 table.dv th{color:var(--muted);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase}
 table.dv caption{text-align:left;color:var(--muted);font-size:11.5px;padding-bottom:6px}
 
+/* ============================================================
+   PER-TAB THEMING
+   Each tab is a different "show segment" and carries its own look:
+     DD LIVE      - tech/broadcast control room. Electric blue, cyan glow,
+                    monitor-wall grid, on-air furniture.
+     CHRONICLES   - the archive. Stays charcoal/gold, because that is the
+                    surface the categorical chart palette was VALIDATED
+                    against (worst adjacent CVD dE 8.4 on #1a1a19). Do not
+                    restyle the chart surface without re-running the
+                    validator - the series colours are only safe on it.
+     FIELD NOTES  - the rulebook. Warm country/kraft, matching the hex
+                    badge artwork.
+   Variables are re-declared per panel so components inherit automatically.
+   ============================================================ */
+
+/* ---------- DD LIVE: broadcast control room ---------- */
+#p-live{
+  --surface:#0e1f33;
+  --charcoal:#12283f;
+  --ink-2:#b8d4ea;
+  --muted:#7695ad;
+  --grid:#1c3a52;
+  --ring:rgba(120,200,255,.16);
+  --cyan:#38d9f0;
+  position:relative;
+  background:
+    radial-gradient(ellipse at 12% 0%,rgba(56,217,240,.13),transparent 55%),
+    radial-gradient(ellipse at 88% 12%,rgba(232,179,58,.10),transparent 55%),
+    linear-gradient(170deg,#0b1b2d,#081422 70%);
+  border:1px solid rgba(120,200,255,.18);
+  border-radius:14px;padding:18px;overflow:hidden;
+}
+/* monitor-wall grid + scanlines */
+#p-live::before{
+  content:"";position:absolute;inset:0;pointer-events:none;opacity:.5;
+  background-image:
+    linear-gradient(rgba(56,217,240,.055) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(56,217,240,.055) 1px,transparent 1px);
+  background-size:44px 44px;
+}
+#p-live::after{
+  content:"";position:absolute;inset:0;pointer-events:none;opacity:.35;
+  background:repeating-linear-gradient(180deg,rgba(0,0,0,.22) 0 1px,transparent 1px 3px);
+}
+#p-live > *{position:relative;z-index:1}
+
+.live-hero{
+  position:relative;border-radius:12px;overflow:hidden;margin-bottom:18px;
+  border:1px solid rgba(120,200,255,.22);
+}
+.live-hero img{width:100%;display:block}
+.live-hero .scrim{
+  position:absolute;inset:0;
+  background:linear-gradient(180deg,transparent 45%,rgba(8,20,34,.92) 100%);
+}
+.live-hero .cap{
+  position:absolute;left:0;right:0;bottom:0;padding:16px 18px;display:flex;
+  align-items:flex-end;justify-content:space-between;gap:14px;flex-wrap:wrap;
+}
+.live-hero .tag{
+  font-size:clamp(10px,1.5vw,12px);letter-spacing:.34em;color:var(--cyan);font-weight:700;
+}
+.live-hero .sub{font-size:12.5px;color:var(--ink-2);margin-top:5px;max-width:62ch;line-height:1.55}
+.onair{
+  display:inline-flex;align-items:center;gap:8px;background:rgba(0,0,0,.55);
+  border:1px solid var(--cyan);border-radius:999px;padding:6px 13px;
+  font-size:10.5px;font-weight:800;letter-spacing:.19em;color:var(--cyan);white-space:nowrap;
+}
+.onair .bulb{width:8px;height:8px;border-radius:50%;background:#28d17c;
+  box-shadow:0 0 0 0 rgba(40,209,124,.75);animation:pulse 1.9s infinite}
+.onair.off{border-color:var(--muted);color:var(--muted)}
+.onair.off .bulb{background:var(--muted);animation:none;box-shadow:none}
+
+/* live-segment strip */
+.segs{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:11px;margin-bottom:18px}
+.seg{
+  background:linear-gradient(160deg,rgba(20,48,76,.9),rgba(10,26,44,.9));
+  border:1px solid rgba(120,200,255,.18);border-left:3px solid var(--cyan);
+  border-radius:10px;padding:13px 14px;
+}
+.seg .k{font-size:9.5px;letter-spacing:.2em;color:var(--cyan);font-weight:800}
+.seg .v{font-size:15px;font-weight:800;margin-top:6px;line-height:1.3}
+.seg .s{font-size:11.5px;color:var(--ink-2);margin-top:4px;line-height:1.5}
+
+/* ---------- FIELD NOTES: country / kraft ---------- */
+#p-notes{
+  --surface:#241d16;
+  --charcoal:#2e251b;
+  --ink:#f6efe3;
+  --ink-2:#d9c9ae;
+  --muted:#a4906f;
+  --grid:#3a2f22;
+  --ring:rgba(232,179,58,.20);
+  position:relative;
+  background:
+    radial-gradient(ellipse at 20% 0%,rgba(232,179,58,.10),transparent 60%),
+    linear-gradient(165deg,#2a2118,#1a140e 75%);
+  border:1px solid rgba(232,179,58,.22);
+  border-radius:14px;padding:18px;
+}
+/* faint woodgrain */
+#p-notes::before{
+  content:"";position:absolute;inset:0;pointer-events:none;opacity:.5;border-radius:14px;
+  background:repeating-linear-gradient(92deg,rgba(0,0,0,.13) 0 2px,transparent 2px 9px);
+}
+#p-notes > *{position:relative;z-index:1}
+#p-notes .card,#p-notes .note-card{
+  background:linear-gradient(160deg,#2b2219,#211a12);
+  border:1px solid rgba(232,179,58,.20);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.04);
+}
+#p-notes .note-card h3{color:var(--gold)}
+#p-notes .tag{background:var(--gold);color:#241d16}
+
 /* ---------- Alex, the host ---------- */
 .host{display:grid;grid-template-columns:minmax(230px,300px) 1fr;gap:22px;align-items:center;
   background:linear-gradient(150deg,var(--charcoal),var(--surface));
@@ -309,6 +429,21 @@ footer a{color:var(--gold-dim)}
 <main>
   <!-- ================= DD LIVE ================= -->
   <section class="panel" id="p-live" role="tabpanel" aria-labelledby="tab-live" hidden>
+    <div class="live-hero">
+      <img src="../images/DarwinDecathlonLive.png" alt="Darwin Decathlon Live broadcast desk">
+      <div class="scrim"></div>
+      <div class="cap">
+        <div>
+          <div class="tag">ADAPT &middot; COMPETE &middot; WIN</div>
+          <div class="sub">Live coverage of the Darwin Decathlon &mdash; running standings, event-by-event
+            scoring, and win probability updating between events.</div>
+        </div>
+        <span class="onair off" id="onair"><span class="bulb"></span>OFF AIR</span>
+      </div>
+    </div>
+
+    <div class="segs" id="liveSegs"></div>
+
     <div class="host">
       <div class="host-video">
         <!-- D-ID agent embed goes here. Until it's wired up this is a static card. -->
@@ -439,6 +574,8 @@ function selectTab(tb,push){
     document.getElementById(p2).hidden = !on;
   });
   const slug=(TABS.find(x=>x[0]===tb)||[])[2];
+  // Drives the per-tab chrome accent (see body[data-seg=...] rules).
+  document.body.dataset.seg = slug==='chronicles' ? 'chron' : slug;
   if(push && slug) history.replaceState(null,'','#'+slug);
   if(tb==='tab-chron') requestAnimationFrame(renderAll);
 }
@@ -446,7 +583,7 @@ TABS.forEach(([tb])=>document.getElementById(tb).addEventListener('click',()=>se
 (function fromHash(){
   const h=(location.hash||'').replace('#','').toLowerCase();
   const hit=TABS.find(x=>x[2]===h);
-  if(hit) selectTab(hit[0],false);
+  selectTab(hit?hit[0]:'tab-chron',false);   // always set the chrome accent
 })();
 addEventListener('hashchange',()=>{
   const h=(location.hash||'').replace('#','').toLowerCase();
@@ -455,6 +592,27 @@ addEventListener('hashchange',()=>{
 
 const toChron=$('#toChron');
 if(toChron) toChron.addEventListener('click',()=>document.getElementById('tab-chron').click());
+
+/* ---------- DD LIVE segment strip (derived) ----------
+   Stands in for the live scoreboard until a tournament is actually running.
+   Everything here comes from the data, so it stays true as years are added. */
+function renderLiveSegs(){
+  const box=$('#liveSegs'); if(!box) return; box.innerHTML='';
+  const latest=D.tournaments[D.tournaments.length-1];
+  const wins={}; D.tournaments.forEach(t=>{ wins[t.champion]=(wins[t.champion]||0)+1; });
+  const best=D.tournaments.slice().sort((a,b)=>b.championPoints-a.championPoints)[0];
+  const seg=(k,v,s)=>{
+    const d=document.createElement('div'); d.className='seg';
+    d.innerHTML=`<div class="k">${k}</div><div class="v">${v}</div>${s?`<div class="s">${s}</div>`:''}`;
+    box.appendChild(d);
+  };
+  seg('NEXT TOURNAMENT','Not yet scheduled','Date TBD &mdash; this panel goes live when it is');
+  seg('REIGNING CHAMPION',latest.champion,
+      `${latest.championPoints} points, ${latest.year} &middot; defends the Ron`);
+  seg('RECORD TO BEAT',best.championPoints+' pts',`${best.champion}, ${best.year}`);
+  seg('TITLES',Object.keys(wins).length+' champions',
+      `across ${D.tournaments.length} tournaments since ${D.tournaments[0].year}`);
+}
 
 /* ---------- state ---------- */
 // ?year=2023 deep-links a specific tournament; defaults to the most recent.
@@ -1098,7 +1256,7 @@ function renderFieldNotes(){
    changes. Nothing in the render path hardcodes a name, year or score. */
 function renderAll(){
   renderTicker(); renderHero(); renderTiles();
-  renderWP(); renderCA(); renderMoments(); renderFieldNotes();
+  renderWP(); renderCA(); renderMoments(); renderFieldNotes(); renderLiveSegs();
 }
 renderAll();
 })();
