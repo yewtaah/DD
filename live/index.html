@@ -471,21 +471,39 @@ let ISOLATE = null;                 // player name or null
   mk('ALL TIME','ALL');
 })();
 
-/* ---------- ticker ---------- */
-(function ticker(){
-  const t=D.tournaments[0];
-  const bits=[
-    `<b>CHAMPION ${t.year}</b> ${t.champion} &mdash; ${t.championPoints} pts`,
-    `<b>SKEET</b> Ryan Whitzel opens the tournament with a perfect 10`,
-    `<b>SHURIKEN</b> Chuck Niesner throws a 10 at the Bateman House`,
-    `<b>COLLAPSE</b> Matt Roland posts a 0 in Darts`,
-    `<b>DERBY</b> Andy Conacher goes 10 at George Bush Park`,
-    `<b>2018</b> Ben Murrill wins it all after finishing 8th in 2015`,
-    `<b>2022</b> First tie in tournament history &mdash; settled by sudden-death washers`
-  ];
+/* ---------- ticker (fully derived - no hardcoded facts) ----------
+   Rebuilt on every render so corrected data shows up here too. */
+function renderTicker(){
+  const bits=[];
+
+  // Every champion, newest first.
+  D.tournaments.slice().sort((a,b)=>b.year-a.year).forEach(t=>{
+    bits.push(`<b>CHAMPION ${t.year}</b> ${t.champion}${t.coChampion?` &amp; ${t.coChampion}`:''} &mdash; ${t.championPoints} pts`);
+  });
+
+  // Best winning score on record.
+  const best=D.tournaments.slice().sort((a,b)=>b.championPoints-a.championPoints)[0];
+  if(best) bits.push(`<b>RECORD</b> ${best.champion}'s ${best.championPoints} in ${best.year} is the highest winning score ever`);
+
+  // Perfect 10s and zeros in the currently selected tournament.
+  const t=D.tournaments.find(x=>x.year===YEAR);
+  if(t){
+    t.players.forEach(p=>p.points.forEach((v,i)=>{
+      if(v===10)  bits.push(`<b>${t.events[i].name.toUpperCase()}</b> ${p.name} scores a perfect 10 (${t.year})`);
+      if(v!=null && v>10) bits.push(`<b>${t.events[i].name.toUpperCase()}</b> ${p.name} posts a ${v} &mdash; above the nominal max (${t.year})`);
+      if(v===0)   bits.push(`<b>COLLAPSE</b> ${p.name} posts a 0 in ${t.events[i].name} (${t.year})`);
+    }));
+  }
+
+  // Repeat champions.
+  const wins={}; D.tournaments.forEach(t2=>{ wins[t2.champion]=(wins[t2.champion]||0)+1; });
+  Object.entries(wins).filter(([,n])=>n>1).forEach(([name,n])=>{
+    bits.push(`<b>DYNASTY</b> ${name} has taken the Ron ${n} times`);
+  });
+
   const html = bits.map(b=>`<span>${b}</span>`).join('');
   $('#tickerTrack').innerHTML = html+html;
-})();
+}
 
 /* ================= Monte Carlo win probability =================
    At each checkpoint (after k events) take the real standings, then
@@ -593,12 +611,17 @@ function renderWP(){
     svg.appendChild(el('text',{x:padL,y:top-8,fill:'var(--gold)','font-size':11,
       'font-weight':800,'letter-spacing':'.18em'},d.day.toUpperCase()));
 
-    // event gridlines + labels
+    // Event gridlines + labels. Concurrent events sit close together, so the
+    // labels are staggered onto two rows rather than allowed to collide
+    // (2019 ran Kan Jam and Corn Hole at the same 7pm slot).
+    let lastLabelX=-Infinity, row=0;
     d.items.forEach(o=>{
       const x=d.x(o.tt);
       svg.appendChild(el('line',{x1:x,x2:x,y1:top,y2:top+bandH,stroke:'var(--grid)','stroke-width':1}));
-      const g=el('text',{x:x,y:top+bandH+15,'text-anchor':'middle',fill:'var(--muted)','font-size':9.5});
-      g.textContent=o.e.short; svg.appendChild(g);
+      row = (x-lastLabelX < 58) ? (row+1)%2 : 0;
+      lastLabelX = x;
+      svg.appendChild(el('text',{x:x,y:top+bandH+15+row*11,'text-anchor':'middle',
+        fill:'var(--muted)','font-size':9.5},o.e.short));
     });
   });
 
@@ -623,12 +646,15 @@ function renderWP(){
         opacity:dim?0.16:(col===CONTEXT?0.75:1)});
       svg.appendChild(p); paths.push(p);
     });
-    // end label for the top 5 (direct labelling = identity not by color alone)
-    if(colorOf[r.name]!==CONTEXT || ISOLATE===r.name){
+    // Direct end label for EVERY player - no one is bucketed into "other".
+    // The top finishers carry a validated categorical hue; the rest share a
+    // neutral context grey, but each still gets its own line, its own label
+    // and its own legend row, so identity never depends on colour alone.
+    {
       const last=days[days.length-1], li=last.items[last.items.length-1];
       endLabels.push({
         x:last.x(li.tt)+9, y:yOf(days.length-1,wp[li.i+1][r.idx]),
-        col:dim?'var(--muted)':col, op:dim?.4:1,
+        col:dim?'var(--muted)':col, op:dim?.35:1,
         text:r.name.split(' ')[0]+' '+r.name.split(' ')[1][0]+'.'
       });
     }
@@ -636,14 +662,23 @@ function renderWP(){
 
   // Dodge overlapping end labels - several players finish near 0% and their
   // labels landed on top of each other.
+  // Dodge overlapping end labels, then clamp the whole stack inside the last
+  // band. With a 12-player field the stack is taller than the gaps, so it must
+  // be corrected in BOTH directions or it escapes off the top of the chart.
   endLabels.sort((a,b)=>a.y-b.y);
   const MIN=13;
   for(let i=1;i<endLabels.length;i++){
     const d=endLabels[i].y-endLabels[i-1].y;
     if(d<MIN) endLabels[i].y=endLabels[i-1].y+MIN;
   }
-  const overflow=endLabels.length?endLabels[endLabels.length-1].y-(H-padB):0;
-  if(overflow>0) endLabels.forEach(l=>l.y-=overflow);
+  if(endLabels.length){
+    const bandTop=padT+(days.length-1)*(bandH+gap);
+    const bandBot=bandTop+bandH;
+    const over=endLabels[endLabels.length-1].y-bandBot;
+    if(over>0) endLabels.forEach(l=>l.y-=over);
+    const under=bandTop-endLabels[0].y;
+    if(under>0) endLabels.forEach(l=>l.y+=under);
+  }
   endLabels.forEach(l=>{
     svg.appendChild(el('text',{x:l.x,y:l.y+3.5,fill:l.col,'font-size':11,
       'font-weight':700,opacity:l.op},l.text));
@@ -687,32 +722,91 @@ function renderWP(){
 
   host.appendChild(svg);
 
-  // legend (top 5 coloured + Others), click to isolate
+  // Legend lists EVERY competitor individually, in finishing order, each one
+  // clickable to isolate its line. No "other" bucket.
   ranked.forEach((r,i)=>{
-    if(i>=5) return;
     const li=document.createElement('div'); li.className='li'+(ISOLATE&&ISOLATE!==r.name?' off':'');
-    li.innerHTML=`<span class="sw" style="background:${colorOf[r.name]}"></span>${r.name}`;
+    li.innerHTML=`<span class="sw" style="background:${colorOf[r.name]}"></span>`+
+                 `<span style="opacity:.55;font-variant-numeric:tabular-nums">${i+1}.</span>&nbsp;${r.name}`+
+                 `<span style="opacity:.55">&nbsp;${r.total}</span>`;
+    li.title = `${r.name} finished ${ordinal(i+1)} with ${r.total} points`;
     li.onclick=()=>{ ISOLATE = ISOLATE===r.name?null:r.name; renderWP(); };
     legendBox.appendChild(li);
   });
-  if(ranked.length>5){
-    const li=document.createElement('div'); li.className='li';
-    li.innerHTML=`<span class="sw" style="background:${CONTEXT}"></span>Field (${ranked.length-5} others)`;
-    li.onclick=()=>{ISOLATE=null;renderWP();};
-    legendBox.appendChild(li);
-  }
 
   buildWPTable(t,wp,ranked);
 }
 
+/* ALL-TIME view: one line per tournament, tracking the eventual champion's
+   cumulative points across the 10 events. Shows how each title was actually
+   won - wire-to-wire, or a late charge. Fully derived from the data. */
 function renderWPAll(){
-  $('#wpChart').innerHTML =
-    `<div class="empty" style="margin-top:12px"><h3>One Tournament Digitized</h3>
-     <p>All-time comparison lights up once more scorecards are loaded. 2015 is complete;
-        2018, 2019, 2021 and 2022 are known by champion only. Add those scorecards and this
-        becomes one line per tournament.</p></div>`;
-  $('#wpTable').hidden=true; $('#wpTableBtn').setAttribute('aria-expanded','false');
-  $('#wpTableBtn').textContent='Show data table';
+  const host=$('#wpChart'); host.innerHTML='';
+  const legendBox=$('#wpLegend'); legendBox.innerHTML='';
+  const list=D.tournaments.slice().sort((a,b)=>a.year-b.year);
+
+  const W=1000,padL=48,padR=112,padT=22,padB=42,H=380;
+  const maxEv=Math.max(...list.map(t=>t.events.length));
+  const maxPts=Math.max(...list.map(t=>t.championPoints))*1.05;
+  const x=i=>padL+(i/maxEv)*(W-padL-padR);
+  const y=p=>padT+(1-p/maxPts)*(H-padT-padB);
+
+  const svg=el('svg',{viewBox:`0 0 ${W} ${H}`,role:'img',
+    'aria-label':'Champion cumulative points by event, every tournament'});
+
+  for(let g=0; g<=4; g++){
+    const p=maxPts*g/4;
+    svg.appendChild(el('line',{x1:padL,x2:W-padR,y1:y(p),y2:y(p),
+      stroke:g===0?'var(--axis)':'var(--grid)','stroke-width':1}));
+    svg.appendChild(el('text',{x:padL-9,y:y(p)+4,'text-anchor':'end',
+      fill:'var(--muted)','font-size':10.5},Math.round(p)));
+  }
+  for(let i=1;i<=maxEv;i++){
+    svg.appendChild(el('line',{x1:x(i),x2:x(i),y1:padT,y2:H-padB,stroke:'var(--grid)','stroke-width':1}));
+    svg.appendChild(el('text',{x:x(i),y:H-padB+16,'text-anchor':'middle',
+      fill:'var(--muted)','font-size':10},'E'+i));
+  }
+  svg.appendChild(el('text',{x:(padL+W-padR)/2,y:H-6,'text-anchor':'middle',
+    fill:'var(--muted)','font-size':10.5,'letter-spacing':'.12em'},'EVENT NUMBER'));
+
+  const labels=[];
+  list.forEach((t,si)=>{
+    const col = si<5 ? SERIES_HEX[si] : CONTEXT;
+    const champ=t.players.find(p=>p.name===t.champion) || t.players[0];
+    const dim = ISOLATE && ISOLATE!==String(t.year);
+    let cum=0, d='M'+x(0)+' '+y(0);
+    champ.points.forEach((v,i)=>{ cum+=(v||0); d+='L'+x(i+1).toFixed(1)+' '+y(cum).toFixed(1); });
+    svg.appendChild(el('path',{d,fill:'none',stroke:col,'stroke-width':dim?1.4:2.6,
+      'stroke-linejoin':'round','stroke-linecap':'round',opacity:dim?0.2:1}));
+    labels.push({x:x(champ.points.length)+9,y:y(cum),col,op:dim?.35:1,
+      text:`${t.year} · ${t.champion.split(' ')[1]}`});
+
+    const li=document.createElement('div'); li.className='li'+(dim?' off':'');
+    li.innerHTML=`<span class="sw" style="background:${col}"></span>${t.year} &mdash; ${t.champion} (${t.championPoints})`;
+    li.onclick=()=>{ ISOLATE = ISOLATE===String(t.year)?null:String(t.year); renderWP(); };
+    legendBox.appendChild(li);
+  });
+
+  labels.sort((a,b)=>a.y-b.y);
+  for(let i=1;i<labels.length;i++){
+    if(labels[i].y-labels[i-1].y<13) labels[i].y=labels[i-1].y+13;
+  }
+  labels.forEach(l=>svg.appendChild(el('text',{x:l.x,y:l.y+3.5,fill:l.col,
+    'font-size':11,'font-weight':700,opacity:l.op},l.text)));
+
+  host.appendChild(svg);
+
+  let h=`<table class="dv"><caption>Champion cumulative points by event</caption><thead><tr><th>Year</th><th>Champion</th>`;
+  for(let i=1;i<=maxEv;i++) h+=`<th>E${i}</th>`; h+='<th>Total</th></tr></thead><tbody>';
+  list.forEach(t=>{
+    const champ=t.players.find(p=>p.name===t.champion)||t.players[0];
+    let cum=0; h+=`<tr><td>${t.year}</td><td>${t.champion}</td>`;
+    champ.points.forEach(v=>{ cum+=(v||0); h+=`<td>${cum}</td>`; });
+    for(let i=champ.points.length;i<maxEv;i++) h+='<td>&mdash;</td>';
+    h+=`<td><b>${t.championPoints}</b></td></tr>`;
+  });
+  h+='</tbody></table>';
+  $('#wpTable').innerHTML=h;
 }
 
 function buildWPTable(t,wp,ranked){
@@ -754,63 +848,95 @@ function renderCA(){
     D.knownChampions.map(c=>c.year).concat(D.tournaments.map(t=>t.year))
   )].sort((a,b)=>a-b);
 
-  // Feature the players with more than one recorded finish - those are the arcs.
+  // Multi-appearance competitors are the actual arcs. Ordered by best finish,
+  // then by number of appearances, so the colour slots go to the players whose
+  // careers carry the most signal.
   const multi=Object.entries(finishes).filter(([,f])=>f.length>1)
-    .sort((a,b)=>Math.min(...a[1].map(x=>x.place))-Math.min(...b[1].map(x=>x.place)));
+    .sort((a,b)=>{
+      const ba=Math.min(...a[1].map(x=>x.place)), bb=Math.min(...b[1].map(x=>x.place));
+      return ba-bb || b[1].length-a[1].length;
+    });
   const solo=Object.entries(finishes).filter(([,f])=>f.length===1);
 
-  const W=1000,padL=52,padR=132,padT=22,padB=40,H=330;
-  const maxPlace=10;
+  // Axis depth follows the largest field ever fielded (12 in 2019 and 2021),
+  // so nobody gets truncated off the bottom.
+  const maxPlace=Math.max(...D.tournaments.map(t=>t.players.length));
+  const W=1000,padL=54,padR=150,padT=22,padB=40,H=380;
   const x=y=>padL+(years.indexOf(y)/(years.length-1||1))*(W-padL-padR);
   const yy=p=>padT+((p-1)/(maxPlace-1))*(H-padT-padB);
 
   const svg=el('svg',{viewBox:`0 0 ${W} ${H}`,role:'img','aria-label':'Career arc: finishing position by year'});
-  [1,3,5,8,10].forEach(p=>{
+  const ticks=[1]; for(let p=3;p<=maxPlace;p+=3) ticks.push(p);
+  if(ticks[ticks.length-1]!==maxPlace) ticks.push(maxPlace);
+  ticks.forEach(p=>{
     svg.appendChild(el('line',{x1:padL,x2:W-padR,y1:yy(p),y2:yy(p),
       stroke:p===1?'var(--gold-dim)':'var(--grid)','stroke-width':1,opacity:p===1?.55:1}));
     svg.appendChild(el('text',{x:padL-10,y:yy(p)+4,'text-anchor':'end',fill:'var(--muted)','font-size':10.5},
       p===1?'CHAMP':ordinal(p)));
   });
   years.forEach(y=>{
-    const hasCard = D.tournaments.some(t=>t.year===y);
     svg.appendChild(el('line',{x1:x(y),x2:x(y),y1:padT,y2:H-padB,stroke:'var(--grid)','stroke-width':1}));
     svg.appendChild(el('text',{x:x(y),y:H-padB+18,'text-anchor':'middle',
-      fill:hasCard?'var(--ink-2)':'var(--muted)','font-size':11,'font-weight':hasCard?700:400},String(y)));
-    if(!hasCard) svg.appendChild(el('text',{x:x(y),y:H-padB+30,'text-anchor':'middle',
-      fill:'var(--muted)','font-size':8.5},'champ only'));
+      fill:'var(--ink-2)','font-size':11,'font-weight':700},String(y)));
+    const t=D.tournaments.find(tt=>tt.year===y);
+    if(t) svg.appendChild(el('text',{x:x(y),y:H-padB+31,'text-anchor':'middle',
+      fill:'var(--muted)','font-size':8.5},t.players.length+' players'));
   });
 
-  multi.slice(0,5).forEach(([name,f],i)=>{
-    const col=SERIES_HEX[i], pts=f.slice().sort((a,b)=>a.year-b.year);
+  // Every multi-appearance competitor gets their own line and legend row.
+  // Top finishers take validated categorical hues; the rest share the neutral
+  // context grey but stay individually labelled - never merged into "other".
+  const endLab=[];
+  multi.forEach(([name,f],i)=>{
+    const col = i<5 ? SERIES_HEX[i] : CONTEXT;
+    const pts=f.slice().sort((a,b)=>a.year-b.year);
     const dim = ISOLATE && ISOLATE!==name;
-    let d='';
-    pts.forEach((p,j)=>{ d+=(j===0?'M':'L')+x(p.year).toFixed(1)+' '+yy(p.place).toFixed(1); });
-    svg.appendChild(el('path',{d,fill:'none',stroke:col,'stroke-width':dim?1.5:2.6,
-      'stroke-linecap':'round','stroke-linejoin':'round','stroke-dasharray':'6 5',opacity:dim?.2:.95}));
+    // Solid between consecutive tournaments; dashed where a competitor sat a
+    // year out, so a gap reads as "did not play" rather than a real trajectory.
+    for(let j=1;j<pts.length;j++){
+      const a=pts[j-1], b=pts[j];
+      const consecutive = years.indexOf(b.year)-years.indexOf(a.year)===1;
+      svg.appendChild(el('line',{x1:x(a.year),y1:yy(a.place),x2:x(b.year),y2:yy(b.place),
+        stroke:col,'stroke-width':dim?1.4:2.4,'stroke-linecap':'round',
+        'stroke-dasharray':consecutive?'':'5 5',opacity:dim?0.18:(col===CONTEXT?0.7:0.95)}));
+    }
     pts.forEach(p=>{
-      svg.appendChild(el('circle',{cx:x(p.year),cy:yy(p.place),r:5.5,fill:col,
-        stroke:'var(--surface)','stroke-width':2,opacity:dim?.25:1}));
+      svg.appendChild(el('circle',{cx:x(p.year),cy:yy(p.place),r:p.place===1?6:4.6,
+        fill:p.place===1?'var(--gold)':col,stroke:'var(--surface)','stroke-width':2,
+        opacity:dim?0.22:1}));
     });
     const lp=pts[pts.length-1];
-    svg.appendChild(el('text',{x:x(lp.year)+11,y:yy(lp.place)+4,fill:dim?'var(--muted)':col,
-      'font-size':11.5,'font-weight':700,opacity:dim?.4:1},name));
+    endLab.push({x:x(lp.year)+11,y:yy(lp.place),col:dim?'var(--muted)':col,op:dim?.35:1,text:name});
+
     const li=document.createElement('div'); li.className='li'+(dim?' off':'');
-    li.innerHTML=`<span class="sw" style="background:${col}"></span>${name}`;
+    const titles=pts.filter(p=>p.place===1).length;
+    li.innerHTML=`<span class="sw" style="background:${col}"></span>${name}`+
+      (titles?`<span style="color:var(--gold)">&nbsp;${'★'.repeat(titles)}</span>`:'')+
+      `<span style="opacity:.5">&nbsp;${pts.length}&times;</span>`;
+    li.title=`${name}: ${pts.length} tournaments, best finish ${ordinal(Math.min(...pts.map(p=>p.place)))}`;
     li.onclick=()=>{ISOLATE=ISOLATE===name?null:name;renderCA();};
     legendBox.appendChild(li);
   });
 
-  // single-appearance players as context dots
+  // Single-appearance competitors: still plotted and still labelled on hover.
   solo.forEach(([name,f])=>{
     const p=f[0];
-    svg.appendChild(el('circle',{cx:x(p.year),cy:yy(p.place),r:3.6,fill:CONTEXT,opacity:.85}));
+    const c=el('circle',{cx:x(p.year),cy:yy(p.place),r:3.8,fill:CONTEXT,opacity:.8});
+    c.appendChild(el('title',{},`${name} - ${ordinal(p.place)}, ${p.year} (only appearance)`));
+    svg.appendChild(c);
   });
+
+  endLab.sort((a,b)=>a.y-b.y);
+  for(let i=1;i<endLab.length;i++){ if(endLab[i].y-endLab[i-1].y<13) endLab[i].y=endLab[i-1].y+13; }
+  endLab.forEach(l=>svg.appendChild(el('text',{x:l.x,y:l.y+3.5,fill:l.col,
+    'font-size':11,'font-weight':700,opacity:l.op},l.text)));
 
   host.appendChild(svg);
   $('#caNote').innerHTML =
-    `Dashed segments span years whose scorecards aren&rsquo;t digitized yet &mdash; only the champion is known for
-     2018, 2019, 2021 and 2022, so intermediate placements for those years are unknown, not zero.
-     Grey dots are competitors with a single recorded appearance.`;
+    `Every tournament on record now has a full scorecard, so these are real finishing positions &mdash;
+     gold dots are championships. A <strong>dashed segment</strong> means the competitor sat that
+     tournament out, so the gap reads as an absence rather than a trajectory. Grey dots are
+     competitors with a single appearance; hover for their result.`;
 }
 
 /* ================= hero, tiles, moments, field notes ================= */
@@ -823,10 +949,19 @@ function renderHero(){
     box.appendChild(d);
   };
   if(!t){
-    add('TOURNAMENTS',D.knownChampions.length,'2015 &ndash; 2022');
-    add('SCORECARDS LOADED','1','2015 complete');
-    add('CHAMPIONS',new Set(D.knownChampions.map(c=>c.name)).size,'no repeat winners yet',true);
-    add('HIGHEST WINNING SCORE','81','Ben Murrill, 2018');
+    // ALL-TIME hero stats - every value derived, nothing hardcoded.
+    const yrs=D.tournaments.map(x=>x.year).sort((a,b)=>a-b);
+    const best=D.tournaments.slice().sort((a,b)=>b.championPoints-a.championPoints)[0];
+    const wins={}; D.tournaments.forEach(x=>{ wins[x.champion]=(wins[x.champion]||0)+1; });
+    const repeat=Object.entries(wins).filter(([,n])=>n>1).sort((a,b)=>b[1]-a[1]);
+    const allPlayers=new Set(); D.tournaments.forEach(x=>x.players.forEach(p=>allPlayers.add(p.name)));
+    add('TOURNAMENTS',D.tournaments.length,`${yrs[0]} &ndash; ${yrs[yrs.length-1]}`);
+    add('CHAMPIONS',Object.keys(wins).length,
+        repeat.length?`${repeat[0][0]} leads with ${repeat[0][1]}`:'no repeat winners');
+    add('RECORD SCORE',best.championPoints,`${best.champion}, ${best.year}`,true);
+    add('COMPETITORS',allPlayers.size,'all-time');
+    add('EVENTS CONTESTED',
+        new Set(D.tournaments.flatMap(x=>x.events.map(e=>e.name))).size,'distinct events');
     return;
   }
   const r=rankedPlayers(t);
@@ -912,22 +1047,43 @@ function renderMoments(){
   });
 }
 
-(function renderFieldNotes(){
-  const box=$('#eventNotes'); const t=D.tournaments[0];
+/* Field Notes follows the selected tournament, so correcting an event's rules
+   in the data file updates this too. Falls back to the most recent tournament
+   when ALL TIME is selected. */
+function renderFieldNotes(){
+  const box=$('#eventNotes'); box.innerHTML='';
+  const t = D.tournaments.find(x=>x.year===YEAR) || D.tournaments[D.tournaments.length-1];
+  const hdr=document.createElement('p');
+  hdr.className='desc'; hdr.style.gridColumn='1/-1'; hdr.style.margin='0 0 2px';
+  hdr.innerHTML=`Showing the <strong style="color:var(--gold)">${t.year}</strong> lineup &mdash; `+
+    `${t.events.length} events${t.location?', '+t.location:''}. The champion may swap one event out each year, so this changes.`;
+  box.appendChild(hdr);
+
   t.events.forEach(e=>{
     const d=document.createElement('article'); d.className='note-card'; d.id='note-'+e.n;
     d.style.transition='border-color .4s';
+    const meta=[t.year, e.day+(e.time?' '+e.time:''), e.venue].filter(Boolean).join(' &middot; ');
     d.innerHTML=`<span class="tag">EVENT ${String(e.n).padStart(2,'0')}</span>
+      ${e.newThisYear?'<span class="tag" style="background:var(--s3);margin-left:5px">NEW</span>':''}
+      ${e.pair?'<span class="tag" style="background:var(--s1);margin-left:5px">PAIRS</span>':''}
       <h3>${e.name}</h3>
-      <div class="meta">${t.year} &middot; ${e.day} ${e.time} &middot; ${e.venue}</div>
-      <p><strong style="color:var(--ink)">${e.basis}.</strong> ${e.rules}</p>
-      ${e.snafu?`<p style="color:var(--gold-dim)"><strong>SNAFU:</strong> ${e.snafu}</p>`:''}`;
+      <div class="meta">${meta}</div>
+      ${e.basis?`<p><strong style="color:var(--ink)">${e.basis}.</strong> ${e.rules||''}</p>`:''}
+      ${e.snafu?`<p style="color:var(--gold-dim)"><strong>SNAFU:</strong> ${e.snafu}</p>`:''}
+      ${e.gameMaster?`<p style="color:var(--muted);font-size:11.5px">Game Master: ${e.gameMaster}</p>`:''}`;
     box.appendChild(d);
   });
-})();
+}
 
-/* ---------- render ---------- */
-function renderAll(){ renderHero(); renderTiles(); renderWP(); renderCA(); renderMoments(); }
+/* ---------- render ----------
+   Every panel is rebuilt from window.DD_DATA on each call, so editing
+   live/data/tournaments.js (fixing a bad score, adding a new tournament)
+   propagates to every chart, tile, stat, ticker item and note with no code
+   changes. Nothing in the render path hardcodes a name, year or score. */
+function renderAll(){
+  renderTicker(); renderHero(); renderTiles();
+  renderWP(); renderCA(); renderMoments(); renderFieldNotes();
+}
 renderAll();
 })();
 </script>
