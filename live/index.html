@@ -174,24 +174,35 @@ main{max-width:1240px;margin:0 auto;padding:22px 18px 70px}
 .stat .v.gold{color:var(--gold)}
 .stat .sub{font-size:11.5px;color:var(--ink-2);margin-top:3px}
 
-/* ---------- event tiles ---------- */
-.tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(124px,1fr));gap:10px;margin:8px 0 26px}
+/* ---------- event tiles ----------
+   Two asset generations coexist: the illustrated hex BADGES (which already
+   carry the event name and tagline in the artwork) and the older flat D2-*
+   pictograms still used by six retired events that have no badge yet.
+   .tile.badge suppresses the redundant text label; .tile.legacy keeps it. */
+.tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(168px,1fr));gap:12px;margin:8px 0 26px}
 .tile{
-  position:relative;background:var(--surface);border:1px solid var(--ring);border-radius:10px;
-  padding:12px 10px 10px;text-align:center;overflow:hidden;cursor:pointer;
-  transition:transform .18s cubic-bezier(.2,.7,.2,1),border-color .18s;
+  position:relative;background:var(--surface);border:1px solid var(--ring);border-radius:12px;
+  padding:10px 10px 12px;text-align:center;overflow:hidden;cursor:pointer;
+  transition:transform .2s cubic-bezier(.2,.7,.2,1),border-color .2s,box-shadow .2s;
 }
-.tile:hover,.tile:focus-visible{transform:translateY(-4px);border-color:var(--gold);outline:none}
+.tile:hover,.tile:focus-visible{
+  transform:translateY(-6px) scale(1.02);border-color:var(--gold);outline:none;
+  box-shadow:0 12px 30px rgba(0,0,0,.55);
+}
 .tile::after{
-  content:"";position:absolute;inset:0;background:linear-gradient(120deg,transparent 40%,rgba(232,179,58,.16) 50%,transparent 60%);
-  transform:translateX(-120%);transition:transform .55s;
+  content:"";position:absolute;inset:0;background:linear-gradient(120deg,transparent 40%,rgba(232,179,58,.18) 50%,transparent 60%);
+  transform:translateX(-120%);transition:transform .55s;pointer-events:none;
 }
 .tile:hover::after{transform:translateX(120%)}
-.tile .num{position:absolute;top:6px;left:8px;font-size:10px;font-weight:800;color:var(--gold);letter-spacing:.1em}
-/* No filter here: the D2-*.png icons are already white-on-blue artwork.
-   brightness(0)+invert(1) flattened them into solid white squares. */
-.tile img{width:46px;height:46px;object-fit:contain;border-radius:6px;opacity:.96}
-.tile .nm{font-size:12px;font-weight:700;margin-top:7px;line-height:1.25}
+.tile .num{
+  position:absolute;top:7px;left:9px;z-index:2;font-size:10px;font-weight:800;color:var(--gold);
+  letter-spacing:.1em;text-shadow:0 1px 3px rgba(0,0,0,.9);
+}
+.tile.badge img{width:100%;height:auto;display:block;border-radius:8px;
+  filter:drop-shadow(0 2px 6px rgba(0,0,0,.45));transition:filter .2s}
+.tile.badge:hover img{filter:drop-shadow(0 4px 12px rgba(232,179,58,.3))}
+.tile.legacy img{width:56px;height:56px;object-fit:contain;border-radius:6px;opacity:.96;margin-top:6px}
+.tile .nm{font-size:12.5px;font-weight:700;margin-top:8px;line-height:1.25}
 .tile .mt{font-size:10.5px;color:var(--muted);margin-top:3px}
 .tile .pair{display:inline-block;font-size:9px;letter-spacing:.1em;color:var(--gold);border:1px solid var(--gold-dim);border-radius:3px;padding:1px 4px;margin-top:5px}
 
@@ -978,12 +989,16 @@ function renderTiles(){
   const t=D.tournaments.find(x=>x.year===YEAR);
   if(!t){ box.innerHTML=''; return; }
   t.events.forEach(e=>{
-    const d=document.createElement('button'); d.className='tile'; d.type='button';
+    // Illustrated badges already carry the event name in the artwork, so the
+    // text label is suppressed for them and kept for the older flat icons.
+    const isBadge = /\/badges\//.test(e.icon||'');
+    const d=document.createElement('button');
+    d.className='tile '+(isBadge?'badge':'legacy'); d.type='button';
     d.innerHTML=`<span class="num">${String(e.n).padStart(2,'0')}</span>
-      <img src="${e.icon}" alt="" loading="lazy">
-      <div class="nm">${e.name}</div>
+      <img src="${e.icon}" alt="${e.name}" loading="lazy">
+      ${isBadge?'':`<div class="nm">${e.name}</div>`}
       <div class="mt">${e.day}${e.time?' '+e.time:''}</div>
-      <div class="mt" style="opacity:.75">${e.venue}</div>
+      <div class="mt" style="opacity:.75">${e.venue||''}</div>
       ${e.pair?'<span class="pair">PAIRS</span>':''}`;
     d.onclick=()=>{
       document.getElementById('tab-notes').click();
