@@ -154,8 +154,16 @@ nav.tabs button:focus-visible{outline:2px solid var(--gold);outline-offset:-2px}
 main{max-width:1240px;margin:0 auto;padding:22px 18px 70px}
 .panel[hidden]{display:none}
 
-/* ---------- filter row ---------- */
-.filters{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:20px}
+/* ---------- filter row ----------
+   Sticky so the tournament selector stays reachable while scrolling the
+   charts. Offset sits below the header bar + ticker. */
+.filters{
+  display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:20px;
+  position:sticky;top:0;z-index:30;
+  padding:11px 12px;margin-left:-12px;margin-right:-12px;
+  background:rgba(13,13,13,.93);backdrop-filter:blur(9px);
+  border-bottom:1px solid var(--grid);border-radius:0 0 10px 10px;
+}
 .filters .lab{font-size:11px;letter-spacing:.2em;color:var(--muted);font-weight:700}
 .chip{
   background:#1f1f1e;border:1px solid var(--axis);color:var(--ink-2);
@@ -362,6 +370,70 @@ table.dv caption{text-align:left;color:var(--muted);font-size:11.5px;padding-bot
 #p-notes .note-card h3{color:var(--gold)}
 #p-notes .tag{background:var(--gold);color:#241d16}
 
+/* ---------- Field guide (Field Notes tab) ---------- */
+.guide-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:13px}
+.guide-card{
+  position:relative;background:linear-gradient(160deg,#2b2219,#1d160f);
+  border:1px solid rgba(232,179,58,.20);border-radius:12px;padding:12px;text-align:center;
+  cursor:pointer;transition:transform .18s cubic-bezier(.2,.7,.2,1),border-color .18s,box-shadow .18s;
+}
+.guide-card:hover,.guide-card:focus-visible{
+  transform:translateY(-5px);border-color:var(--gold);outline:none;
+  box-shadow:0 12px 28px rgba(0,0,0,.5);
+}
+.guide-card img{width:100%;max-width:132px;height:auto;display:block;margin:0 auto}
+.guide-card .gname{font-size:13.5px;font-weight:800;margin-top:8px;color:var(--ink)}
+.guide-card .gmeta{font-size:11px;color:var(--muted);margin-top:4px;line-height:1.5}
+.guide-card .gyears{font-size:10px;letter-spacing:.08em;color:var(--gold-dim);margin-top:5px}
+.guide-card .retired{
+  position:absolute;top:8px;right:8px;font-size:8.5px;letter-spacing:.12em;font-weight:800;
+  color:#e8b33a;border:1px solid var(--gold-dim);border-radius:3px;padding:2px 5px;background:rgba(0,0,0,.45);
+}
+.guide-card .active-badge{
+  position:absolute;top:8px;right:8px;font-size:8.5px;letter-spacing:.12em;font-weight:800;
+  color:#0e1f33;background:#28d17c;border-radius:3px;padding:2px 5px;
+}
+
+/* --- single event guide --- */
+.gback{background:none;border:1px solid var(--axis);color:var(--ink-2);font:700 12px var(--sans);
+  padding:8px 14px;border-radius:7px;cursor:pointer;letter-spacing:.08em;margin-bottom:14px}
+.gback:hover{border-color:var(--gold);color:var(--ink)}
+.gbanner{position:relative;border-radius:14px;overflow:hidden;border:1px solid rgba(232,179,58,.25);margin-bottom:18px}
+.gbanner img{width:100%;display:block}
+.gbanner .gscrim{position:absolute;inset:0;background:linear-gradient(180deg,transparent 40%,rgba(20,15,9,.94) 100%)}
+.gbanner .gcap{position:absolute;left:0;right:0;bottom:0;padding:18px 20px}
+.gbanner h2{margin:0;font-size:clamp(26px,5vw,44px);font-weight:800;letter-spacing:-.01em;line-height:1}
+.gbanner .gsub{color:var(--gold);font-size:12px;letter-spacing:.2em;font-weight:700;margin-bottom:6px}
+.gbanner .gtag{color:var(--ink-2);font-size:13px;margin-top:7px}
+.gbanner.nobanner{background:linear-gradient(150deg,#2e251b,#1a140e);min-height:190px}
+.gbanner.nobanner .gbadge{position:absolute;right:22px;top:50%;transform:translateY(-50%);width:150px;opacity:.95}
+
+.gstats{display:grid;grid-template-columns:repeat(auto-fit,minmax(158px,1fr));gap:11px;margin-bottom:18px}
+.gstat{background:linear-gradient(160deg,#2b2219,#211a12);border:1px solid rgba(232,179,58,.18);
+  border-left:3px solid var(--gold);border-radius:10px;padding:12px 14px}
+.gstat .k{font-size:9.5px;letter-spacing:.18em;color:var(--muted);font-weight:800}
+.gstat .v{font-size:19px;font-weight:800;margin-top:5px;line-height:1.2;color:var(--gold)}
+.gstat .s{font-size:11px;color:var(--ink-2);margin-top:4px;line-height:1.45}
+
+.gedge{background:linear-gradient(150deg,rgba(40,209,124,.10),rgba(20,15,9,.6));
+  border:1px solid rgba(40,209,124,.35);border-left:3px solid #28d17c;border-radius:12px;
+  padding:15px 17px;margin-bottom:18px}
+.gedge h3{margin:0 0 8px;font-size:12px;letter-spacing:.2em;color:#28d17c;text-transform:uppercase}
+.gedge ul{margin:0;padding-left:18px}
+.gedge li{font-size:13px;color:var(--ink-2);line-height:1.65;margin-bottom:5px}
+.gedge li strong{color:var(--ink)}
+
+.gsection{background:linear-gradient(160deg,#2b2219,#211a12);border:1px solid rgba(232,179,58,.18);
+  border-radius:12px;padding:16px 18px;margin-bottom:16px}
+.gsection h3{margin:0 0 10px;font-size:12.5px;letter-spacing:.16em;color:var(--gold);text-transform:uppercase}
+.gsection p{font-size:13px;color:var(--ink-2);line-height:1.65;margin:0 0 9px}
+.gyear{border-left:2px solid var(--axis);padding:2px 0 2px 12px;margin-bottom:12px}
+.gyear .gy{font-weight:800;color:var(--ink);font-size:13px}
+.gyear .gv{font-size:11px;color:var(--muted);letter-spacing:.05em;margin-left:6px}
+.gsnafu{color:var(--gold-dim);font-size:12.5px;margin-top:5px}
+.gphotos{border:1px dashed var(--axis);border-radius:10px;padding:22px;text-align:center;
+  color:var(--muted);font-size:12.5px;line-height:1.6}
+
 /* ---------- Alex, the host ---------- */
 .host{display:grid;grid-template-columns:minmax(230px,300px) 1fr;gap:22px;align-items:center;
   background:linear-gradient(150deg,var(--charcoal),var(--surface));
@@ -521,16 +593,23 @@ footer a{color:var(--gold-dim)}
 
   <!-- ================= FIELD NOTES ================= -->
   <section class="panel" id="p-notes" role="tabpanel" aria-labelledby="tab-notes" hidden>
-    <div class="card">
-      <h2>General <span class="accent">Rules</span></h2>
-      <p class="desc">10 events. 10 players. Event winner takes 10 points, 2nd takes 9, on down to
-        1 point for 10th. A missed event scores 0. Most total points out of 100 is Grand Champion.
-        Ties split the point band &mdash; two players tied for 1st each take 9.5.</p>
-      <p class="note">Pair events: the current points leader picks their partner first, then 2nd place,
-        and so on. Players may not pick anyone in the top half of the standings. With an odd number of
-        players, the last-place player plays solo &mdash; natural selection.</p>
+    <!-- Index of every event ever contested; clicking one opens its field guide. -->
+    <div id="notesIndex">
+      <div class="card" style="margin-bottom:18px">
+        <h2>The <span class="accent">Field Guide</span></h2>
+        <p class="desc">Every event ever contested in the Darwin Decathlon &mdash; the ten that
+          survive, and the ones that were voted off. Each has its own page: rules as they evolved,
+          venue history, all-time records, and who actually owns it.</p>
+        <p class="note">Scoring, in general: the event winner takes 10 points, 2nd takes 9, on down
+          to 1 for 10th. A missed event scores 0. Pair events split the band &mdash; the winning team
+          takes (10+9)/2 = 9.5 each. The current leader picks their partner first, then 2nd place,
+          and so on; with an odd number of players the last one picked plays solo.</p>
+      </div>
+      <div class="guide-grid" id="guideGrid"></div>
     </div>
-    <div class="notes" id="eventNotes"></div>
+
+    <!-- Single-event field guide, deep-linkable via ?event=<slug> -->
+    <div id="notesDetail" hidden></div>
   </section>
 </main>
 
@@ -583,7 +662,10 @@ TABS.forEach(([tb])=>document.getElementById(tb).addEventListener('click',()=>se
 (function fromHash(){
   const h=(location.hash||'').replace('#','').toLowerCase();
   const hit=TABS.find(x=>x[2]===h);
-  selectTab(hit?hit[0]:'tab-chron',false);   // always set the chrome accent
+  // ?event=<slug> deep-links straight into a single event's field guide.
+  const ev=new URLSearchParams(location.search).get('event');
+  selectTab(ev ? 'tab-notes' : (hit?hit[0]:'tab-chron'), false);
+  if(ev) requestAnimationFrame(()=>openGuide(ev,false));
 })();
 addEventListener('hashchange',()=>{
   const h=(location.hash||'').replace('#','').toLowerCase();
@@ -1221,32 +1303,182 @@ function renderMoments(){
   });
 }
 
-/* Field Notes follows the selected tournament, so correcting an event's rules
-   in the data file updates this too. Falls back to the most recent tournament
-   when ALL TIME is selected. */
-function renderFieldNotes(){
-  const box=$('#eventNotes'); box.innerHTML='';
-  const t = D.tournaments.find(x=>x.year===YEAR) || D.tournaments[D.tournaments.length-1];
-  const hdr=document.createElement('p');
-  hdr.className='desc'; hdr.style.gridColumn='1/-1'; hdr.style.margin='0 0 2px';
-  hdr.innerHTML=`Showing the <strong style="color:var(--gold)">${t.year}</strong> lineup &mdash; `+
-    `${t.events.length} events${t.location?', '+t.location:''}. The champion may swap one event out each year, so this changes.`;
-  box.appendChild(hdr);
+/* ================= FIELD NOTES: the field guide =================
+   A page per event ever contested. Events renamed between years are merged
+   into one canonical guide (Chinese Stars IS Shuriken), so per-event history
+   doesn't get split across two half-empty pages. Everything below is derived,
+   so a correction in the data file flows straight through. */
 
-  t.events.forEach(e=>{
-    const d=document.createElement('article'); d.className='note-card'; d.id='note-'+e.n;
-    d.style.transition='border-color .4s';
-    const meta=[t.year, e.day+(e.time?' '+e.time:''), e.venue].filter(Boolean).join(' &middot; ');
-    d.innerHTML=`<span class="tag">EVENT ${String(e.n).padStart(2,'0')}</span>
-      ${e.newThisYear?'<span class="tag" style="background:var(--s3);margin-left:5px">NEW</span>':''}
-      ${e.pair?'<span class="tag" style="background:var(--s1);margin-left:5px">PAIRS</span>':''}
-      <h3>${e.name}</h3>
-      <div class="meta">${meta}</div>
-      ${e.basis?`<p><strong style="color:var(--ink)">${e.basis}.</strong> ${e.rules||''}</p>`:''}
-      ${e.snafu?`<p style="color:var(--gold-dim)"><strong>SNAFU:</strong> ${e.snafu}</p>`:''}
-      ${e.gameMaster?`<p style="color:var(--muted);font-size:11.5px">Game Master: ${e.gameMaster}</p>`:''}`;
-    box.appendChild(d);
+// Renames -> canonical name. Keep in sync with data/UNVERIFIED-claims.md.
+const ALIAS = {
+  "Chinese Stars":"Shuriken",
+  ".22 Shoot":"Shooting Gallery",
+  "Long Golf Ball":"Long Drive"
+};
+const canonical = n => ALIAS[n] || n;
+const slugify = n => n.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+
+/* Build the registry once: every canonical event, with each appearance and the
+   full result set for that appearance. */
+function buildGuide(){
+  const reg={};
+  D.tournaments.forEach(t=>{
+    t.events.forEach((e,ei)=>{
+      const name=canonical(e.name);
+      const g = reg[name] || (reg[name]={name,slug:slugify(name),appearances:[],aliases:new Set()});
+      if(e.name!==name) g.aliases.add(e.name);
+      // Results for this event: [{player, points}] ignoring non-participants.
+      const rows=t.players.map(p=>({player:p.name,pts:p.points[ei]}))
+                          .filter(r=>r.pts!=null)
+                          .sort((a,b)=>b.pts-a.pts);
+      g.appearances.push({year:t.year,event:e,rows,tournament:t});
+    });
   });
+  // Per-event analytics.
+  Object.values(reg).forEach(g=>{
+    g.appearances.sort((a,b)=>a.year-b.year);
+    g.years=g.appearances.map(a=>a.year);
+    g.lastYear=g.years[g.years.length-1];
+    g.retired = g.lastYear !== D.tournaments[D.tournaments.length-1].year;
+
+    const winCount={}, allPts=[], margins=[];
+    g.appearances.forEach(a=>{
+      if(!a.rows.length) return;
+      const top=a.rows[0].pts;
+      const winners=a.rows.filter(r=>r.pts===top);
+      winners.forEach(w=>{ winCount[w.player]=(winCount[w.player]||0)+1; });
+      a.winners=winners.map(w=>w.player);
+      a.topScore=top;
+      const beaten=a.rows.find(r=>r.pts<top);
+      a.margin = beaten!=null ? +(top-beaten.pts).toFixed(2) : null;
+      if(a.margin!=null) margins.push(a.margin);
+      a.rows.forEach(r=>allPts.push(r.pts));
+    });
+    g.winCount=winCount;
+    g.mostWins=Object.entries(winCount).sort((a,b)=>b[1]-a[1]);
+    g.avgPts = allPts.length ? +(allPts.reduce((x,y)=>x+y,0)/allPts.length).toFixed(2) : null;
+    g.avgMargin = margins.length ? +(margins.reduce((x,y)=>x+y,0)/margins.length).toFixed(2) : null;
+    g.isPair = g.appearances.some(a=>a.event.pair);
+    g.venues=[...new Set(g.appearances.map(a=>a.event.venue).filter(Boolean))];
+    // Best all-time average for a player with 2+ appearances at this event.
+    const byPlayer={};
+    g.appearances.forEach(a=>a.rows.forEach(r=>{ (byPlayer[r.player]=byPlayer[r.player]||[]).push(r.pts); }));
+    g.playerAvg=Object.entries(byPlayer)
+      .filter(([,v])=>v.length>1)
+      .map(([p,v])=>({player:p,n:v.length,avg:+(v.reduce((x,y)=>x+y,0)/v.length).toFixed(2)}))
+      .sort((a,b)=>b.avg-a.avg);
+    g.icon = g.appearances[g.appearances.length-1].event.icon;
+  });
+  return reg;
+}
+const GUIDE = buildGuide();
+
+function renderFieldNotes(){
+  const grid=$('#guideGrid'); if(!grid) return; grid.innerHTML='';
+  const list=Object.values(GUIDE).sort((a,b)=>
+    (a.retired?1:0)-(b.retired?1:0) || b.years.length-a.years.length || a.name.localeCompare(b.name));
+  list.forEach(g=>{
+    const d=document.createElement('button'); d.type='button'; d.className='guide-card';
+    d.innerHTML=`${g.retired?'<span class="retired">RETIRED</span>':'<span class="active-badge">ACTIVE</span>'}
+      <img src="${g.icon}" alt="${g.name}" loading="lazy">
+      <div class="gname">${g.name}</div>
+      <div class="gmeta">${g.years.length} tournament${g.years.length===1?'':'s'} &middot; ${g.isPair?'Pairs':'Individual'}</div>
+      <div class="gyears">${g.years.join(' · ')}</div>`;
+    d.onclick=()=>openGuide(g.slug,true);
+    grid.appendChild(d);
+  });
+}
+
+function openGuide(slug,push){
+  const g=Object.values(GUIDE).find(x=>x.slug===slug);
+  if(!g){ closeGuide(false); return; }
+  const box=$('#notesDetail');
+  $('#notesIndex').hidden=true; box.hidden=false;
+  if(push) history.replaceState(null,'',`?event=${slug}#notes`);
+
+  // Explicit map rather than deriving from the name - "Skeet Shooting" would
+  // derive to banner-SkeetShooting.webp, but the asset is banner-Skeet.webp.
+  // Missing entries fall back to the no-banner treatment via onerror.
+  const BANNERS={ "Skeet Shooting":"banner-Skeet.webp", "Corn Hole":"banner-CornHole.webp" };
+  const banner=`../images/banners/${BANNERS[g.name]||'__none__'}`;
+  const latest=g.appearances[g.appearances.length-1];
+  const st=(k,v,s)=>`<div class="gstat"><div class="k">${k}</div><div class="v">${v}</div>${s?`<div class="s">${s}</div>`:''}</div>`;
+
+  const topWin=g.mostWins[0];
+  const tiedTop=g.mostWins.filter(w=>topWin&&w[1]===topWin[1]);
+  const bestAvg=g.playerAvg[0];
+
+  // Tactical read, derived rather than asserted.
+  const edge=[];
+  if(tiedTop.length===1) edge.push(`<strong>${tiedTop[0][0]}</strong> owns this event &mdash; ${tiedTop[0][1]} win${tiedTop[0][1]===1?'':'s'} out of ${g.years.length}. Beat them and you have probably won the event.`);
+  else if(tiedTop.length>1) edge.push(`Wide open: ${tiedTop.map(w=>w[0]).join(', ')} are tied on ${topWin[1]} win${topWin[1]===1?'':'s'} apiece. No one owns it.`);
+  if(bestAvg) edge.push(`Most consistent scorer: <strong>${bestAvg.player}</strong>, averaging ${bestAvg.avg} points across ${bestAvg.n} appearances.`);
+  if(g.avgMargin!=null) edge.push(g.avgMargin<=1
+    ? `Margins are razor thin &mdash; the winner clears second place by just <strong>${g.avgMargin} points</strong> on average. Every throw counts.`
+    : `The winner typically clears second place by <strong>${g.avgMargin} points</strong>, so a strong showing here moves the overall standings.`);
+  if(g.isPair) edge.push(`Pair event: your partner is half your score. The standings leader picks first, so climbing the table before this event buys you a better teammate.`);
+  const snafus=[...new Set(g.appearances.map(a=>a.event.snafu).filter(Boolean))];
+  if(snafus.length) edge.push(`Avoid the SNAFU: ${snafus[0]}`);
+  if(g.retired) edge.push(`<strong>Retired.</strong> Last contested in ${g.lastYear}. A champion can always bring it back.`);
+
+  box.innerHTML=`
+    <button class="gback" id="gback">&larr; All events</button>
+    <div class="gbanner" id="gban">
+      <img src="${banner}" alt="" onerror="this.closest('.gbanner').classList.add('nobanner');this.remove();">
+      <img class="gbadge" src="${g.icon}" alt="" style="display:none">
+      <div class="gscrim"></div>
+      <div class="gcap">
+        <div class="gsub">${g.isPair?'PAIR EVENT':'INDIVIDUAL EVENT'}${g.retired?' &middot; RETIRED':''}</div>
+        <h2>${g.name}</h2>
+        <div class="gtag">${latest.event.basis||''}${g.aliases.size?` &middot; also played as ${[...g.aliases].join(', ')}`:''}</div>
+      </div>
+    </div>
+
+    <div class="gstats">
+      ${st('TOURNAMENTS',g.years.length,g.years.join(', '))}
+      ${st('MOST WINS',tiedTop.length?`${topWin[1]}&times;`:'&mdash;',tiedTop.length?tiedTop.map(w=>w[0]).join(', '):'no data')}
+      ${st('AVG SCORE',g.avgPts??'&mdash;','across every competitor, all years')}
+      ${st('AVG MARGIN',g.avgMargin!=null?g.avgMargin+' pts':'&mdash;','winner over runner-up')}
+      ${st('FORMAT',g.isPair?'Pairs':'Individual',g.venues.length?g.venues[g.venues.length-1]:'')}
+    </div>
+
+    ${edge.length?`<div class="gedge"><h3>How to gain an edge</h3><ul>${edge.map(e=>`<li>${e}</li>`).join('')}</ul></div>`:''}
+
+    <div class="gsection">
+      <h3>Rules, year by year</h3>
+      ${g.appearances.slice().reverse().map(a=>`
+        <div class="gyear">
+          <span class="gy">${a.year}</span>
+          <span class="gv">${[a.event.name!==g.name?`as "${a.event.name}"`:'',a.event.day||'',a.event.time||'',a.event.venue||''].filter(Boolean).join(' · ')}</span>
+          ${a.event.basis?`<p style="margin:5px 0 0"><strong style="color:var(--ink)">${a.event.basis}.</strong> ${a.event.rules||''}</p>`:''}
+          ${a.event.snafu?`<div class="gsnafu"><strong>SNAFU:</strong> ${a.event.snafu}</div>`:''}
+          ${a.winners?`<div style="font-size:12px;color:var(--muted);margin-top:5px">Won by <strong style="color:var(--gold)">${a.winners.join(' & ')}</strong> (${a.topScore} pts)${a.margin!=null?` &middot; margin ${a.margin}`:''}</div>`:''}
+        </div>`).join('')}
+    </div>
+
+    <div class="gsection">
+      <h3>All-time leaderboard</h3>
+      <table class="dv"><caption>Average points per appearance (2+ appearances)</caption>
+      <thead><tr><th>Competitor</th><th>Apps</th><th>Wins</th><th>Avg pts</th></tr></thead><tbody>
+      ${g.playerAvg.slice(0,12).map(p=>`<tr><td>${p.player}</td><td>${p.n}</td><td>${g.winCount[p.player]||0}</td><td><b>${p.avg}</b></td></tr>`).join('')}
+      </tbody></table>
+    </div>
+
+    <div class="gsection">
+      <h3>Conditions &amp; photos</h3>
+      <div class="gphotos">
+        No conditions report filed for the next tournament yet.<br>
+        Event photos and competitor commentary will land here once the media feed is wired up.
+      </div>
+    </div>`;
+
+  $('#gback').onclick=()=>closeGuide(true);
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function closeGuide(push){
+  $('#notesDetail').hidden=true; $('#notesIndex').hidden=false;
+  if(push) history.replaceState(null,'','#notes');
 }
 
 /* ---------- render ----------
