@@ -1,0 +1,6 @@
+# Real historical/roster data contains PII (names paired with personal
+# emails/phones) and must never be committed to this public repo.
+# Template files (*.template.csv) are dummy-data examples and ARE tracked,
+# so anyone cloning the repo can see the structure without real data.
+data/*.csv
+!data/*.template.csv

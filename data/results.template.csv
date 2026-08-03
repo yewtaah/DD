@@ -1,0 +1,51 @@
+year,event_name,player_name,partner_name,raw_score,placement,points_awarded,notes
+2026,Skeet Shooting,Frank Ricard,,22,1,10,"Nailed it, no beer penalty"
+2026,Skeet Shooting,Eric Stratton,,18,2,9,
+2026,Skeet Shooting,Bernard Campbell,,15,3,8,
+2026,Skeet Shooting,John Blutarsky,,9,4,7,"Missed 16, had to shotgun a beer mid-round"
+2026,Skeet Shooting,Kent Dorfman,,4,5,6,"Hit himself in the foot lining up, no targets down"
+2026,Home Run Derby,Frank Ricard,,9,1,10,"Launched one clean over the fence and through Otter's windshield"
+2026,Home Run Derby,John Blutarsky,,7,2,9,
+2026,Home Run Derby,Eric Stratton,,5,3,8,
+2026,Home Run Derby,Bernard Campbell,,3,4,7,
+2026,Home Run Derby,Kent Dorfman,,0,5,6,"Struck out on all 10 swings, pitching machine got a standing ovation"
+2026,Washers,Frank Ricard,Eric Stratton,21,1,9.5,
+2026,Washers,Eric Stratton,Frank Ricard,21,1,9.5,
+2026,Washers,Bernard Campbell,John Blutarsky,14,2,7.5,
+2026,Washers,John Blutarsky,Bernard Campbell,14,2,7.5,
+2026,Washers,Kent Dorfman,,3,3,5.5,"Busted back to 11 twice, played solo per the natural-selection rule"
+2026,Disc Golf,Bernard Campbell,,54,1,10,"Clean round, closest-to-pin bonus on hole 9"
+2026,Disc Golf,Frank Ricard,,58,2,9,
+2026,Disc Golf,Eric Stratton,,61,3,8,
+2026,Disc Golf,Kent Dorfman,,70,4,7,
+2026,Disc Golf,John Blutarsky,,88,5,6,"Lost 4 discs in the pond; his own wrong-hole hole-in-one triggered the liquor-shot rule for everyone else"
+2026,Kan Jam,Bernard Campbell,John Blutarsky,,1,9.5,
+2026,Kan Jam,John Blutarsky,Bernard Campbell,,1,9.5,
+2026,Kan Jam,Frank Ricard,Eric Stratton,,2,7.5,
+2026,Kan Jam,Eric Stratton,Frank Ricard,,2,7.5,
+2026,Kan Jam,Kent Dorfman,,,3,5.5,"Threw the instant-win disc into a tree"
+2026,Shooting Gallery,Frank Ricard,,9,1,10,
+2026,Shooting Gallery,John Blutarsky,,7,2,9,
+2026,Shooting Gallery,Eric Stratton,,6,3,8,
+2026,Shooting Gallery,Bernard Campbell,,5,4,7,
+2026,Shooting Gallery,Kent Dorfman,,1,5,6,"Only clipped one clay - commentator called it 'a moral victory'"
+2026,Golf Longest Drive,Frank Ricard,,278,1,10,"Commentator: 'The Tank just relocated a fairway'"
+2026,Golf Longest Drive,Eric Stratton,,245,2,9,
+2026,Golf Longest Drive,John Blutarsky,,210,3,8,
+2026,Golf Longest Drive,Bernard Campbell,,190,4,7,
+2026,Golf Longest Drive,Kent Dorfman,,60,5,6,"Whiffed twice; one drive found the parking lot"
+2026,Kickball,Eric Stratton,,,1,10,"Smooth as always"
+2026,Kickball,Frank Ricard,,,2,9,
+2026,Kickball,Bernard Campbell,,,3,8,
+2026,Kickball,John Blutarsky,,,4,7,
+2026,Kickball,Kent Dorfman,,,5,6,"Tripped rounding first, called it 'a bit'"
+2026,Corn Hole,Frank Ricard,Eric Stratton,,1,9.5,
+2026,Corn Hole,Eric Stratton,Frank Ricard,,1,9.5,
+2026,Corn Hole,Bernard Campbell,John Blutarsky,,2,7.5,
+2026,Corn Hole,John Blutarsky,Bernard Campbell,,2,7.5,
+2026,Corn Hole,Kent Dorfman,,,3,5.5,
+2026,Beer Pong,John Blutarsky,Bernard Campbell,,1,9.5,"Called a blue-ball double and made it - Frank's team owed two cups"
+2026,Beer Pong,Bernard Campbell,John Blutarsky,,1,9.5,
+2026,Beer Pong,Frank Ricard,Eric Stratton,,2,7.5,
+2026,Beer Pong,Eric Stratton,Frank Ricard,,2,7.5,
+2026,Beer Pong,Kent Dorfman,,,3,5.5,"Forfeited after event #1's shotgun beer never quite wore off"

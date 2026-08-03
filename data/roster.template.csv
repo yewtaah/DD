@@ -1,0 +1,11 @@
+first_name,last_name,nickname,email,phone,is_active
+Frank,Ricard,The Tank,frank.tank@example.com,555-010-0001,1
+Bernard,Campbell,Beanie,beanie@example.com,555-010-0002,1
+Mitch,Martin,,mitch.martin@example.com,555-010-0003,1
+John,Blutarsky,Bluto,bluto@example.com,555-010-0004,1
+Eric,Stratton,Otter,otter@example.com,555-010-0005,1
+Kent,Dorfman,Flounder,flounder@example.com,555-010-0006,1
+Lewis,Skolnick,,lewis.skolnick@example.com,555-010-0007,1
+Gilbert,Lowe,,gilbert.lowe@example.com,555-010-0008,1
+Harold,Dobbs,Booger,booger@example.com,555-010-0009,1
+Arnold,Poindexter,,poindexter@example.com,555-010-0010,1
