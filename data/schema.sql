@@ -30,11 +30,14 @@ CREATE TABLE events (
     slug                VARCHAR(100) NOT NULL UNIQUE,   -- matches the site's page name, e.g. 'Skeet', 'DiscGolf'
     description          VARCHAR(MAX) NULL,
     icon_asset           VARCHAR(200) NULL,   -- e.g. 'images/D2-Skeet.png'
-    is_pair_event        BIT NOT NULL DEFAULT 0,
     scoring_direction     VARCHAR(10) NOT NULL DEFAULT 'high'  -- 'high' = highest raw_score wins, 'low' = lowest wins
         CHECK (scoring_direction IN ('high','low')),
     is_active            BIT NOT NULL DEFAULT 1
 );
+-- NOTE: whether an event is played in pairs is deliberately NOT stored here.
+-- It changes year to year - Shuffleboard was an individual event in 2015 but a
+-- pair event in 2018, and 2015 ran only Corn Hole and Beer Pong as pairs. It
+-- lives on tournament_events instead.
 
 -- Physical places events are played. Kept separate from tournaments because
 -- different events within the same tournament weekend can happen at
@@ -46,10 +49,30 @@ CREATE TABLE venues (
     venue_id             INT IDENTITY(1,1) PRIMARY KEY,
     name                 VARCHAR(200) NOT NULL,   -- e.g. 'Vacek Ranch', 'American Shooting Center', 'TopGolf Katy'
     address              VARCHAR(300) NULL,
+    city                 VARCHAR(100) NULL,
+    state                CHAR(2) NULL,
+    -- WGS84 / EPSG:4326 decimal degrees. DECIMAL(9,6) gives ~0.11 m resolution,
+    -- far finer than any of this data actually warrants - see geo_precision.
     latitude             DECIMAL(9,6) NULL,
     longitude            DECIMAL(9,6) NULL,
+    -- Honest precision metadata. NEVER treat a coordinate here as surveyed.
+    --   'rooftop'      : specific building/parcel, desk-geocoded from a street address
+    --   'parcel'       : large site (park, ranch); point is somewhere inside it
+    --   'locality'     : town/neighborhood centroid only - deliberately coarse
+    --   'unknown'      : no coordinate assigned
+    geo_precision        VARCHAR(20) NOT NULL DEFAULT 'unknown'
+        CHECK (geo_precision IN ('rooftop','parcel','locality','unknown')),
+    geo_source           VARCHAR(200) NULL,   -- where the coordinate came from
+    -- Privacy gate for the public story map. Private residences must be
+    -- rendered at locality precision only, never pinned to the actual property.
+    is_private_residence BIT NOT NULL DEFAULT 0,
+    publish_precise_location BIT NOT NULL DEFAULT 1,
     notes                VARCHAR(MAX) NULL
 );
+-- Spatial index note: if this moves to a spatial type later, add
+--   ALTER TABLE venues ADD geog AS GEOGRAPHY::Point(latitude, longitude, 4326) PERSISTED;
+--   CREATE SPATIAL INDEX ix_venues_geog ON venues(geog);
+-- Kept as plain lat/lon columns for now so the static site can consume it as JSON.
 
 CREATE TABLE tournaments (
     tournament_id    INT IDENTITY(1,1) PRIMARY KEY,
@@ -71,6 +94,9 @@ CREATE TABLE tournament_events (
     venue_id             INT NULL REFERENCES venues(venue_id),
     event_order          INT NULL,
     played_at            DATETIME2 NULL,
+    is_pair_event        BIT NOT NULL DEFAULT 0,   -- varies by year; see note on events
+    scoring_basis        VARCHAR(200) NULL,        -- e.g. 'Most targets hit', 'Fewest strokes on 9 holes'
+    rules_text           VARCHAR(MAX) NULL,
     snafu_text           VARCHAR(MAX) NULL,
     savior_text          VARCHAR(MAX) NULL,
     notes                VARCHAR(MAX) NULL,
@@ -191,9 +217,18 @@ INSERT INTO events (name, slug, icon_asset, is_pair_event, scoring_direction) VA
     ('Corn Hole',             'CornHole',     'images/D2-Cornhole.png',    1, 'high'),
     ('Beer Pong',             'BeerPong',     'images/D2-BeerPong.png',    1, 'high');
 
--- 2015 (DD1) ran a different lineup - Shuffleboard, Darts, Golden Tee, TopGolf,
--- Field Goal Kicking - confirmed via the real DD1 scorecard (see data/results.csv,
--- gitignored). Icon assets for these already exist (images/D2-Shuffleboard.png,
--- D2-Darts.png, D2-GoldenTee.png, D2-TopGolf.png, D2-FieldGoalKicking.png) but
--- these rows aren't inserted yet - waiting on the full year-by-year walkthrough
--- (icons/locations/rules) before locking in venue assignments and descriptions.
+-- Retired events - played in earlier years, since rotated out by champions
+-- exercising their right to swap one event. Confirmed from the DD1 scorecard
+-- and the 2015 rules deck (DD-2015-Rules.pdf).
+INSERT INTO events (name, slug, icon_asset, scoring_direction, is_active) VALUES
+    ('Shuffle Board',         'Shuffleboard', 'images/D2-Shuffleboard.png',      'high', 0),
+    ('Darts',                 'Darts',        'images/D2-Darts.png',            'high', 0),
+    ('Golden Tee',            'GoldenTee',    'images/D2-GoldenTee.png',        'low',  0),
+    ('TopGolf',               'TopGolf',      'images/D2-TopGolf.png',          'high', 0),
+    ('Field Goal Kicking',    'FieldGoal',    'images/D2-FieldGoalKicking.png', 'high', 0),
+    ('Shuriken',              'ShurikenOrig', 'images/D2-Shuriken.png',         'high', 0);
+-- Naming caution: 'Shuriken' above is the ORIGINAL 2015 throwing-stars/knives
+-- event held at Bateman House. The current site's schedule links "Kickball" to
+-- Shuriken.html - i.e. Kickball replaced Shuriken but reused the page. They are
+-- different events and must stay distinct rows, or per-event history will merge
+-- two unrelated activities.

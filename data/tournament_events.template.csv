@@ -1,0 +1,5 @@
+year,event_order,event_name,venue_name,played_at,scoring_basis,rules,snafu,notes
+2026,1,Skeet Shooting,Faber College Fieldhouse,2026-05-02 10:00,Most targets hit,"25 clay targets, most hits wins.",< 10 = shotgun a beer,SAMPLE DATA ONLY
+2026,2,Home Run Derby,Faber College Fieldhouse,2026-05-02 12:00,Most home runs,"10 swings.",Under 10 points = full bag of Big League Chew in your mouth,SAMPLE DATA ONLY
+2026,3,Washers,The Tank's Backyard,2026-05-02 14:00,Most points,"Play to exactly 21, net scoring, bust back to 11.",Miss the board two rounds running = 10 push ups,"SAMPLE DATA ONLY - PAIR EVENT"
+2026,4,Beer Pong,Delta Tau Chi House,2026-05-02 19:00,Tournament,"Single elimination, teams by current standings.",One blue ball per player; call it and make it = opponents drink two cups,"SAMPLE DATA ONLY - PAIR EVENT"

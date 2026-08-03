@@ -1,4 +1,4 @@
-name,address,latitude,longitude,notes
-Faber College Fieldhouse,"1 Faber Way, Faber, PA (SAMPLE)",40.084,-75.339,"Home of Skeet Shooting and Home Run Derby - sample data only"
-Delta Tau Chi House,"304 Faber St, Faber, PA (SAMPLE)",40.085,-75.341,"Beer Pong grand finale venue - sample data only"
-The Tank's Backyard,"SAMPLE - address withheld",,,"Washers and Corn Hole - sample data only"
+name,address,city,state,latitude,longitude,geo_precision,geo_source,is_private_residence,publish_precise_location,notes
+Faber College Fieldhouse,1 Faber Way,Faber,PA,40.084000,-75.339000,rooftop,"SAMPLE DATA - desk-geocoded",0,1,"Skeet and Home Run Derby - sample only"
+Delta Tau Chi House,304 Faber St,Faber,PA,40.085000,-75.341000,rooftop,"SAMPLE DATA - desk-geocoded",0,1,"Beer Pong grand finale - sample only"
+The Tank's Backyard,PRIVATE RESIDENCE - address intentionally omitted,Faber,PA,40.083000,-75.335000,locality,"SAMPLE DATA - deliberately coarse, town centroid not the property",1,0,"Washers and Corn Hole - sample only. Demonstrates the privacy pattern: private homes get locality precision and publish_precise_location=0."
