@@ -72,7 +72,7 @@ window.DD_DATA = {
           basis:"Fewest strokes on 9 holes", rules:"Upgraded clubs/balls/tees acceptable.", snafu:"Drink for the rough or a bunker; in the water = Grape Ape shot" },
         { n:3,  name:"Shuffle Board",      short:"Shuffle",    day:"Fri", time:"9:00pm", t:21*60,   venue:"Stars Sports Bar", icon:"/images/D2-Shuffleboard.png",
           basis:"Most points", rules:"Total score on 8 throws. Puck must be completely over the line.", snafu:"0 points = Goldschlager shot" },
-        { n:4,  name:"Darts",              short:"Darts",      day:"Fri", time:"9:00pm", t:21*60,   venue:"Stars Sports Bar", icon:"/images/D2-Darts.png",
+        { n:4,  name:"Darts",              short:"Darts",      day:"Fri", time:"9:00pm", t:21*60,   venue:"Stars Sports Bar", icon:"/images/badges/badge-Darts.webp",
           basis:"Highest score", rules:"15 darts, total of all points.", snafu:"Under 20 = drink a cosmopolitan martini" },
         { n:5,  name:"Home Run Derby",     short:"Derby",      day:"Sat", time:"9:00am", t:9*60,    venue:"George Bush Park", icon:"/images/badges/badge-HomeRunDerby.webp",
           basis:"Most home runs", rules:"10 swings.", snafu:"Fail to clear the infield on the fly = wear a pink tutu" },
