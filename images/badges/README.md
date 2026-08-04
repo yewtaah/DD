@@ -57,31 +57,23 @@ reads `pair:true` in `data/tournaments.js` to decide what is a pair event.
 | `badge-Shuriken.webp` | brass | Shuriken **and** "Chinese Stars" | 2015, 2021, 2022 |
 | `badge-FieldGoal.webp` | brass | Field Goal Kicking | 2015, 2018, 2019 |
 | `badge-Darts.webp` | brass | Darts | 2015 |
+| `badge-GoldenTee.webp` | brass | Golden Tee | 2015 |
+| `badge-GoKarts.webp` | brass | Go Karts | 2018 only |
+| `badge-TopGolf.webp` | brass | TopGolf | 2015, 2018, 2019 |
 | `badge-BeerPong.webp` | steel | Beer Pong | all six |
 | `badge-CornHole.webp` | steel | Corn Hole | all six |
 | `badge-KanJam.webp` | steel | Kan Jam | 2018, 2019, 2021, 2022, 2023 |
 | `badge-Washers.webp` | steel | Washers | 2018, 2019, 2021, 2022, 2023 |
 | `badge-ShuffleBoard.webp` | steel | Shuffle Board | 2015, 2018, 2019 |
 | `badge-Kickball.webp` | steel | Kickball | 2023 |
-| `badge-GoldenTee.webp` | **old style** | Golden Tee | 2015 |
 
 Two badges intentionally serve two event names each — Shuriken/Chinese Stars and
 Shooting Gallery/.22 Shoot are the same activity renamed between years.
 
+All 17 events now have a real badge; the `images/D2-*.png` legacy pictogram set
+is fully retired from `data/tournaments.js` (the files remain on disk, unused).
+
 ## Outstanding
-
-**No badge — still on the flat `images/D2-*.png` pictograms**, which render in a
-"legacy" tile that keeps a text label underneath so they look intentional
-rather than broken:
-
-- **TopGolf** (2015, 2018, 2019)
-- **Go Karts** (2018 only)
-
-**`badge-GoldenTee.webp` is the last old-style badge.** The brass export
-supplied for it (`DarwinBadgeBrassGoldenTee200.png`) is titled **"GO KARTS"**
-over Golden Tee arcade-cabinet artwork, so it matches neither event: wrong
-title for Golden Tee, wrong art for Go Karts. It is kept in the repo unused
-until it is regenerated. The old badge was restored in the meantime.
 
 **`badge-Skeet.webp` has the wrong art.** The title reads SKEET SHOOTING
 correctly, but the illustration is a TopGolf driving range and the tagline says
@@ -89,6 +81,29 @@ correctly, but the illustration is a TopGolf driving range and the tagline says
 but it wants regenerating — skeet opens every tournament and is the most-seen
 badge on the site.
 
-**Everything is upscaled.** The `*200.png` exports are roughly 199x270, which
-is a ~1.9x upscale to the 512 target. It holds up at tile size and will look
-soft on a high-DPI screen. Exporting at 512 would fix it for free.
+**Everything is upscaled.** The `*200.png` exports are roughly 199x270 (the
+TopGolf source is closer, 437x560), against a 512 target — mostly a ~1.9x
+upscale. It holds up at tile size and will look soft on a high-DPI screen.
+Exporting at 512 would fix it for free.
+
+**Banners are two of seventeen.** `banner-Skeet.webp` and `banner-CornHole.webp`
+exist; the other 15 events fall back to the plain "no banner" gradient on their
+Field Notes page.
+
+## Banner theme split
+
+Confirmed by the two banners that exist: the backdrop follows the same
+brass/steel split as the badge frame.
+
+- **Individual events (brass badge) → Texas hill country.** `banner-Skeet.webp`
+  is the reference: the badge rendered as a wooden sign staked in a Vacek Ranch
+  pasture, windmill and fence line in frame.
+- **Team events (steel badge) → cold industrial / steel.** `banner-CornHole.webp`
+  is the reference: the badge floating in a dim steel-and-neon interior, no
+  outdoor scene at all.
+
+Export at **1600x873** (or any 1.83:1 image - it gets cover-cropped to that
+ratio on import), full-bleed, no transparency needed. Keep the bottom third
+uncluttered: the site lays a dark gradient plus the event title over the
+bottom ~35% of the banner (`.gscrim` in index.html), so anything essential
+down there gets partially obscured by white text.
