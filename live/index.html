@@ -465,7 +465,61 @@ table.dv caption{text-align:left;color:var(--muted);font-size:14px;padding-botto
 .gyear{border-left:2px solid var(--axis);padding:2px 0 2px 12px;margin-bottom:12px}
 .gyear .gy{font-weight:800;color:var(--ink);font-size:15px}
 .gyear .gv{font-size:13.5px;color:var(--muted);letter-spacing:.05em;margin-left:6px}
-.gsnafu{color:var(--gold-dim);font-size:14.5px;margin-top:5px}
+.gsnafu{color:var(--gold-dim);font-size:14px;margin-top:5px}
+/* Roll of honour - compact table replacing the old year-by-year rules dump. */
+table.roll{width:100%;border-collapse:collapse;font-size:14.5px}
+table.roll th{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);
+  text-align:left;padding:0 10px 7px 0;border-bottom:1px solid rgba(232,179,58,.22);font-weight:800}
+table.roll td{padding:8px 10px 8px 0;border-bottom:1px solid rgba(255,255,255,.06);vertical-align:top}
+table.roll tr:last-child td{border-bottom:0}
+table.roll .num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+table.roll .ry{font-weight:800;color:var(--ink);white-space:nowrap;font-variant-numeric:tabular-nums}
+table.roll .rw{font-weight:700;color:var(--gold)}
+table.roll .rn{color:var(--ink-2);font-size:13px;line-height:1.5}
+table.roll .dim{color:var(--muted);opacity:.5}
+table.roll .tight{color:#28d17c;font-weight:800}
+details.rules{margin-top:14px;border-top:1px solid rgba(232,179,58,.18);padding-top:12px}
+details.rules summary{cursor:pointer;font-size:12.5px;letter-spacing:.1em;color:var(--gold-dim);
+  font-weight:800;text-transform:uppercase;list-style:none}
+details.rules summary::-webkit-details-marker{display:none}
+details.rules summary::before{content:"\25B8 ";display:inline-block;transition:transform .18s}
+details.rules[open] summary::before{transform:rotate(90deg)}
+details.rules .rv{margin-top:11px;font-size:14px;color:var(--ink-2);line-height:1.6}
+details.rules .rvy{display:inline-block;font-weight:800;color:var(--ink);margin-right:8px;
+  font-variant-numeric:tabular-nums}
+
+/* --- density: reclaim space, especially on phones --- */
+@media(max-width:700px){
+  main{padding:12px 11px 44px}
+  .gsection,.card{padding:13px 12px}
+  #p-live,#p-notes{padding:11px}
+  .gstats{grid-template-columns:repeat(2,1fr);gap:8px}
+  .gstat{padding:9px 11px}
+  .gstat .v{font-size:17px}
+  .hero{grid-template-columns:repeat(2,1fr);gap:8px}
+  .tiles{grid-template-columns:repeat(auto-fill,minmax(132px,1fr));gap:9px}
+  .guide-grid{grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:9px}
+  .gallery{grid-template-columns:1fr;gap:10px}
+  .shot img{height:200px}
+  table.roll{font-size:13.5px}
+  table.roll .rn{font-size:12px}
+  .gbanner .gcap{padding:12px 13px}
+}
+/* Narrow: drop Margin then Notes rather than let the table squeeze the page.
+   Breakpoint is 560 (not 460) - real phone viewports report wider than the
+   device width once the browser chrome and scrollbar are accounted for, and a
+   460 cutoff never fired. */
+@media(max-width:560px){
+  table.roll th:nth-child(5),table.roll td:nth-child(5){display:none}
+}
+@media(max-width:430px){
+  table.roll th:nth-child(4),table.roll td:nth-child(4){display:none}
+}
+/* Wide content scrolls inside its own container instead of widening the page. */
+.tblwrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table.dv{min-width:520px}
+/* Nothing should be able to push the document wider than the viewport. */
+html,body{max-width:100%;overflow-x:clip}
 .gphotos{border:1px dashed var(--axis);border-radius:10px;padding:22px;text-align:center;
   color:var(--muted);font-size:14.5px;line-height:1.6}
 .gphotos code{color:var(--gold-dim);font-size:13.5px}
@@ -1450,6 +1504,25 @@ function photosFor(g){
             .sort((a,b) => (b.year||0) - (a.year||0));
 }
 
+/* One short derived insight per appearance for the roll of honour. Only says
+   something when the data actually supports it - no filler. */
+function yearInsight(g,a){
+  const out=[];
+  const scores=g.appearances.map(x=>x.topScore).filter(v=>v!=null);
+  const margins=g.appearances.map(x=>x.margin).filter(v=>v!=null);
+  if(a.topScore!=null && scores.length && a.topScore===Math.max(...scores)) out.push('Best winning score');
+  if(a.margin!=null && margins.length && a.margin===Math.min(...margins)) out.push('Closest finish');
+  if(a.margin!=null && margins.length && a.margin===Math.max(...margins) && margins.length>1) out.push('Biggest blowout');
+  if(a.winners && a.winners.length>1) out.push('Pair event');
+  if(a.event.newThisYear) out.push('Debut year');
+  if(a.year===g.years[0] && !a.event.newThisYear) out.push('First on record');
+  if(a.year===g.lastYear && g.retired) out.push('Last time played');
+  if(a.event.name!==g.name) out.push(`Played as &ldquo;${a.event.name}&rdquo;`);
+  // Did the event winner go on to take the whole tournament?
+  if(a.winners && a.tournament && a.winners.includes(a.tournament.champion)) out.push('Won by that year&rsquo;s champion');
+  return out.length ? out.join(' &middot; ') : '<span class="dim">&mdash;</span>';
+}
+
 /* Photo commentary, written from the scorecard rather than hand-typed.
    Looks up how each tagged competitor ACTUALLY did in that event that year and
    picks a line to match. The ribbing is aimed at the performance, never the
@@ -1559,23 +1632,42 @@ function openGuide(slug,push){
     ${edge.length?`<div class="gedge"><h3>How to gain an edge</h3><ul>${edge.map(e=>`<li>${e}</li>`).join('')}</ul></div>`:''}
 
     <div class="gsection">
-      <h3>Rules, year by year</h3>
-      ${g.appearances.slice().reverse().map(a=>`
-        <div class="gyear">
-          <span class="gy">${a.year}</span>
-          <span class="gv">${[a.event.name!==g.name?`as "${a.event.name}"`:'',a.event.day||'',a.event.time||'',a.event.venue||''].filter(Boolean).join(' · ')}</span>
-          ${a.event.basis?`<p style="margin:5px 0 0"><strong style="color:var(--ink)">${a.event.basis}.</strong> ${a.event.rules||''}</p>`:''}
-          ${a.event.snafu?`<div class="gsnafu"><strong>SNAFU:</strong> ${a.event.snafu}</div>`:''}
-          ${a.winners?`<div style="font-size:14px;color:var(--muted);margin-top:5px">Won by <strong style="color:var(--gold)">${a.winners.join(' & ')}</strong> (${a.topScore} pts)${a.margin!=null?` &middot; margin ${a.margin}`:''}</div>`:''}
-        </div>`).join('')}
+      <h3>Roll of honour</h3>
+      <table class="roll">
+        <thead><tr><th>Year</th><th>Winner</th><th class="num">Pts</th><th class="num">Margin</th><th>Notes</th></tr></thead>
+        <tbody>
+        ${g.appearances.slice().reverse().map(a=>`
+          <tr>
+            <td class="ry">${a.year}</td>
+            <td class="rw">${a.winners?a.winners.join(' &amp; '):'&mdash;'}</td>
+            <td class="num">${a.topScore??'&mdash;'}</td>
+            <td class="num ${a.margin!=null&&a.margin<=0.5?'tight':''}">${a.margin!=null?a.margin:'&mdash;'}</td>
+            <td class="rn">${yearInsight(g,a)}</td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+      ${(()=>{ // Rules only differ in a few years - show the distinct ones once, collapsed.
+        const seen=new Map();
+        g.appearances.forEach(a=>{
+          const k=[a.event.basis,a.event.rules,a.event.snafu].join('|');
+          if(!seen.has(k)) seen.set(k,{a,years:[a.year]}); else seen.get(k).years.push(a.year);
+        });
+        const variants=[...seen.values()].filter(v=>v.a.event.basis||v.a.event.rules||v.a.event.snafu);
+        if(!variants.length) return '';
+        return `<details class="rules"><summary>Rules &amp; SNAFUs (${variants.length} variant${variants.length===1?'':'s'} on record)</summary>
+          ${variants.map(v=>`<div class="rv"><span class="rvy">${v.years.join(', ')}</span>
+            ${v.a.event.basis?`<strong>${v.a.event.basis}.</strong> `:''}${v.a.event.rules||''}
+            ${v.a.event.snafu?`<div class="gsnafu"><strong>SNAFU:</strong> ${v.a.event.snafu}</div>`:''}</div>`).join('')}
+        </details>`;
+      })()}
     </div>
 
     <div class="gsection">
       <h3>All-time leaderboard</h3>
-      <table class="dv"><caption>Average points per appearance (2+ appearances)</caption>
+      <div class="tblwrap"><table class="dv"><caption>Average points per appearance (2+ appearances)</caption>
       <thead><tr><th>Competitor</th><th>Apps</th><th>Wins</th><th>Avg pts</th></tr></thead><tbody>
       ${g.playerAvg.slice(0,12).map(p=>`<tr><td>${p.player}</td><td>${p.n}</td><td>${g.winCount[p.player]||0}</td><td><b>${p.avg}</b></td></tr>`).join('')}
-      </tbody></table>
+      </tbody></table></div>
     </div>
 
     <div class="gsection">
