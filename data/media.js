@@ -39,15 +39,11 @@ window.DD_MEDIA = [
     caption: "Terry Register steps in, ready for his swing at the plate.",
     people: ["Terry Register"], venue: "Vacek Ranch"
   },
-  {
-    event: "Kan Jam", year: 2021,
-    // Filename originally read 2018; corrected to 2021 - the windmill and
-    // outbuildings match the Vacek Ranch photos in DD4 Recap.pdf, and the
-    // ranch did not host the tournament until 2021.
-    file: "/images/KanJam2021Windmill.png",
-    caption: "Kan Jam at dusk under the windmill, cornhole boards still set up alongside.",
-    people: [], venue: "Vacek Ranch"
-  },
+  // The dusk windmill shot (KanJam2021Windmill.png) was pulled - it was a
+  // multi-megabyte PNG of a photograph, the worst possible format for one. If
+  // it comes back, re-export as JPEG or WebP at ~1600px and re-add here. The
+  // year was the interesting part: the filename said 2018, but the windmill
+  // and outbuildings match the Vacek Ranch, which did not host until 2021.
   {
     event: "Shuffle Board", year: 2019,
     file: "/images/Shuffleboard.jpg",

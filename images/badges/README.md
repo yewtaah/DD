@@ -43,44 +43,52 @@ also write a mask PNG showing exactly what got keyed.
 
 ## Current set
 
-| File | Used by event(s) | Years |
-|---|---|---|
-| `badge-Skeet.webp` | Skeet Shooting | all six |
-| `badge-HomeRunDerby.webp` | Home Run Derby | all six |
-| `badge-CornHole.webp` | Corn Hole | all six |
-| `badge-BeerPong.webp` | Beer Pong | all six |
-| `badge-KanJam.webp` | Kan Jam | 2018, 2019, 2021, 2022, 2023 |
-| `badge-Washers.webp` | Washers | 2018, 2019, 2021, 2022, 2023 |
-| `badge-DiscGolf.webp` | Disc Golf | 2019, 2021, 2022, 2023 |
-| `badge-Shooting.webp` | Shooting Gallery **and** ".22 Shoot" | 2021, 2022, 2023 |
-| `badge-LongDrive.webp` | "Long Golf Ball" **and** "Long Drive" | 2021, 2022, 2023 |
-| `badge-Shuriken.webp` | Shuriken **and** "Chinese Stars" | 2015, 2021, 2022 |
-| `badge-FieldGoal.webp` | Field Goal Kicking | 2015, 2018, 2019 |
-| `badge-GoldenTee.webp` | Golden Tee | 2015 |
-| `badge-Darts.webp` | Darts | 2015 |
-| `badge-Kickball.webp` | Kickball | 2023 |
+The set is themed by format: **brass** shields for individual events, **steel**
+for team events. That is a visual cue, not the source of truth — the site still
+reads `pair:true` in `data/tournaments.js` to decide what is a pair event.
+
+| File | Frame | Used by event(s) | Years |
+|---|---|---|---|
+| `badge-Skeet.webp` | brass | Skeet Shooting | all six |
+| `badge-HomeRunDerby.webp` | brass | Home Run Derby | all six |
+| `badge-DiscGolf.webp` | brass | Disc Golf | 2019, 2021, 2022, 2023 |
+| `badge-Shooting.webp` | brass | Shooting Gallery **and** ".22 Shoot" | 2021, 2022, 2023 |
+| `badge-LongDrive.webp` | brass | "Long Golf Ball" **and** "Long Drive" | 2021, 2022, 2023 |
+| `badge-Shuriken.webp` | brass | Shuriken **and** "Chinese Stars" | 2015, 2021, 2022 |
+| `badge-FieldGoal.webp` | brass | Field Goal Kicking | 2015, 2018, 2019 |
+| `badge-Darts.webp` | brass | Darts | 2015 |
+| `badge-BeerPong.webp` | steel | Beer Pong | all six |
+| `badge-CornHole.webp` | steel | Corn Hole | all six |
+| `badge-KanJam.webp` | steel | Kan Jam | 2018, 2019, 2021, 2022, 2023 |
+| `badge-Washers.webp` | steel | Washers | 2018, 2019, 2021, 2022, 2023 |
+| `badge-ShuffleBoard.webp` | steel | Shuffle Board | 2015, 2018, 2019 |
+| `badge-Kickball.webp` | steel | Kickball | 2023 |
+| `badge-GoldenTee.webp` | **old style** | Golden Tee | 2015 |
 
 Two badges intentionally serve two event names each — Shuriken/Chinese Stars and
 Shooting Gallery/.22 Shoot are the same activity renamed between years.
 
-## Still missing
+## Outstanding
 
-Three events have no badge and fall back to the flat `images/D2-*.png`
-pictograms, which render in a "legacy" tile that keeps a text label underneath
-so they look intentional rather than broken:
+**No badge — still on the flat `images/D2-*.png` pictograms**, which render in a
+"legacy" tile that keeps a text label underneath so they look intentional
+rather than broken:
 
-- **Shuffle Board** (2015, 2018, 2019)
 - **TopGolf** (2015, 2018, 2019)
 - **Go Karts** (2018 only)
 
-## Known quality problem — see issue #6
+**`badge-GoldenTee.webp` is the last old-style badge.** The brass export
+supplied for it (`DarwinBadgeBrassGoldenTee200.png`) is titled **"GO KARTS"**
+over Golden Tee arcade-cabinet artwork, so it matches neither event: wrong
+title for Golden Tee, wrong art for Go Karts. It is kept in the repo unused
+until it is regenerated. The old badge was restored in the meantime.
 
-The badges generated before `badge-Darts.webp` were keyed with an earlier
-canvas-based method that left **visible dithered checkerboard residue** around
-the artwork. It is obvious in the Chronicles grid: Skeet, Golden Tee, Home Run
-Derby, Field Goal and Shuriken all sit in a speckled rectangle, and Corn Hole
-has a fainter halo. Washers, Kickball and Beer Pong were never keyed at all and
-are fully opaque (~6% clear pixels versus ~70% on a correctly keyed badge).
+**`badge-Skeet.webp` has the wrong art.** The title reads SKEET SHOOTING
+correctly, but the illustration is a TopGolf driving range and the tagline says
+"TOPGOLF SHARPSHOOTER!". Shipped as-is because the title and frame are right,
+but it wants regenerating — skeet opens every tournament and is the most-seen
+badge on the site.
 
-`badge-Darts.webp` is the reference for how these should look. Regenerating the
-rest at 512 and running them through `tools/badge-key.py` is the fix.
+**Everything is upscaled.** The `*200.png` exports are roughly 199x270, which
+is a ~1.9x upscale to the 512 target. It holds up at tile size and will look
+soft on a high-DPI screen. Exporting at 512 would fix it for free.
