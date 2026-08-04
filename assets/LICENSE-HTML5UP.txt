@@ -1,3 +1,18 @@
+===============================================================================
+THIRD-PARTY LICENSE - NOT THE LICENSE FOR THIS PROJECT
+===============================================================================
+
+This is the license for the "Stellar" page template by HTML5 UP
+(https://html5up.net), which supplies the CSS, JS, Sass and webfonts in this
+assets/ directory. It is reproduced here because CC BY 3.0 requires the notice
+to travel with the work.
+
+The Darwin Decathlon project itself is licensed under the MIT License. See
+/LICENSE in the repository root.
+
+===============================================================================
+
+
 Creative Commons Attribution 3.0 Unported
 http://creativecommons.org/licenses/by/3.0/
 

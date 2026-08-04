@@ -1,387 +1,1820 @@
+<!doctype html>
 <!--
-    Darwin Decathlon
-    Designed by Scott Bateman (adapted from AWS template)
-    Template licensed for commercial use under the CCA 3.0 license (html5up.net/license)
+    ============================================================================
+    DARWIN DECATHLON v2.0 - "LIVE"
+    ============================================================================
+    A private, non-commercial hobby site documenting a recurring social gathering
+    among friends. Not a business, not a sanctioned sporting body, not affiliated
+    with any brand or venue named on these pages.
+
+    PARTICIPANT CONSENT
+      Every person named here is a tournament participant, has been given this
+      URL, and is aware their name and finishing position are published. Only
+      names and scores appear - never contact details, never a private street
+      address. Removal requests are honored immediately, no justification asked.
+
+    PII BOUNDARY
+      data/tournaments.js is PII-scrubbed and is the ONLY dataset this page
+      may consume. The real rosters and scorecards (data/*.csv) are gitignored
+      because they carry emails, phone numbers and a home address. Never wire
+      this page to those. The 2019 rules deck contains a participant's home
+      address; it appears nowhere in this codebase and must stay that way.
+
+    GEOSPATIAL
+      Venue coordinates carry a `precision` field and a `private` flag. Private
+      residences/property are recorded at LOCALITY precision deliberately and
+      must never be pinned to the actual parcel. Respect the flag.
+
+    SIMULATED DATA
+      Win-probability figures are retrospective Monte Carlo output, NOT recorded
+      odds. Nobody tracked live win probability at any tournament. Labeled as
+      such on the page - keep it that way.
+
+    LICENSING
+      MIT for the whole project (LICENSE) - permissive on purpose, and carrying
+      the "AS IS" warranty and liability disclaimer that is the real reason it
+      is there. A copyright license cannot license a person's likeness, so
+      reuse of participant photos is between the reuser and the people in them.
+      Any participant can have a photo pulled on request, no questions asked.
+      Full notice: DISCLAIMER.md
+    ============================================================================
 -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Darwin Decathlon</title>
+<meta name="description" content="Ten events. Two days. One champion. The Darwin Decathlon is an annual backyard tournament among friends in Texas - results, records and a field guide to every event ever played.">
+<link rel="icon" href="/favicon.ico">
+<link rel="canonical" href="https://darwindecathlon.com/">
 
-<!DOCTYPE HTML>
-<html>
-	<head>
-		<title>Darwin Decathlon</title>
-		<meta charset="utf-8" />
-		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
-		
-		<!-- Global site tag (gtag.js) - Google Analytics -->
-		<script async src="https://www.googletagmanager.com/gtag/js?id=G-2EW2457YD1"></script>
-		<script>
-		window.dataLayer = window.dataLayer || [];
-		function gtag(){dataLayer.push(arguments);}
-		gtag('js', new Date());
+<!-- Link previews, for when someone drops the URL in a group chat. -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Darwin Decathlon">
+<meta property="og:title" content="Darwin Decathlon">
+<meta property="og:description" content="Ten events. Two days. One champion. Six tournaments of results, records and a field guide to every event ever played.">
+<meta property="og:url" content="https://darwindecathlon.com/">
+<meta property="og:image" content="https://darwindecathlon.com/images/DarwinDecathlonLive.png">
+<meta name="twitter:card" content="summary_large_image">
 
-		gtag('config', 'G-2EW2457YD1');
-		</script>
-		<!-- End Google Analytics -->
+<!-- Google Analytics. Carried over from the v1 homepage this page replaces -
+     same G-2EW2457YD1 property, so the historical series stays continuous. -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-2EW2457YD1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-2EW2457YD1');
+</script>
+<style>
+/* ============================================================
+   Darwin Decathlon v2.0 - broadcast theme
+   Chart surface + series colors are the documented dataviz dark
+   palette, validated (worst adjacent CVD dE 8.4, normal-vision
+   19.3, all series >=3:1 on surface). Gold is CHROME ONLY -
+   never a series color - at 9.07:1 on the chart surface.
+   ============================================================ */
+:root{
+  --charcoal:#232322;
+  --charcoal-2:#2c2c2a;
+  --surface:#1a1a19;       /* chart surface (validated against) */
+  --plane:#0d0d0d;
+  --gold:#e8b33a;
+  --gold-dim:#d4a02c;
+  --ink:#ffffff;
+  --ink-2:#c3c2b7;
+  --muted:#898781;
+  --grid:#2c2c2a;
+  --axis:#383835;
+  --context:#6b6a66;       /* non-highlighted lines, 3.22:1 */
+  /* categorical slots 1-5, dark, fixed order - never cycled */
+  --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500; --s5:#d55181;
+  --ring:rgba(255,255,255,.10);
+  --sans:system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:var(--plane);color:var(--ink);font-family:var(--sans);
+  -webkit-font-smoothing:antialiased;
+}
+img{max-width:100%}
 
-        <link rel="stylesheet" href="assets/css/main.css" />
-		<noscript><link rel="stylesheet" href="assets/css/noscript.css" /></noscript>
-        
-		
-		<!-- Countdown timer -->
-		<script src="assets/js/timer.js"></script>
-	</head>
-	
-    <body class="is-preload">
-		<!-- Wrapper -->
-		<div id="wrapper">
-				<!-- Header -->
-				<header id="header" class="alt">
-					<span class="logo"><img src="images/DD6Logo.png" alt="Darwin Decathlon Logo" /></span>
-					<h1>Darwin Decathlon</h1>
-					<h2>Tournament #6 - 2023</h2> 
-					<div id="clockdiv"></div>
-				</header>
+/* ---------- broadcast intro ---------- */
+#intro{
+  position:fixed;inset:0;z-index:100;background:var(--plane);
+  display:grid;place-items:center;overflow:hidden;
+  animation:introOut .9s ease-in 2.6s forwards;
+}
+#intro.skip{display:none}
+.intro-bg{
+  position:absolute;inset:-10%;
+  background:
+    radial-gradient(ellipse at 30% 20%,rgba(232,179,58,.20),transparent 55%),
+    radial-gradient(ellipse at 75% 80%,rgba(57,135,229,.16),transparent 55%),
+    linear-gradient(160deg,#0d0d0d,#232322 55%,#0d0d0d);
+  animation:kenburns 5s ease-out forwards;
+}
+.intro-sweep{
+  position:absolute;top:0;bottom:0;width:38%;
+  background:linear-gradient(100deg,transparent,rgba(232,179,58,.30),transparent);
+  filter:blur(6px);animation:sweep 1.9s cubic-bezier(.6,0,.2,1) .25s both;
+}
+.intro-card{position:relative;text-align:center;padding:0 24px}
+.intro-rule{height:3px;background:linear-gradient(90deg,transparent,var(--gold),transparent);
+  transform:scaleX(0);animation:ruleIn .8s cubic-bezier(.2,.7,.2,1) .35s forwards}
+.intro-kicker{
+  font-size:clamp(10px,1.6vw,13px);letter-spacing:.42em;color:var(--gold);
+  margin:18px 0 6px;opacity:0;animation:fadeUp .7s ease-out .6s forwards;
+}
+.intro-title{
+  font-size:clamp(34px,8vw,86px);font-weight:800;letter-spacing:-.02em;line-height:.98;
+  margin:0;opacity:0;animation:fadeUp .8s cubic-bezier(.2,.7,.2,1) .8s forwards;
+}
+.intro-sub{
+  font-size:clamp(11px,1.8vw,15px);letter-spacing:.3em;color:var(--ink-2);
+  margin-top:14px;opacity:0;animation:fadeUp .7s ease-out 1.15s forwards;
+}
+@keyframes kenburns{from{transform:scale(1.12)}to{transform:scale(1)}}
+@keyframes sweep{from{left:-40%}to{left:115%}}
+@keyframes ruleIn{to{transform:scaleX(1)}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@keyframes introOut{to{opacity:0;visibility:hidden}}
 
-				<!-- Nav -->
-				<nav id="nav">
-					<ul>
-						<li><a href="index.html#intro" class="active">Overview</a></li>
-						<li><a href="index.html#schedule">Schedule</a></li>
-						<li><a href="index.html#rules">Rules</a></li>
-						<li><a href="Weather.html">Weather</a></li>
-						<li><a href="Champs.html">Champions</a></li>
-					</ul>
-				</nav>
+/* ---------- chrome ---------- */
+header.bar{
+  position:sticky;top:0;z-index:40;background:linear-gradient(180deg,var(--charcoal),var(--charcoal-2));
+  border-bottom:2px solid var(--gold);
+}
+.bar-inner{max-width:1240px;margin:0 auto;padding:10px 18px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:11px;font-weight:800;letter-spacing:.04em}
+.brand .dot{width:9px;height:9px;border-radius:50%;background:#e34948;box-shadow:0 0 0 0 rgba(227,73,72,.7);animation:pulse 1.8s infinite}
+@keyframes pulse{70%{box-shadow:0 0 0 9px rgba(227,73,72,0)}100%{box-shadow:0 0 0 0 rgba(227,73,72,0)}}
+.brand small{color:var(--gold);letter-spacing:.24em;font-size:13.5px;font-weight:700}
+nav.tabs{display:flex;gap:2px;margin-left:auto;flex-wrap:wrap}
+nav.tabs button{
+  background:transparent;border:0;border-bottom:3px solid transparent;color:var(--ink-2);
+  font:700 13px/1 var(--sans);letter-spacing:.13em;padding:12px 16px;cursor:pointer;
+  transition:color .18s,border-color .18s,background .18s;
+}
+nav.tabs button:hover{color:var(--ink);background:rgba(255,255,255,.04)}
+nav.tabs button[aria-selected="true"]{color:var(--gold);border-bottom-color:var(--gold)}
+/* Each tab carries its own accent, so switching feels like changing channels. */
+nav.tabs button#tab-live[aria-selected="true"]{color:#38d9f0;border-bottom-color:#38d9f0}
+body[data-seg="live"] header.bar{border-bottom-color:#38d9f0;
+  background:linear-gradient(180deg,#12283f,#0e1f33)}
+body[data-seg="live"] .brand small{color:#38d9f0}
+body[data-seg="notes"] header.bar{background:linear-gradient(180deg,#2e251b,#241d16)}
+nav.tabs button:focus-visible{outline:2px solid var(--gold);outline-offset:-2px}
 
-				<!-- Main -->
-				<div id="main">
-					<!-- Introduction -->
-					<section id="intro" class="main">
-						<div class="spotlight">
-							<div class="content">
-								<header class="major special"><h2>Overview</h2></header>								
-								<p>The Darwin Decathlon rewards survival of the fittest through
-									a grueling 10-event competition.  Whether it is home run derby, washers, or beer pong, all 
-									of the events demand the utmost mastery of non-athletic pursuits.  We have designed this epic 
-									event to establish who has the suburban skills necessary to be deteremined ultimate champion.  
-									While some have questions the event as grown men simply acting like children, contestants 
-									know that this is a noble endeavor unlike any other in human history.
-								</p>
-								<p>
-									2023 marks the 6th tournament at the Vacek Ranch and this year we are starting on Cinco de Mayo!
-								</p>
-								
-							</div>							
-						</div>
-					</section>
+/* ---------- ticker ---------- */
+.ticker{background:#151514;border-bottom:1px solid var(--grid);overflow:hidden;white-space:nowrap}
+.ticker-track{display:inline-block;padding:7px 0;animation:tick 44s linear infinite}
+.ticker:hover .ticker-track{animation-play-state:paused}
+.ticker span{color:var(--ink-2);font-size:14.5px;letter-spacing:.05em;padding:0 22px}
+.ticker b{color:var(--gold)}
+@keyframes tick{from{transform:translateX(0)}to{transform:translateX(-50%)}}
 
-					<!-- Schedule -->
-					<section id="schedule" class="main special">
-						<header class="major">
-							<h2>Darwin Decathlon Event Schedule</h2>
-						</header>
-						<h3>DATE</h3>
-						<br>
-						<table border=1>
-							<tr>
-								<th style="text-align:center;width:5%">Event</th>
-								<th style="text-align:center;width:20%">Day/Time</th>
-								<th style="text-align:center;width:25%">Activity</th>
-								<th style="text-align:center;width:50%">Details</th>
-							</tr>
-							<tr>
-								<td>1</td>
-								<td>Day 1 10:00am</td>
-								<td><a href="Skeet.html">Skeet</a></td>
-								<td style="text-align:left">Most hits out of 25 clay targets</td> 
-							</tr>
-							<tr>
-								<td>2</td>
-								<td>Day 1 12:00pm</td>
-								<td><a href="HomeRunDerby.html">Home Run Derby</a></td>
-								<td style="text-align:left">Most home runs out of 10 swings</td>
-							</tr>
-							<tr>
-								<td>3</td>
-								<td>Day 1 2:00pm</td>
-								<td><a href="Washers.html">Washers</a></td>
-								<td style="text-align:left">Classic ice house game - throw washers through the hole</td> 
-							</tr>
-							<tr>
-								<td>4</td>
-								<td>Day 1 4:00pm</td>
-								<td><a href="DiscGolf.html">Disc Golf</a></td>
-								<td style="text-align:left">A round in the country - lowest score wins</td> 
-							</tr>
-							<tr>
-								<td>5</td>
-								<td>Day 1 6:00pm</td>
-								<td><a href="KanJam.html">Kan Jam</a></td>
-								<td style="text-align:left">Team precision frisbee</td> 
-							</tr>
-							<tr>
-								<td>6</td>
-								<td>Day 2 10:00am</td>
-								<td><a href="Shooting.html">Shooting Gallery</a></td>
-								<td style="text-align:left">Shoot clay targets out of tree with .22</td> 
-							</tr>
-							<tr>
-								<td>7</td>
-								<td>Day 2 12:00pm</td>
-								<td><a href="LongDrive.html">Golf Longest Ball</a></td>
-								<td style="text-align:left">5 shots to get furthest fairway drive</td> 
-							</tr>
-							<tr>
-								<td>8</td>
-								<td>Day 2 2:00pm</td>
-								<td><a href="Shuriken.html">Kickball</a></td>
-								<td style="text-align:left">Put me in coach, I'm ready to kick!</td> 
-							</tr>
-							<tr>
-								<td>9</td>
-								<td>Day 2 4:00pm</td>
-								<td><a href="CornHole.html">Corn Hole</a></td>
-								<td style="text-align:left">Win and you might get sponsored by Johnsonville brats</td> 
-							</tr>
-							<tr>
-								<td>10</td>
-								<td>Day 2 6:00pm</td>
-								<td><a href="BeerPong.html">Beer Pong</a></td>
-								<td style="text-align:left">Grand finale to determine champion</td> 
-							</tr>
-						</table>
-						<br>
-					</section>
+main{max-width:1240px;margin:0 auto;padding:22px 18px 70px}
+.panel[hidden]{display:none}
 
-													
-					<!-- Lab Section -->
-					<section id="rules" class="main special">
-						<header class="major">
-							<h2>Rules</h2>
-						</header>
-						<p>
-							Each event has 55 points up for grabs.  Winner of the event gets 10 points, 2nd 
-							place gets 9 points, 3rd place gets 8.  This scale continues down to 10th place 
-							getting a single point.  Pair events split the points.  See tables below for 
-							points awarded in each ranking.
-						</p>
-						<center>
-							<table>
-								<tr>
-									<th><h2>Single Events</h2></th>
-									<th><h2>Pair Events</h2></th>
-								</tr>
-								<tr>
-									<td>
-										<table>
-											<tr>
-												<th>Place</th>
-												<th>Points</th>
-											</tr>
-											<tr>
-												<th>1st</th>
-												<th>10</th>
-											</tr>
-											<tr>
-												<th>2nd</th>
-												<th>9</th>
-											</tr>
-											<tr>
-												<th>3rd</th>
-												<th>8</th>
-											</tr>
-											<tr>
-												<th>4th</th>
-												<th>7</th>
-											</tr>
-											<tr>
-												<th>5th</th>
-												<th>6</th>
-											</tr>
-											<tr>
-												<th>6th</th>
-												<th>5</th>
-											</tr>
-											<tr>
-												<th>7th</th>
-												<th>4</th>
-											</tr>
-											<tr>
-												<th>8th</th>
-												<th>3</th>
-											</tr>
-											<tr>
-												<th>9th</th>
-												<th>2</th>
-											</tr>
-											<tr>
-												<th>10th</th>
-												<th>1</th>
-											</tr>
-											<tr>
-												<th>11th or below</th>
-												<th>0</th>
-											</tr>
-										</table>
-								</td>
-								<td>
-									<table>
-										<tr>
-											<th>Place</th>
-											<th>Points</th>
-										</tr>
-										<tr>
-											<th>1st</th>
-											<th>9.5</th>
-										</tr>
-										<tr>
-											<th>2nd</th>
-											<th>7.5</th>
-										</tr>
-										<tr>
-											<th>3rd</th>
-											<th>5.5</th>
-										</tr>
-										<tr>
-											<th>4th</th>
-											<th>3.5</th>
-										</tr>
-										<tr>
-											<th>5th</th>
-											<th>1.5</th>
-										</tr>
-										<tr>
-											<th>6th or below</th>
-											<th>0</th>
-										</tr>
-									</table>
-								</td>
-							</table>
-						<p>
-							For pair events, the current point leader chooses their partner first, then 
-							2nd place picks, etc.  Players may not pick anyone in the top half of contestants.  
-							If an odd number of players exist, the last place player must play solo (aka natural selection!).
-						</p>
-						<hr>
-						</center>
-						<ul class="features">
-							<li>
-								<a href="Skeet.html">
-									<span><img src="images/D2-Skeet.png" alt="Skeet" width="150" height="150" /></span>
-									<p>Skeet Shooting</p>
-								 </a>
-							</li>
-							<li>
-								<a href="HomeRunDerby.html">
-									<span class="awsicon"><img src="images/D2-HomeRunDerby.png" alt="Home Run Derby" width="150" height="150" /></span>
-									<p>Home Run Derby</p>
-								</a>
-							</li>
-							<li>
-								<a href="Washers.html">
-									<span class="awsicon"><img src="images/D2-Washers.png" alt="Washers" width="150" height="150" /></span>
-									<p>Washers</p>
-								</a>
-							</li>
-							<li>
-								<a href="DiscGolf.html">
-									<span class="awsicon"><img src="images/D2-DiscGolf.png" alt="Disc Golf" width="150" height="150" /></span>
-									<p>Disc Golf</p>
-								</a>
-							</li>
-							<li>
-								<a href="Shooting.html">
-									<span class="awsicon"><img src="images/D2-Shooting.png" alt="Shooting Gallery" width="150" height="150" /></span>
-									<p>Shooting Gallery</p>
-								</a>
-							</li>
-							<li>
-								<a href="LongDrive.html">
-									<span class="awsicon"><img src="images/D2-TopGolf.png" alt="Longest Drive" width="150" height="150" /></span>
-									<p>Golf Longest Drive</p>
-								</a>
-							</li>
-							<li>
-								<a href="Shuriken.html">
-									<span class="awsicon"><img src="images/D2-Shuriken.png" alt="Shuriken" width="150" height="150" /></span>
-									<p>Shuriken</p>
-								</a>
-							</li>
-							<li>
-								<a href="CornHole.html">
-									<span class="awsicon"><img src="images/D2-Cornhole.png" alt="Corn Hole" width="150" height="150" /></span>
-									<p>Corn Hole</p>
-								</a>
-							</li>
-							<li>
-								<a href="KanJam.html">
-									<span class="awsicon"><img src="images/D2-KanJam.png" alt="Kan Jam" width="150" height="150" /></span>
-									<p>Kan Jam</p>
-								</a>
-							</li>
-							<li>
-								<a href="BeerPong.html">
-									<span class="awsicon"><img src="images/D2-BeerPong.png" alt="Beer Pong" width="150" height="150" /></span>
-									<p>Beer Pong</p>
-								</a>
-							</li>
-						</ul>							
-					</section>
+/* ---------- filter row ----------
+   Sticky so the tournament selector stays reachable while scrolling the
+   charts. Offset sits below the header bar + ticker. */
+.filters{
+  display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:20px;
+  position:sticky;top:0;z-index:30;
+  padding:11px 12px;margin-left:-12px;margin-right:-12px;
+  background:rgba(13,13,13,.93);backdrop-filter:blur(9px);
+  border-bottom:1px solid var(--grid);border-radius:0 0 10px 10px;
+}
+.filters .lab{font-size:13.5px;letter-spacing:.2em;color:var(--muted);font-weight:700}
+.chip{
+  background:#1f1f1e;border:1px solid var(--axis);color:var(--ink-2);
+  font:700 13px/1 var(--sans);padding:9px 15px;border-radius:999px;cursor:pointer;
+  transition:all .16s;
+}
+.chip:hover{border-color:var(--gold-dim);color:var(--ink)}
+.chip[aria-pressed="true"]{background:var(--gold);border-color:var(--gold);color:#1a1a19}
+.chip:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
 
-				</div>
+/* ---------- hero ---------- */
+.hero{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(158px,1fr));gap:12px;margin-bottom:22px;
+}
+.stat{
+  background:linear-gradient(160deg,var(--charcoal),var(--surface));
+  border:1px solid var(--ring);border-left:3px solid var(--gold);
+  border-radius:10px;padding:14px 16px;
+}
+.stat .k{font-size:13px;letter-spacing:.19em;color:var(--muted);font-weight:700}
+.stat .v{font-size:clamp(20px,3.2vw,30px);font-weight:800;margin-top:5px;line-height:1.1}
+.stat .v.gold{color:var(--gold)}
+.stat .sub{font-size:14px;color:var(--ink-2);margin-top:3px}
 
-				<center>
-				<h2>Event Links</h2>
-					<ul class="icons">
-						<li><a href="Skeet.html">Skeet</span></a></li>
-						<li><a href="HomeRunDerby.html">Home Run Derby</span></a></li>
-						<li><a href="Washers.html">Washers</span></a></li>
-						<li><a href="DiscGolf.html">DiscGolf</span></a></li>
-						<li><a href="Shooting.html">Shooting Gallery</span></a></li>
-						<li><a href="LongDrive.html">Longest Drive</span></a></li>
-						<li><a href="Shuriken.html">Shuriken</span></a></li>
-						<li><a href="CornHole.html">Corn Hole</span></a></li>
-						<li><a href="KanJam.html">Kan Jam</span></a></li>
-						<li><a href="BeerPong.html">BeerPong</span></a></li>
-					</ul>
-				</center>
+/* ---------- event tiles ----------
+   Two asset generations coexist: the illustrated hex BADGES (which already
+   carry the event name and tagline in the artwork) and the older flat D2-*
+   pictograms still used by six retired events that have no badge yet.
+   .tile.badge suppresses the redundant text label; .tile.legacy keeps it. */
+.tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(168px,1fr));gap:12px;margin:8px 0 26px}
+.tile{
+  position:relative;background:var(--surface);border:1px solid var(--ring);border-radius:12px;
+  padding:10px 10px 12px;text-align:center;overflow:hidden;cursor:pointer;
+  transition:transform .2s cubic-bezier(.2,.7,.2,1),border-color .2s,box-shadow .2s;
+}
+.tile:hover,.tile:focus-visible{
+  transform:translateY(-6px) scale(1.02);border-color:var(--gold);outline:none;
+  box-shadow:0 12px 30px rgba(0,0,0,.55);
+}
+.tile::after{
+  content:"";position:absolute;inset:0;background:linear-gradient(120deg,transparent 40%,rgba(232,179,58,.18) 50%,transparent 60%);
+  transform:translateX(-120%);transition:transform .55s;pointer-events:none;
+}
+.tile:hover::after{transform:translateX(120%)}
+.tile .num{
+  position:absolute;top:7px;left:9px;z-index:2;font-size:12.5px;font-weight:800;color:var(--gold);
+  letter-spacing:.1em;text-shadow:0 1px 3px rgba(0,0,0,.9);
+}
+.tile.badge img{width:100%;height:auto;display:block;border-radius:8px;
+  filter:drop-shadow(0 2px 6px rgba(0,0,0,.45));transition:filter .2s}
+.tile.badge:hover img{filter:drop-shadow(0 4px 12px rgba(232,179,58,.3))}
+.tile.legacy img{width:56px;height:56px;object-fit:contain;border-radius:6px;opacity:.96;margin-top:6px}
+.tile .nm{font-size:14.5px;font-weight:700;margin-top:8px;line-height:1.25}
+.tile .mt{font-size:13px;color:var(--muted);margin-top:3px}
+.tile .pair{display:inline-block;font-size:11.5px;letter-spacing:.1em;color:var(--gold);border:1px solid var(--gold-dim);border-radius:3px;padding:1px 4px;margin-top:5px}
 
-			<!-- Footer -->
-				<footer id="footer">
-					<section>
-						<h2>Darwin Decathlon</h2>
-						<li><a href="index.html#intro" class="active">Overview</a></li>
-						<li><a href="index.html#schedule">Schedule</a></li>
-						<li><a href="index.html#rules">Rules</a></li>
-						<li><a href="Weather.html">Weather</a></li>
-						<li><a href="Champs.html">Champions</a></li>
-						<hr>
-						<h2>Social Media Presence</h2>
-						<p>Keep up to date on event changes and upcoming activities</p>											
-						<ul class="icons">
-							<li><a href="https://www.instagram.com/decathmaster/" class="icon brands fa-instagram alt"><span class="label">Instagram</span></a></li>
-						</ul>
-						
-					</section>
-					<section>
-						<h2>Contact Info</h2>
-						<dl class="alt">
-							<p><b>Scott Bateman</b> | Tournament Master
-							<br>scott@darwindecathlon.com</p>
-						</dl>
-					</section>					
-					<p class="copyright">&copy; <span id="copyyear">2023</span>, Cinco Ranch Gaming Commission or its affiliates. All rights reserved.</p>
-				</footer>
+/* ---------- chart card ---------- */
+.card{background:var(--surface);border:1px solid var(--ring);border-radius:12px;padding:18px 16px 12px;margin-bottom:22px}
+.card h2{margin:0;font-size:17px;letter-spacing:.13em;text-transform:uppercase}
+.card h2 .accent{color:var(--gold)}
+.card .desc{color:var(--ink-2);font-size:14.5px;margin:7px 0 0;max-width:76ch;line-height:1.55}
+.card .note{
+  color:var(--muted);font-size:14px;margin-top:9px;padding-left:10px;
+  border-left:2px solid var(--axis);line-height:1.5;max-width:76ch;
+}
+.legend{display:flex;flex-wrap:wrap;gap:12px;margin:14px 0 4px}
+.legend .li{display:flex;align-items:center;gap:6px;font-size:14px;color:var(--ink-2);cursor:pointer;padding:2px 4px;border-radius:5px}
+.legend .li:hover{background:rgba(255,255,255,.05);color:var(--ink)}
+.legend .sw{width:13px;height:3px;border-radius:2px;flex:none}
+.legend .li.off{opacity:.42}
+svg{display:block;width:100%;height:auto;overflow:visible}
+.tt{
+  position:fixed;z-index:60;pointer-events:none;background:#101010;border:1px solid var(--gold-dim);
+  border-radius:8px;padding:9px 11px;font-size:14px;min-width:170px;opacity:0;transition:opacity .12s;
+  box-shadow:0 8px 26px rgba(0,0,0,.6);
+}
+.tt.on{opacity:1}
+.tt .h{color:var(--gold);font-weight:800;letter-spacing:.06em;font-size:13.5px;margin-bottom:6px}
+.tt .r{display:flex;justify-content:space-between;gap:14px;padding:2px 0;color:var(--ink-2)}
+.tt .r b{color:var(--ink);font-variant-numeric:tabular-nums}
+.tt .r .sw{width:9px;height:9px;border-radius:2px;display:inline-block;margin-right:6px}
 
-		</div>
+.toolrow{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-top:10px}
+.linkbtn{background:none;border:1px solid var(--axis);color:var(--ink-2);font:600 11.5px var(--sans);
+  padding:6px 11px;border-radius:6px;cursor:pointer;letter-spacing:.06em}
+.linkbtn:hover{border-color:var(--gold-dim);color:var(--ink)}
+table.dv{width:100%;border-collapse:collapse;margin-top:12px;font-size:14px}
+table.dv th,table.dv td{border-bottom:1px solid var(--grid);padding:6px 8px;text-align:right;font-variant-numeric:tabular-nums}
+table.dv th:first-child,table.dv td:first-child{text-align:left}
+table.dv th{color:var(--muted);font-size:13px;letter-spacing:.1em;text-transform:uppercase}
+table.dv caption{text-align:left;color:var(--muted);font-size:14px;padding-bottom:6px}
 
-		<!-- Scripts -->
-			<script src="assets/js/jquery.min.js"></script>
-			<script src="assets/js/jquery.scrollex.min.js"></script>
-			<script src="assets/js/jquery.scrolly.min.js"></script>
-			<script src="assets/js/browser.min.js"></script>
-			<script src="assets/js/breakpoints.min.js"></script>
-			<script src="assets/js/util.js"></script>
-			<script src="assets/js/main.js"></script>
-			<script src="assets/js/copyright.js"></script>
-	</body>
+/* ============================================================
+   PER-TAB THEMING
+   Each tab is a different "show segment" and carries its own look:
+     DD LIVE      - tech/broadcast control room. Electric blue, cyan glow,
+                    monitor-wall grid, on-air furniture.
+     CHRONICLES   - the archive. Stays charcoal/gold, because that is the
+                    surface the categorical chart palette was VALIDATED
+                    against (worst adjacent CVD dE 8.4 on #1a1a19). Do not
+                    restyle the chart surface without re-running the
+                    validator - the series colours are only safe on it.
+     FIELD NOTES  - the rulebook. Warm country/kraft, matching the hex
+                    badge artwork.
+   Variables are re-declared per panel so components inherit automatically.
+   ============================================================ */
+
+/* ---------- DD LIVE: broadcast control room ---------- */
+#p-live{
+  --surface:#0e1f33;
+  --charcoal:#12283f;
+  --ink-2:#b8d4ea;
+  --muted:#7695ad;
+  --grid:#1c3a52;
+  --ring:rgba(120,200,255,.16);
+  --cyan:#38d9f0;
+  position:relative;
+  background:
+    radial-gradient(ellipse at 12% 0%,rgba(56,217,240,.13),transparent 55%),
+    radial-gradient(ellipse at 88% 12%,rgba(232,179,58,.10),transparent 55%),
+    linear-gradient(170deg,#0b1b2d,#081422 70%);
+  border:1px solid rgba(120,200,255,.18);
+  border-radius:14px;padding:18px;overflow:hidden;
+}
+/* monitor-wall grid + scanlines */
+#p-live::before{
+  content:"";position:absolute;inset:0;pointer-events:none;opacity:.5;
+  background-image:
+    linear-gradient(rgba(56,217,240,.055) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(56,217,240,.055) 1px,transparent 1px);
+  background-size:44px 44px;
+}
+#p-live::after{
+  content:"";position:absolute;inset:0;pointer-events:none;opacity:.35;
+  background:repeating-linear-gradient(180deg,rgba(0,0,0,.22) 0 1px,transparent 1px 3px);
+}
+#p-live > *{position:relative;z-index:1}
+
+.live-hero{
+  position:relative;border-radius:12px;overflow:hidden;margin-bottom:18px;
+  border:1px solid rgba(120,200,255,.22);
+}
+.live-hero img{width:100%;display:block}
+.live-hero .scrim{
+  position:absolute;inset:0;
+  background:linear-gradient(180deg,transparent 45%,rgba(8,20,34,.92) 100%);
+}
+.live-hero .cap{
+  position:absolute;left:0;right:0;bottom:0;padding:16px 18px;display:flex;
+  align-items:flex-end;justify-content:space-between;gap:14px;flex-wrap:wrap;
+}
+.live-hero .tag{
+  font-size:clamp(10px,1.5vw,12px);letter-spacing:.34em;color:var(--cyan);font-weight:700;
+}
+.live-hero .sub{font-size:14.5px;color:var(--ink-2);margin-top:5px;max-width:62ch;line-height:1.55}
+.onair{
+  display:inline-flex;align-items:center;gap:8px;background:rgba(0,0,0,.55);
+  border:1px solid var(--cyan);border-radius:999px;padding:6px 13px;
+  font-size:13px;font-weight:800;letter-spacing:.19em;color:var(--cyan);white-space:nowrap;
+}
+.onair .bulb{width:8px;height:8px;border-radius:50%;background:#28d17c;
+  box-shadow:0 0 0 0 rgba(40,209,124,.75);animation:pulse 1.9s infinite}
+.onair.off{border-color:var(--muted);color:var(--muted)}
+.onair.off .bulb{background:var(--muted);animation:none;box-shadow:none}
+
+/* live-segment strip */
+.segs{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:11px;margin-bottom:18px}
+.seg{
+  background:linear-gradient(160deg,rgba(20,48,76,.9),rgba(10,26,44,.9));
+  border:1px solid rgba(120,200,255,.18);border-left:3px solid var(--cyan);
+  border-radius:10px;padding:13px 14px;
+}
+.seg .k{font-size:12px;letter-spacing:.2em;color:var(--cyan);font-weight:800}
+.seg .v{font-size:17px;font-weight:800;margin-top:6px;line-height:1.3}
+.seg .s{font-size:14px;color:var(--ink-2);margin-top:4px;line-height:1.5}
+
+/* ---------- FIELD NOTES: country / kraft ---------- */
+#p-notes{
+  --surface:#241d16;
+  --charcoal:#2e251b;
+  --ink:#f6efe3;
+  --ink-2:#d9c9ae;
+  --muted:#a4906f;
+  --grid:#3a2f22;
+  --ring:rgba(232,179,58,.20);
+  position:relative;
+  background:
+    radial-gradient(ellipse at 20% 0%,rgba(232,179,58,.10),transparent 60%),
+    linear-gradient(165deg,#2a2118,#1a140e 75%);
+  border:1px solid rgba(232,179,58,.22);
+  border-radius:14px;padding:18px;
+}
+/* faint woodgrain */
+#p-notes::before{
+  content:"";position:absolute;inset:0;pointer-events:none;opacity:.5;border-radius:14px;
+  background:repeating-linear-gradient(92deg,rgba(0,0,0,.13) 0 2px,transparent 2px 9px);
+}
+#p-notes > *{position:relative;z-index:1}
+#p-notes .card,#p-notes .note-card{
+  background:linear-gradient(160deg,#2b2219,#211a12);
+  border:1px solid rgba(232,179,58,.20);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.04);
+}
+#p-notes .note-card h3{color:var(--gold)}
+#p-notes .tag{background:var(--gold);color:#241d16}
+
+/* ---------- Field guide (Field Notes tab) ---------- */
+.guide-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:13px}
+.guide-card{
+  position:relative;background:linear-gradient(160deg,#2b2219,#1d160f);
+  border:1px solid rgba(232,179,58,.20);border-radius:12px;padding:12px;text-align:center;
+  cursor:pointer;transition:transform .18s cubic-bezier(.2,.7,.2,1),border-color .18s,box-shadow .18s;
+}
+.guide-card:hover,.guide-card:focus-visible{
+  transform:translateY(-5px);border-color:var(--gold);outline:none;
+  box-shadow:0 12px 28px rgba(0,0,0,.5);
+}
+.guide-card img{width:100%;max-width:132px;height:auto;display:block;margin:0 auto}
+.guide-card .gname{font-size:15.5px;font-weight:800;margin-top:8px;color:var(--ink)}
+.guide-card .gmeta{font-size:13.5px;color:var(--muted);margin-top:4px;line-height:1.5}
+.guide-card .gyears{font-size:12.5px;letter-spacing:.08em;color:var(--gold-dim);margin-top:5px}
+.guide-card .inactive{
+  position:absolute;top:8px;right:8px;font-size:11px;letter-spacing:.12em;font-weight:800;
+  color:#e8b33a;border:1px solid var(--gold-dim);border-radius:3px;padding:2px 5px;background:rgba(0,0,0,.45);
+}
+.guide-card .active-badge{
+  position:absolute;top:8px;right:8px;font-size:11px;letter-spacing:.12em;font-weight:800;
+  color:#0e1f33;background:#28d17c;border-radius:3px;padding:2px 5px;
+}
+
+/* --- single event guide --- */
+/* Guide navigation - prev / all events / next. Tooled brass-and-leather plates
+   to sit with the country Field Notes theme, rather than default buttons. */
+.gnav{display:grid;grid-template-columns:1fr auto 1fr;gap:10px;align-items:stretch;margin:0 0 18px}
+.gnav:last-child{margin:22px 0 0}
+.gnavbtn{
+  display:flex;flex-direction:column;justify-content:center;gap:3px;min-width:0;
+  text-align:left;cursor:pointer;font-family:var(--sans);color:var(--ink-2);
+  background:linear-gradient(150deg,#33291d,#241c13);
+  border:1px solid rgba(232,179,58,.28);border-radius:11px;padding:11px 15px;
+  transition:transform .16s cubic-bezier(.2,.7,.2,1),border-color .16s,box-shadow .16s,background .16s;
+}
+.gnavbtn.right{text-align:right;align-items:flex-end}
+.gnavbtn:hover,.gnavbtn:focus-visible{
+  background:linear-gradient(150deg,#3d3123,#2a2118);border-color:var(--gold);color:var(--ink);
+  outline:none;transform:translateY(-2px);box-shadow:0 8px 20px rgba(0,0,0,.45);
+}
+.gnavbtn .dir{font-size:10.5px;font-weight:800;letter-spacing:.22em;color:var(--gold);white-space:nowrap}
+.gnavbtn .nm{font-size:14.5px;font-weight:700;line-height:1.25;overflow:hidden;
+  text-overflow:ellipsis;white-space:nowrap;max-width:100%}
+.gback{
+  align-self:stretch;display:flex;align-items:center;justify-content:center;gap:7px;
+  background:linear-gradient(150deg,#2a2118,#1d160f);
+  border:1px solid rgba(232,179,58,.28);border-radius:11px;
+  color:var(--gold);font:800 12px var(--sans);letter-spacing:.16em;
+  padding:11px 20px;cursor:pointer;white-space:nowrap;
+  transition:transform .16s cubic-bezier(.2,.7,.2,1),border-color .16s,background .16s,color .16s;
+}
+.gback::before{content:"\2630";font-size:13px;opacity:.85}
+.gback:hover,.gback:focus-visible{
+  background:var(--gold);color:#241d16;border-color:var(--gold);outline:none;transform:translateY(-2px);
+}
+@media(max-width:620px){
+  .gnav{grid-template-columns:1fr 1fr;grid-template-areas:"prev next" "back back"}
+  .gnavbtn:not(.right){grid-area:prev}
+  .gnavbtn.right{grid-area:next}
+  .gback{grid-area:back}
+  .gnavbtn .nm{font-size:13px}
+}
+.gbanner{position:relative;border-radius:14px;overflow:hidden;border:1px solid rgba(232,179,58,.25);margin-bottom:18px}
+.gbanner img{width:100%;display:block}
+.gbanner .gscrim{position:absolute;inset:0;background:linear-gradient(180deg,transparent 40%,rgba(20,15,9,.94) 100%)}
+.gbanner .gcap{position:absolute;left:0;right:0;bottom:0;padding:18px 20px}
+.gbanner h2{margin:0;font-size:clamp(26px,5vw,44px);font-weight:800;letter-spacing:-.01em;line-height:1}
+.gbanner .gsub{color:var(--gold);font-size:14px;letter-spacing:.2em;font-weight:700;margin-bottom:6px}
+.gbanner .gtag{color:var(--ink-2);font-size:15px;margin-top:7px}
+.gbanner.nobanner{background:linear-gradient(150deg,#2e251b,#1a140e);min-height:190px}
+.gbanner.nobanner .gbadge{position:absolute;right:22px;top:50%;transform:translateY(-50%);width:150px;opacity:.95}
+
+.gstats{display:grid;grid-template-columns:repeat(auto-fit,minmax(158px,1fr));gap:11px;margin-bottom:18px}
+.gstat{background:linear-gradient(160deg,#2b2219,#211a12);border:1px solid rgba(232,179,58,.18);
+  border-left:3px solid var(--gold);border-radius:10px;padding:12px 14px}
+.gstat .k{font-size:12px;letter-spacing:.18em;color:var(--muted);font-weight:800}
+.gstat .v{font-size:20px;font-weight:800;margin-top:5px;line-height:1.2;color:var(--gold)}
+.gstat .s{font-size:13.5px;color:var(--ink-2);margin-top:4px;line-height:1.45}
+
+.gedge{background:linear-gradient(150deg,rgba(40,209,124,.10),rgba(20,15,9,.6));
+  border:1px solid rgba(40,209,124,.35);border-left:3px solid #28d17c;border-radius:12px;
+  padding:15px 17px;margin-bottom:18px}
+.gedge h3{margin:0 0 8px;font-size:14px;letter-spacing:.2em;color:#28d17c;text-transform:uppercase}
+.gedge ul{margin:0;padding-left:18px}
+.gedge li{font-size:15px;color:var(--ink-2);line-height:1.65;margin-bottom:5px}
+.gedge li strong{color:var(--ink)}
+
+/* ---------- Event briefing (prose carried over from the v1 rules pages) ----------
+   Sits directly under the banner so there is something to read before the
+   tables start. The lede is deliberately larger than body copy - this is the
+   part people actually stop for. */
+.gbrief{background:linear-gradient(160deg,#2b2219,#211a12);
+  border:1px solid rgba(232,179,58,.18);border-radius:12px;
+  padding:18px 20px;margin-bottom:18px}
+.glede{margin:0;font-size:18px;line-height:1.62;color:var(--ink);
+  font-style:italic;letter-spacing:.005em}
+.gruleset{margin-top:16px;border-top:1px solid rgba(232,179,58,.16);padding-top:14px}
+.gruleset h3{margin:0 0 9px;font-size:14.5px;letter-spacing:.16em;color:var(--gold);
+  text-transform:uppercase}
+.gruleset ul{margin:0;padding-left:18px}
+.gruleset li{font-size:15.5px;color:var(--ink-2);line-height:1.62;margin-bottom:7px}
+
+/* SNAFU (the penalty) and SAVIOR (the bonus) - the two halves of every event's
+   character. Red and green so they read at a glance without the labels. */
+.gcards{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+  gap:12px;margin-top:15px}
+.gcard{border-radius:10px;padding:13px 15px;border:1px solid}
+.gcard .ck{font-size:12px;letter-spacing:.22em;font-weight:800;margin-bottom:6px}
+.gcard p{margin:0;font-size:15px;line-height:1.58;color:var(--ink-2)}
+.gcard.snafu{background:rgba(214,74,58,.10);border-color:rgba(214,74,58,.42)}
+.gcard.snafu .ck{color:#e2705c}
+.gcard.savior{background:rgba(40,209,124,.09);border-color:rgba(40,209,124,.35)}
+.gcard.savior .ck{color:#28d17c}
+.gsrc{margin:14px 0 0;font-size:13px;color:var(--muted);letter-spacing:.04em}
+
+.gsection{background:linear-gradient(160deg,#2b2219,#211a12);border:1px solid rgba(232,179,58,.18);
+  border-radius:12px;padding:16px 18px;margin-bottom:16px}
+.gsection h3{margin:0 0 10px;font-size:14.5px;letter-spacing:.16em;color:var(--gold);text-transform:uppercase}
+.gsection p{font-size:15px;color:var(--ink-2);line-height:1.65;margin:0 0 9px}
+.gyear{border-left:2px solid var(--axis);padding:2px 0 2px 12px;margin-bottom:12px}
+.gyear .gy{font-weight:800;color:var(--ink);font-size:15px}
+.gyear .gv{font-size:13.5px;color:var(--muted);letter-spacing:.05em;margin-left:6px}
+.gsnafu{color:var(--gold-dim);font-size:14px;margin-top:5px}
+/* Roll of honour - compact table replacing the old year-by-year rules dump. */
+table.roll{width:100%;border-collapse:collapse;font-size:14.5px}
+table.roll th{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);
+  text-align:left;padding:0 10px 7px 0;border-bottom:1px solid rgba(232,179,58,.22);font-weight:800}
+table.roll td{padding:8px 10px 8px 0;border-bottom:1px solid rgba(255,255,255,.06);vertical-align:top}
+table.roll tr:last-child td{border-bottom:0}
+table.roll .num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+table.roll .ry{font-weight:800;color:var(--ink);white-space:nowrap;font-variant-numeric:tabular-nums}
+table.roll .rw{font-weight:700;color:var(--gold)}
+table.roll .rn{color:var(--ink-2);font-size:13px;line-height:1.5}
+table.roll .dim{color:var(--muted);opacity:.5}
+table.roll .tight{color:#28d17c;font-weight:800}
+details.rules{margin-top:14px;border-top:1px solid rgba(232,179,58,.18);padding-top:12px}
+details.rules summary{cursor:pointer;font-size:12.5px;letter-spacing:.1em;color:var(--gold-dim);
+  font-weight:800;text-transform:uppercase;list-style:none}
+details.rules summary::-webkit-details-marker{display:none}
+details.rules summary::before{content:"\25B8 ";display:inline-block;transition:transform .18s}
+details.rules[open] summary::before{transform:rotate(90deg)}
+details.rules .rv{margin-top:11px;font-size:14px;color:var(--ink-2);line-height:1.6}
+details.rules .rvy{display:inline-block;font-weight:800;color:var(--ink);margin-right:8px;
+  font-variant-numeric:tabular-nums}
+
+/* --- density: reclaim space, especially on phones --- */
+@media(max-width:700px){
+  main{padding:12px 11px 44px}
+  .gsection,.card{padding:13px 12px}
+  #p-live,#p-notes{padding:11px}
+  .gstats{grid-template-columns:repeat(2,1fr);gap:8px}
+  .gstat{padding:9px 11px}
+  .gstat .v{font-size:17px}
+  .hero{grid-template-columns:repeat(2,1fr);gap:8px}
+  .tiles{grid-template-columns:repeat(auto-fill,minmax(132px,1fr));gap:9px}
+  .guide-grid{grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:9px}
+  .gallery{grid-template-columns:1fr;gap:10px}
+  .shot img{height:200px}
+  table.roll{font-size:13.5px}
+  table.roll .rn{font-size:12px}
+  .gbanner .gcap{padding:12px 13px}
+}
+/* Narrow: drop Margin then Notes rather than let the table squeeze the page.
+   Breakpoint is 560 (not 460) - real phone viewports report wider than the
+   device width once the browser chrome and scrollbar are accounted for, and a
+   460 cutoff never fired. */
+@media(max-width:560px){
+  table.roll th:nth-child(5),table.roll td:nth-child(5){display:none}
+}
+@media(max-width:430px){
+  table.roll th:nth-child(4),table.roll td:nth-child(4){display:none}
+}
+/* Wide content scrolls inside its own container instead of widening the page. */
+.tblwrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table.dv{min-width:520px}
+/* Nothing should be able to push the document wider than the viewport. */
+html,body{max-width:100%;overflow-x:clip}
+.gphotos{border:1px dashed var(--axis);border-radius:10px;padding:22px;text-align:center;
+  color:var(--muted);font-size:14.5px;line-height:1.6}
+.gphotos code{color:var(--gold-dim);font-size:13.5px}
+.upbtn{background:var(--gold);color:#241d16;border:0;border-radius:9px;
+  font:800 13px var(--sans);letter-spacing:.1em;padding:11px 22px;cursor:pointer;
+  transition:transform .16s,filter .16s}
+.upbtn:hover{transform:translateY(-2px);filter:brightness(1.08)}
+.upnote{font-size:12.5px;color:var(--muted);margin-top:10px}
+/* photo gallery */
+.gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:13px}
+.shot{margin:0;background:#1d160f;border:1px solid rgba(232,179,58,.18);border-radius:11px;overflow:hidden}
+.shot img{width:100%;height:230px;object-fit:cover;display:block;transition:transform .35s}
+.shot:hover img{transform:scale(1.04)}
+.shot figcaption{padding:11px 13px;font-size:14px;color:var(--ink-2);line-height:1.55}
+.shot .shotmeta{display:block;margin-top:7px;font-size:12px;color:var(--muted);letter-spacing:.05em}
+.shot .take{display:block;margin-top:8px;padding-left:10px;border-left:2px solid var(--gold-dim);
+  font-size:13.5px;color:var(--gold-dim);line-height:1.6;font-style:italic}
+.shot .take strong{color:var(--gold);font-style:normal}
+
+/* ---------- Alex, the host ---------- */
+.host{display:grid;grid-template-columns:minmax(230px,300px) 1fr;gap:22px;align-items:center;
+  background:linear-gradient(150deg,var(--charcoal),var(--surface));
+  border:1px solid var(--ring);border-left:3px solid var(--gold);border-radius:12px;padding:20px}
+@media(max-width:640px){.host{grid-template-columns:1fr}}
+.host-video{position:relative}
+.host-slot{aspect-ratio:3/4;border:1px dashed var(--axis);border-radius:10px;background:#141413;
+  display:grid;place-items:center;align-content:center;gap:10px}
+.host-avatar{width:82px;height:82px;border-radius:50%;display:grid;place-items:center;
+  background:linear-gradient(150deg,var(--gold),var(--gold-dim));color:#1a1a19;
+  font:800 34px var(--sans)}
+.host-slotnote{color:var(--muted);font-size:13.5px;letter-spacing:.14em;margin:0}
+.ai-badge{position:absolute;top:9px;right:9px;background:rgba(13,13,13,.86);border:1px solid var(--gold-dim);
+  color:var(--gold);font-size:11.5px;font-weight:800;letter-spacing:.13em;padding:3px 7px;border-radius:4px}
+.host-kicker{font-size:13px;letter-spacing:.24em;color:var(--gold);font-weight:700}
+.host-name{margin:6px 0 2px;font-size:clamp(28px,5vw,42px);font-weight:800;letter-spacing:-.01em}
+.host-role{color:var(--ink-2);font-size:15px;letter-spacing:.06em}
+.host-quote{margin:14px 0 0;font-size:16.5px;line-height:1.65;color:var(--ink);max-width:62ch}
+
+/* ---------- generic content ---------- */
+.empty{background:var(--surface);border:1px dashed var(--axis);border-radius:12px;padding:34px 22px;text-align:center}
+.empty h3{margin:0 0 8px;color:var(--gold);letter-spacing:.1em;font-size:16px;text-transform:uppercase}
+.empty p{color:var(--ink-2);font-size:15px;margin:0 auto;max-width:56ch;line-height:1.6}
+.notes{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px}
+.note-card{background:var(--surface);border:1px solid var(--ring);border-radius:10px;padding:15px 16px}
+.note-card h3{margin:0 0 4px;font-size:15.5px;color:var(--gold);letter-spacing:.06em}
+.note-card .meta{font-size:13.5px;color:var(--muted);margin-bottom:9px;letter-spacing:.05em}
+.note-card p{margin:0 0 8px;font-size:14.5px;color:var(--ink-2);line-height:1.6}
+.note-card .tag{display:inline-block;font-size:12.5px;letter-spacing:.1em;color:#1a1a19;background:var(--gold);
+  border-radius:3px;padding:2px 6px;font-weight:800;margin-bottom:8px}
+footer{border-top:1px solid var(--grid);color:var(--muted);font-size:14px;text-align:center;padding:22px 18px 40px;line-height:1.7}
+footer a{color:var(--gold-dim)}
+
+@media (prefers-reduced-motion:reduce){
+  *,*::after{animation-duration:.001s!important;animation-iteration-count:1!important;transition-duration:.001s!important}
+  #intro{animation-delay:0s}
+}
+</style>
+</head>
+<body>
+
+<div id="intro" role="presentation">
+  <div class="intro-bg"></div><div class="intro-sweep"></div>
+  <div class="intro-card">
+    <div class="intro-rule"></div>
+    <div class="intro-kicker">CINCO RANCH GAMING COMMISSION PRESENTS</div>
+    <h1 class="intro-title">DARWIN<br>DECATHLON</h1>
+    <div class="intro-sub">SURVIVAL OF THE FITTEST</div>
+  </div>
+</div>
+
+<header class="bar">
+  <div class="bar-inner">
+    <div class="brand"><span class="dot"></span>DARWIN DECATHLON <small>LIVE</small></div>
+    <nav class="tabs" role="tablist" aria-label="Sections">
+      <button role="tab" id="tab-live" aria-controls="p-live" aria-selected="false">DD LIVE</button>
+      <button role="tab" id="tab-chron" aria-controls="p-chron" aria-selected="true">CHRONICLES</button>
+      <button role="tab" id="tab-notes" aria-controls="p-notes" aria-selected="false">FIELD NOTES</button>
+    </nav>
+  </div>
+</header>
+
+<div class="ticker" aria-hidden="true"><div class="ticker-track" id="tickerTrack"></div></div>
+
+<main>
+  <!-- ================= DD LIVE ================= -->
+  <section class="panel" id="p-live" role="tabpanel" aria-labelledby="tab-live" hidden>
+    <div class="live-hero">
+      <img src="/images/DarwinDecathlonLive.png" alt="Darwin Decathlon Live broadcast desk">
+      <div class="scrim"></div>
+      <div class="cap">
+        <div>
+          <div class="tag">ADAPT &middot; COMPETE &middot; WIN</div>
+          <div class="sub">Live coverage of the Darwin Decathlon &mdash; running standings, event-by-event
+            scoring, and win probability updating between events.</div>
+        </div>
+        <span class="onair off" id="onair"><span class="bulb"></span>OFF AIR</span>
+      </div>
+    </div>
+
+    <div class="segs" id="liveSegs"></div>
+
+    <div class="host">
+      <div class="host-video">
+        <!-- D-ID agent embed goes here. Until it's wired up this is a static card. -->
+        <div id="didAgent" class="host-slot">
+          <div class="host-avatar" aria-hidden="true">A</div>
+          <p class="host-slotnote">D-ID agent embed slot</p>
+        </div>
+        <span class="ai-badge">AI-GENERATED HOST</span>
+      </div>
+      <div class="host-copy">
+        <div class="host-kicker">YOUR GUIDE</div>
+        <h2 class="host-name">Alex</h2>
+        <div class="host-role">Historian &amp; Social Media Coordinator</div>
+        <p class="host-quote">&ldquo;Hey y&rsquo;all, Alex here &mdash; I keep the records <em>and</em> I&rsquo;m the one
+          who has to explain what happened at beer pong. Ask me about any player, any event,
+          any year. I&rsquo;ve got receipts.&rdquo;</p>
+        <p class="note" style="margin-top:12px">Alex is a fictional AI-generated presenter. She is not
+          based on any real broadcaster, and she does not have access to any competitor&rsquo;s
+          contact details.</p>
+      </div>
+    </div>
+
+    <div class="empty" style="margin-top:20px">
+      <h3>No Event In Progress</h3>
+      <p>The next Darwin Decathlon has not been scheduled yet. When a tournament is live,
+         this tab carries running standings, event-by-event scoring, and win probability
+         updating between events &mdash; with Alex calling it as it happens.</p>
+      <p style="margin-top:14px"><button class="chip" id="toChron">Browse the Chronicles instead</button></p>
+    </div>
+  </section>
+
+  <!-- ================= CHRONICLES ================= -->
+  <section class="panel" id="p-chron" role="tabpanel" aria-labelledby="tab-chron">
+    <div class="filters">
+      <span class="lab">TOURNAMENT</span>
+      <div id="yearChips"></div>
+    </div>
+    <div class="hero" id="hero"></div>
+    <div class="tiles" id="tiles"></div>
+
+    <div class="card">
+      <h2>Win <span class="accent">Probability</span></h2>
+      <p class="desc">Each line is one competitor's chance of taking the title, tracked through the
+        tournament. Everyone opens at 10%. Watch the field collapse as the events fall.</p>
+      <p class="note"><strong>How this is computed:</strong> these odds are <em>simulated, not recorded</em>.
+        Nobody tracked live odds in 2015. After each event we take the real standings and play out
+        every remaining event 8,000 times at random, then count how often each player ends up on top.
+        The shape is real; the percentages are a model.</p>
+      <div class="legend" id="wpLegend"></div>
+      <div id="wpChart"></div>
+      <div class="toolrow">
+        <span class="note" style="border:0;padding:0;margin:0">Hover the chart to scrub. Click a name in the legend to isolate.</span>
+        <button class="linkbtn" id="wpTableBtn" aria-expanded="false">Show data table</button>
+      </div>
+      <div id="wpTable" hidden></div>
+    </div>
+
+    <div class="card">
+      <h2>Career <span class="accent">Arc</span></h2>
+      <p class="desc">Finishing position across every Darwin Decathlon on record.
+        <strong>Higher on the chart is a better finish</strong> &mdash; the gold line at the top is
+        the championship, and the axis counts down through the field below it.</p>
+      <div class="legend" id="caLegend"></div>
+      <div id="caChart"></div>
+      <p class="note" id="caNote"></p>
+    </div>
+
+    <div class="card">
+      <h2>Notable <span class="accent">Moments</span></h2>
+      <p class="desc">Anomalies pulled straight out of the scorecards &mdash; the runs, the collapses,
+        and the numbers that don't add up.</p>
+      <div class="notes" id="moments" style="margin-top:14px"></div>
+    </div>
+  </section>
+
+  <!-- ================= FIELD NOTES ================= -->
+  <section class="panel" id="p-notes" role="tabpanel" aria-labelledby="tab-notes" hidden>
+    <!-- Index of every event ever contested; clicking one opens its field guide. -->
+    <div id="notesIndex">
+      <div class="card" style="margin-bottom:18px">
+        <h2>The <span class="accent">Field Guide</span></h2>
+        <p class="desc">Every event ever contested in the Darwin Decathlon &mdash; the ten that
+          survive, and the ones that were voted off. Each has its own page: rules as they evolved,
+          venue history, all-time records, and who actually owns it.</p>
+        <p class="note">Scoring, in general: the event winner takes 10 points, 2nd takes 9, on down
+          to 1 for 10th. A missed event scores 0. Pair events split the band &mdash; the winning team
+          takes (10+9)/2 = 9.5 each. The current leader picks their partner first, then 2nd place,
+          and so on; with an odd number of players the last one picked plays solo.</p>
+      </div>
+      <div class="guide-grid" id="guideGrid"></div>
+    </div>
+
+    <!-- Single-event field guide, deep-linkable via ?event=<slug> -->
+    <div id="notesDetail" hidden></div>
+  </section>
+</main>
+
+<footer>
+  Darwin Decathlon &middot; Cinco Ranch Gaming Commission<br>
+  Win-probability figures are simulated, not historical record. Scorecard values are transcribed as originally recorded.<br>
+  A private, non-commercial project documenting a gathering among friends. Not affiliated with any brand or venue named here.<br>
+  All participants have been given this URL and are aware their name and results appear. Removal requests are honored on request.<br>
+  Code licensed MIT; photographs, scorecards and participant names are All Rights Reserved.
+</footer>
+
+<div class="tt" id="tt" role="status" aria-live="polite"></div>
+
+<script src="/data/tournaments.js"></script>
+<script src="/data/event-notes.js"></script>
+<script src="/data/media.js"></script>
+<script>
+(function(){
+"use strict";
+const D = window.DD_DATA;
+const SERIES = ['var(--s1)','var(--s2)','var(--s3)','var(--s4)','var(--s5)'];
+const SERIES_HEX = ['#3987e5','#d95926','#199e70','#c98500','#d55181'];
+const CONTEXT = '#6b6a66';
+const $ = s => document.querySelector(s);
+const el = (t,a,h)=>{const n=document.createElementNS('http://www.w3.org/2000/svg',t);
+  for(const k in a) n.setAttribute(k,a[k]); if(h!=null) n.textContent=h; return n;};
+const ordinal = n => n+(['th','st','nd','rd'][(n%100-n%10!=10)*(n%10)]||'th');
+
+/* ---------- intro: skip on click/key, and don't replay in-session ---------- */
+const intro = $('#intro');
+if (sessionStorage.getItem('ddIntroSeen')) intro.classList.add('skip');
+else { sessionStorage.setItem('ddIntroSeen','1');
+  const kill=()=>intro.classList.add('skip');
+  intro.addEventListener('click',kill); addEventListener('keydown',kill,{once:true});
+  setTimeout(kill,3600); }
+
+/* ---------- tabs (with #hash deep-linking) ---------- */
+const TABS=[['tab-live','p-live','live'],['tab-chron','p-chron','chronicles'],['tab-notes','p-notes','notes']];
+function selectTab(tb,push){
+  TABS.forEach(([t2,p2])=>{
+    const on = t2===tb;
+    document.getElementById(t2).setAttribute('aria-selected',String(on));
+    document.getElementById(p2).hidden = !on;
+  });
+  const slug=(TABS.find(x=>x[0]===tb)||[])[2];
+  // Drives the per-tab chrome accent (see body[data-seg=...] rules).
+  document.body.dataset.seg = slug==='chronicles' ? 'chron' : slug;
+  if(push && slug) history.replaceState(null,'','#'+slug);
+  if(tb==='tab-chron') requestAnimationFrame(renderAll);
+}
+TABS.forEach(([tb])=>document.getElementById(tb).addEventListener('click',()=>selectTab(tb,true)));
+(function fromHash(){
+  const h=(location.hash||'').replace('#','').toLowerCase();
+  const hit=TABS.find(x=>x[2]===h);
+  // ?event=<slug> deep-links straight into a single event's field guide.
+  const ev=new URLSearchParams(location.search).get('event');
+  selectTab(ev ? 'tab-notes' : (hit?hit[0]:'tab-chron'), false);
+  if(ev) requestAnimationFrame(()=>openGuide(ev,false));
+})();
+addEventListener('hashchange',()=>{
+  const h=(location.hash||'').replace('#','').toLowerCase();
+  const hit=TABS.find(x=>x[2]===h); if(hit) selectTab(hit[0],false);
+});
+
+const toChron=$('#toChron');
+if(toChron) toChron.addEventListener('click',()=>document.getElementById('tab-chron').click());
+
+/* ---------- DD LIVE segment strip (derived) ----------
+   Stands in for the live scoreboard until a tournament is actually running.
+   Everything here comes from the data, so it stays true as years are added. */
+function renderLiveSegs(){
+  const box=$('#liveSegs'); if(!box) return; box.innerHTML='';
+  const latest=D.tournaments[D.tournaments.length-1];
+  const wins={}; D.tournaments.forEach(t=>{ wins[t.champion]=(wins[t.champion]||0)+1; });
+  const best=D.tournaments.slice().sort((a,b)=>b.championPoints-a.championPoints)[0];
+  const seg=(k,v,s)=>{
+    const d=document.createElement('div'); d.className='seg';
+    d.innerHTML=`<div class="k">${k}</div><div class="v">${v}</div>${s?`<div class="s">${s}</div>`:''}`;
+    box.appendChild(d);
+  };
+  seg('NEXT TOURNAMENT','Not yet scheduled','Date TBD &mdash; this panel goes live when it is');
+  seg('REIGNING CHAMPION',latest.champion,
+      `${latest.championPoints} points, ${latest.year} &middot; defends the Ron`);
+  seg('RECORD TO BEAT',best.championPoints+' pts',`${best.champion}, ${best.year}`);
+  seg('TITLES',Object.keys(wins).length+' champions',
+      `across ${D.tournaments.length} tournaments since ${D.tournaments[0].year}`);
+}
+
+/* ---------- state ---------- */
+// ?year=2023 deep-links a specific tournament; defaults to the most recent.
+let YEAR = D.tournaments[D.tournaments.length-1].year;
+(function fromQuery(){
+  const q=new URLSearchParams(location.search).get('year');
+  if(!q) return;
+  if(q.toUpperCase()==='ALL'){ YEAR='ALL'; return; }
+  const y=parseInt(q,10);
+  if(D.tournaments.some(t=>t.year===y)) YEAR=y;
+})();
+let ISOLATE = null;                 // player name or null
+
+/* ---------- year chips ---------- */
+(function chips(){
+  const box=$('#yearChips'); box.style.display='flex'; box.style.gap='8px'; box.style.flexWrap='wrap';
+  const mk=(label,val)=>{
+    const b=document.createElement('button');
+    b.className='chip'; b.textContent=label; b.setAttribute('aria-pressed',String(YEAR===val));
+    b.onclick=()=>{ YEAR=val; ISOLATE=null;
+      box.querySelectorAll('.chip').forEach(c=>c.setAttribute('aria-pressed','false'));
+      b.setAttribute('aria-pressed','true'); renderAll(); };
+    box.appendChild(b);
+  };
+  D.tournaments.forEach(t=>mk(String(t.year),t.year));
+  mk('ALL TIME','ALL');
+})();
+
+/* ---------- ticker (fully derived - no hardcoded facts) ----------
+   Rebuilt on every render so corrected data shows up here too. */
+function renderTicker(){
+  const bits=[];
+
+  // Every champion, newest first.
+  D.tournaments.slice().sort((a,b)=>b.year-a.year).forEach(t=>{
+    bits.push(`<b>CHAMPION ${t.year}</b> ${t.champion}${t.coChampion?` &amp; ${t.coChampion}`:''} &mdash; ${t.championPoints} pts`);
+  });
+
+  // Best winning score on record.
+  const best=D.tournaments.slice().sort((a,b)=>b.championPoints-a.championPoints)[0];
+  if(best) bits.push(`<b>RECORD</b> ${best.champion}'s ${best.championPoints} in ${best.year} is the highest winning score ever`);
+
+  // Perfect 10s and zeros in the currently selected tournament.
+  const t=D.tournaments.find(x=>x.year===YEAR);
+  if(t){
+    t.players.forEach(p=>p.points.forEach((v,i)=>{
+      if(v===10)  bits.push(`<b>${t.events[i].name.toUpperCase()}</b> ${p.name} scores a perfect 10 (${t.year})`);
+      if(v!=null && v>10) bits.push(`<b>${t.events[i].name.toUpperCase()}</b> ${p.name} posts a ${v} &mdash; above the nominal max (${t.year})`);
+      if(v===0)   bits.push(`<b>COLLAPSE</b> ${p.name} posts a 0 in ${t.events[i].name} (${t.year})`);
+    }));
+  }
+
+  // Repeat champions.
+  const wins={}; D.tournaments.forEach(t2=>{ wins[t2.champion]=(wins[t2.champion]||0)+1; });
+  Object.entries(wins).filter(([,n])=>n>1).forEach(([name,n])=>{
+    bits.push(`<b>DYNASTY</b> ${name} has taken the Ron ${n} times`);
+  });
+
+  const html = bits.map(b=>`<span>${b}</span>`).join('');
+  $('#tickerTrack').innerHTML = html+html;
+}
+
+/* ================= Monte Carlo win probability =================
+   At each checkpoint (after k events) take the real standings, then
+   play the remaining events out at random N times. Uniform random
+   allocation - no skill weighting - so it is easy to explain and does
+   not pretend to know more than it does. */
+function winProbability(t, N){
+  N = N||8000;
+  const P=t.players, E=t.events, np=P.length, ne=E.length;
+  // Point band follows field size: 10 for 1st, 9 for 2nd, down to 1 for 10th.
+  // 8 players -> 10..3 (52 per event). 12 players -> 10..1 then zeros (55).
+  const band=[]; for(let i=0;i<np;i++) band.push(Math.max(10-i,0));
+  const out=[]; // out[k][i] = P(player i wins | after k events)
+  const cum=new Float64Array(np);
+
+  for(let k=0;k<=ne;k++){
+    // null = did not play that event, which scores as 0 under the rules
+    if(k>0) for(let i=0;i<np;i++) cum[i]+=(P[i].points[k-1]||0);
+    const rem=ne-k, wins=new Float64Array(np), tot=new Float64Array(np);
+    for(let s=0;s<N;s++){
+      for(let i=0;i<np;i++) tot[i]=cum[i];
+      for(let e=0;e<rem;e++){
+        // Fisher-Yates over the point band, assigned to players
+        const perm=band.slice();
+        for(let i=perm.length-1;i>0;i--){const j=(Math.random()*(i+1))|0;const x=perm[i];perm[i]=perm[j];perm[j]=x;}
+        for(let i=0;i<np;i++) tot[i]+=perm[i];
+      }
+      let best=-1,nb=0;
+      for(let i=0;i<np;i++){ if(tot[i]>best){best=tot[i];nb=1;} else if(tot[i]===best) nb++; }
+      const share=1/nb;
+      for(let i=0;i<np;i++) if(tot[i]===best) wins[i]+=share;
+    }
+    out.push(Array.from(wins,w=>w/N));
+  }
+  return out;
+}
+
+/* ---------- shared: who gets a color ---------- */
+function rankedPlayers(t){
+  // The PRINTED total on each scorecard is authoritative. In several rows it
+  // sits 0.5 above the sum of the visible cells (see data file header), so
+  // recomputing would silently contradict the published record.
+  return t.players.map((p,i)=>({
+    name:p.name, idx:i,
+    total: (t.totals && t.totals[p.name] != null)
+      ? t.totals[p.name]
+      : p.points.reduce((a,b)=>a+(b||0),0)     // null = missed event = 0
+  })).sort((a,b)=>b.total-a.total);
+}
+
+/* ================= win probability chart ================= */
+function renderWP(){
+  const host=$('#wpChart'); host.innerHTML='';
+  const legendBox=$('#wpLegend'); legendBox.innerHTML='';
+  const t = D.tournaments.find(x=>x.year===YEAR);
+
+  if(!t){ renderWPAll(); return; }
+
+  const wp = winProbability(t);
+  const ranked = rankedPlayers(t);
+  const colorOf = {};
+  ranked.forEach((r,i)=>{ colorOf[r.name] = i<5 ? SERIES_HEX[i] : CONTEXT; });
+
+  // split events into day bands, nudge concurrent events apart on the clock axis
+  const days=[]; t.events.forEach((e,i)=>{
+    let d=days.find(x=>x.day===e.day); if(!d){d={day:e.day,items:[]};days.push(d);} d.items.push({e,i});
+  });
+  // Years with recorded clock times (2015, 2019) get a true time axis, with
+  // concurrent events nudged apart. Years where only the day is known
+  // (2018, 2021-23) fall back to even event-sequence spacing - inventing
+  // times we don't have would be worse than showing the sequence honestly.
+  const hasClock = t.events.every(e=>typeof e.t === 'number');
+  days.forEach(d=>{
+    if(!hasClock){ d.items.forEach((o,j)=>{ o.tt=j; }); return; }
+    const byT={}; d.items.forEach(o=>{(byT[o.e.t]=byT[o.e.t]||[]).push(o);});
+    Object.values(byT).forEach(g=>{
+      if(g.length<2){ g[0].tt=g[0].e.t; return; }
+      const span=26, start=-(span*(g.length-1))/2;
+      g.forEach((o,j)=>{ o.tt=o.e.t+start+j*span; });
+    });
+  });
+
+  const W=1000, padL=44, padR=118, bandH=196, gap=44, padT=26, padB=30;
+  const H = padT + days.length*bandH + (days.length-1)*gap + padB;
+  const svg=el('svg',{viewBox:`0 0 ${W} ${H}`,role:'img',
+    'aria-label':`Simulated win probability, ${t.year} Darwin Decathlon`});
+
+  const yOf=(bi,p)=>padT+bi*(bandH+gap)+(1-p)*bandH;
+
+  days.forEach((d,bi)=>{
+    const ts=d.items.map(o=>o.tt);
+    const padTime = hasClock ? 34 : 0.6;
+    const lo=Math.min(...ts)-padTime, hi=Math.max(...ts)+padTime;
+    d.x = tt => padL + ((tt-lo)/(hi-lo))*(W-padL-padR);
+    const top=padT+bi*(bandH+gap);
+
+    // horizontal gridlines 0/25/50/75/100
+    [0,.25,.5,.75,1].forEach(p=>{
+      svg.appendChild(el('line',{x1:padL,x2:W-padR,y1:yOf(bi,p),y2:yOf(bi,p),
+        stroke:p===0?'var(--axis)':'var(--grid)','stroke-width':1}));
+      svg.appendChild(el('text',{x:padL-9,y:yOf(bi,p)+4,'text-anchor':'end',
+        fill:'var(--muted)','font-size':12.5},Math.round(p*100)+'%'));
+    });
+    // day label
+    svg.appendChild(el('text',{x:padL,y:top-8,fill:'var(--gold)','font-size':13,
+      'font-weight':800,'letter-spacing':'.18em'},d.day.toUpperCase()));
+
+    // Event gridlines + labels. Concurrent events sit close together, so the
+    // labels are staggered onto two rows rather than allowed to collide
+    // (2019 ran Kan Jam and Corn Hole at the same 7pm slot).
+    let lastLabelX=-Infinity, row=0;
+    d.items.forEach(o=>{
+      const x=d.x(o.tt);
+      svg.appendChild(el('line',{x1:x,x2:x,y1:top,y2:top+bandH,stroke:'var(--grid)','stroke-width':1}));
+      row = (x-lastLabelX < 58) ? (row+1)%2 : 0;
+      lastLabelX = x;
+      svg.appendChild(el('text',{x:x,y:top+bandH+15+row*11,'text-anchor':'middle',
+        fill:'var(--muted)','font-size':11.5},o.e.short));
+    });
+  });
+
+  // lines: context first, highlighted last (paint order = z-order)
+  const order = ranked.slice().reverse();
+  const paths=[], endLabels=[];
+  order.forEach(r=>{
+    const dim = ISOLATE && ISOLATE!==r.name;
+    const col = colorOf[r.name];
+    days.forEach((d,bi)=>{
+      let dd='';
+      d.items.forEach((o,j)=>{
+        const x=d.x(o.tt), y=yOf(bi,wp[o.i+1][r.idx]);
+        dd += (j===0?'M':'L')+x.toFixed(1)+' '+y.toFixed(1);
+      });
+      // lead-in from the previous checkpoint so each band starts where reality left it
+      const first=d.items[0];
+      const y0=yOf(bi,wp[first.i][r.idx]);
+      dd = 'M'+(padL).toFixed(1)+' '+y0.toFixed(1)+'L'+dd.slice(1);
+      const p=el('path',{d:dd,fill:'none',stroke:col,
+        'stroke-width':(ISOLATE===r.name?3.2:2),'stroke-linejoin':'round','stroke-linecap':'round',
+        opacity:dim?0.16:(col===CONTEXT?0.75:1)});
+      svg.appendChild(p); paths.push(p);
+    });
+    // Direct end label for EVERY player - no one is bucketed into "other".
+    // The top finishers carry a validated categorical hue; the rest share a
+    // neutral context grey, but each still gets its own line, its own label
+    // and its own legend row, so identity never depends on colour alone.
+    {
+      const last=days[days.length-1], li=last.items[last.items.length-1];
+      endLabels.push({
+        x:last.x(li.tt)+9, y:yOf(days.length-1,wp[li.i+1][r.idx]),
+        col:dim?'var(--muted)':col, op:dim?.35:1,
+        text:r.name.split(' ')[0]+' '+r.name.split(' ')[1][0]+'.'
+      });
+    }
+  });
+
+  // Dodge overlapping end labels - several players finish near 0% and their
+  // labels landed on top of each other.
+  // Dodge overlapping end labels, then clamp the whole stack inside the last
+  // band. With a 12-player field the stack is taller than the gaps, so it must
+  // be corrected in BOTH directions or it escapes off the top of the chart.
+  endLabels.sort((a,b)=>a.y-b.y);
+  const MIN=13;
+  for(let i=1;i<endLabels.length;i++){
+    const d=endLabels[i].y-endLabels[i-1].y;
+    if(d<MIN) endLabels[i].y=endLabels[i-1].y+MIN;
+  }
+  if(endLabels.length){
+    const bandTop=padT+(days.length-1)*(bandH+gap);
+    const bandBot=bandTop+bandH;
+    const over=endLabels[endLabels.length-1].y-bandBot;
+    if(over>0) endLabels.forEach(l=>l.y-=over);
+    const under=bandTop-endLabels[0].y;
+    if(under>0) endLabels.forEach(l=>l.y+=under);
+  }
+  endLabels.forEach(l=>{
+    svg.appendChild(el('text',{x:l.x,y:l.y+3.5,fill:l.col,'font-size':13,
+      'font-weight':700,opacity:l.op},l.text));
+  });
+
+  // animated draw-in
+  paths.forEach(p=>{ try{ const L=p.getTotalLength ? p.getTotalLength() : 0;
+    if(L){ p.style.strokeDasharray=L; p.style.strokeDashoffset=L;
+      p.style.transition='stroke-dashoffset 1.1s cubic-bezier(.3,.8,.3,1)';
+      requestAnimationFrame(()=>{p.style.strokeDashoffset='0';}); } }catch(e){} });
+
+  // hover crosshair + tooltip
+  const cross=el('line',{x1:0,x2:0,y1:0,y2:0,stroke:'var(--gold)','stroke-width':1,
+    'stroke-dasharray':'3 3',opacity:0}); svg.appendChild(cross);
+  const tt=$('#tt');
+  svg.addEventListener('pointermove',ev=>{
+    const r=svg.getBoundingClientRect(), sx=(ev.clientX-r.left)/r.width*W, sy=(ev.clientY-r.top)/r.height*H;
+    let bi=-1;
+    days.forEach((d,i)=>{const top=padT+i*(bandH+gap); if(sy>=top-14&&sy<=top+bandH+14) bi=i;});
+    if(bi<0){ cross.setAttribute('opacity',0); tt.classList.remove('on'); return; }
+    const d=days[bi];
+    let best=null,bd=1e9;
+    d.items.forEach(o=>{const dx=Math.abs(d.x(o.tt)-sx); if(dx<bd){bd=dx;best=o;}});
+    if(!best){ return; }
+    const x=d.x(best.tt), top=padT+bi*(bandH+gap);
+    cross.setAttribute('x1',x);cross.setAttribute('x2',x);
+    cross.setAttribute('y1',top);cross.setAttribute('y2',top+bandH);cross.setAttribute('opacity',1);
+    const probs=ranked.map(rr=>({name:rr.name,p:wp[best.i+1][rr.idx],c:colorOf[rr.name]}))
+      .sort((a,b)=>b.p-a.p).slice(0,5);
+    tt.innerHTML=`<div class="h">${best.e.name.toUpperCase()} &middot; ${best.e.day} ${best.e.time}</div>`+
+      `<div class="r" style="color:var(--muted);font-size:13.5px"><span>${best.e.venue}</span></div>`+
+      probs.map(o=>`<div class="r"><span><i class="sw" style="background:${o.c}"></i>${o.name}</span><b>${(o.p*100).toFixed(1)}%</b></div>`).join('');
+    tt.classList.add('on');
+    const pad=14; let L=ev.clientX+pad, T=ev.clientY+pad;
+    const tr=tt.getBoundingClientRect();
+    if(L+tr.width>innerWidth-8) L=ev.clientX-tr.width-pad;
+    if(T+tr.height>innerHeight-8) T=ev.clientY-tr.height-pad;
+    tt.style.left=L+'px'; tt.style.top=T+'px';
+  });
+  svg.addEventListener('pointerleave',()=>{cross.setAttribute('opacity',0);tt.classList.remove('on');});
+
+  host.appendChild(svg);
+
+  // Legend lists EVERY competitor individually, in finishing order, each one
+  // clickable to isolate its line. No "other" bucket.
+  ranked.forEach((r,i)=>{
+    const li=document.createElement('div'); li.className='li'+(ISOLATE&&ISOLATE!==r.name?' off':'');
+    li.innerHTML=`<span class="sw" style="background:${colorOf[r.name]}"></span>`+
+                 `<span style="opacity:.55;font-variant-numeric:tabular-nums">${i+1}.</span>&nbsp;${r.name}`+
+                 `<span style="opacity:.55">&nbsp;${r.total}</span>`;
+    li.title = `${r.name} finished ${ordinal(i+1)} with ${r.total} points`;
+    li.onclick=()=>{ ISOLATE = ISOLATE===r.name?null:r.name; renderWP(); };
+    legendBox.appendChild(li);
+  });
+
+  buildWPTable(t,wp,ranked);
+}
+
+/* ALL-TIME view: one line per tournament, tracking the eventual champion's
+   cumulative points across the 10 events. Shows how each title was actually
+   won - wire-to-wire, or a late charge. Fully derived from the data. */
+function renderWPAll(){
+  const host=$('#wpChart'); host.innerHTML='';
+  const legendBox=$('#wpLegend'); legendBox.innerHTML='';
+  const list=D.tournaments.slice().sort((a,b)=>a.year-b.year);
+
+  const W=1000,padL=48,padR=112,padT=22,padB=42,H=380;
+  const maxEv=Math.max(...list.map(t=>t.events.length));
+  const maxPts=Math.max(...list.map(t=>t.championPoints))*1.05;
+  const x=i=>padL+(i/maxEv)*(W-padL-padR);
+  const y=p=>padT+(1-p/maxPts)*(H-padT-padB);
+
+  const svg=el('svg',{viewBox:`0 0 ${W} ${H}`,role:'img',
+    'aria-label':'Champion cumulative points by event, every tournament'});
+
+  for(let g=0; g<=4; g++){
+    const p=maxPts*g/4;
+    svg.appendChild(el('line',{x1:padL,x2:W-padR,y1:y(p),y2:y(p),
+      stroke:g===0?'var(--axis)':'var(--grid)','stroke-width':1}));
+    svg.appendChild(el('text',{x:padL-9,y:y(p)+4,'text-anchor':'end',
+      fill:'var(--muted)','font-size':12.5},Math.round(p)));
+  }
+  for(let i=1;i<=maxEv;i++){
+    svg.appendChild(el('line',{x1:x(i),x2:x(i),y1:padT,y2:H-padB,stroke:'var(--grid)','stroke-width':1}));
+    svg.appendChild(el('text',{x:x(i),y:H-padB+16,'text-anchor':'middle',
+      fill:'var(--muted)','font-size':12},'E'+i));
+  }
+  svg.appendChild(el('text',{x:(padL+W-padR)/2,y:H-6,'text-anchor':'middle',
+    fill:'var(--muted)','font-size':12.5,'letter-spacing':'.12em'},'EVENT NUMBER'));
+
+  const labels=[];
+  list.forEach((t,si)=>{
+    const col = si<5 ? SERIES_HEX[si] : CONTEXT;
+    const champ=t.players.find(p=>p.name===t.champion) || t.players[0];
+    const dim = ISOLATE && ISOLATE!==String(t.year);
+    let cum=0, d='M'+x(0)+' '+y(0);
+    champ.points.forEach((v,i)=>{ cum+=(v||0); d+='L'+x(i+1).toFixed(1)+' '+y(cum).toFixed(1); });
+    svg.appendChild(el('path',{d,fill:'none',stroke:col,'stroke-width':dim?1.4:2.6,
+      'stroke-linejoin':'round','stroke-linecap':'round',opacity:dim?0.2:1}));
+    labels.push({x:x(champ.points.length)+9,y:y(cum),col,op:dim?.35:1,
+      text:`${t.year} · ${t.champion.split(' ')[1]}`});
+
+    const li=document.createElement('div'); li.className='li'+(dim?' off':'');
+    li.innerHTML=`<span class="sw" style="background:${col}"></span>${t.year} &mdash; ${t.champion} (${t.championPoints})`;
+    li.onclick=()=>{ ISOLATE = ISOLATE===String(t.year)?null:String(t.year); renderWP(); };
+    legendBox.appendChild(li);
+  });
+
+  labels.sort((a,b)=>a.y-b.y);
+  for(let i=1;i<labels.length;i++){
+    if(labels[i].y-labels[i-1].y<13) labels[i].y=labels[i-1].y+13;
+  }
+  labels.forEach(l=>svg.appendChild(el('text',{x:l.x,y:l.y+3.5,fill:l.col,
+    'font-size':13,'font-weight':700,opacity:l.op},l.text)));
+
+  host.appendChild(svg);
+
+  let h=`<table class="dv"><caption>Champion cumulative points by event</caption><thead><tr><th>Year</th><th>Champion</th>`;
+  for(let i=1;i<=maxEv;i++) h+=`<th>E${i}</th>`; h+='<th>Total</th></tr></thead><tbody>';
+  list.forEach(t=>{
+    const champ=t.players.find(p=>p.name===t.champion)||t.players[0];
+    let cum=0; h+=`<tr><td>${t.year}</td><td>${t.champion}</td>`;
+    champ.points.forEach(v=>{ cum+=(v||0); h+=`<td>${cum}</td>`; });
+    for(let i=champ.points.length;i<maxEv;i++) h+='<td>&mdash;</td>';
+    h+=`<td><b>${t.championPoints}</b></td></tr>`;
+  });
+  h+='</tbody></table>';
+  $('#wpTable').innerHTML=h;
+}
+
+function buildWPTable(t,wp,ranked){
+  const host=$('#wpTable');
+  let h=`<table class="dv"><caption>Simulated win probability (%) after each event &mdash; ${t.year}</caption><thead><tr><th>Player</th><th>Start</th>`;
+  t.events.forEach(e=>h+=`<th>${e.short}</th>`); h+='<th>Total</th></tr></thead><tbody>';
+  ranked.forEach(r=>{
+    h+=`<tr><td>${r.name}</td>`;
+    for(let k=0;k<=t.events.length;k++) h+=`<td>${(wp[k][r.idx]*100).toFixed(1)}</td>`;
+    h+=`<td><b>${r.total}</b></td></tr>`;
+  });
+  h+='</tbody></table>';
+  host.innerHTML=h;
+}
+$('#wpTableBtn').addEventListener('click',function(){
+  const p=$('#wpTable'), open=p.hidden;
+  p.hidden=!open; this.setAttribute('aria-expanded',String(open));
+  this.textContent = open?'Hide data table':'Show data table';
+});
+
+/* ================= career arc ================= */
+function renderCA(){
+  const host=$('#caChart'); host.innerHTML='';
+  const legendBox=$('#caLegend'); legendBox.innerHTML='';
+
+  // finishes[player] = [{year, place, known}]
+  const finishes={};
+  D.tournaments.forEach(t=>{
+    rankedPlayers(t).forEach((r,i)=>{
+      (finishes[r.name]=finishes[r.name]||[]).push({year:t.year,place:i+1});
+    });
+  });
+  D.knownChampions.forEach(c=>{
+    if(D.tournaments.some(t=>t.year===c.year)) return;   // already have full data
+    (finishes[c.name]=finishes[c.name]||[]).push({year:c.year,place:1});
+  });
+
+  const years=[...new Set(
+    D.knownChampions.map(c=>c.year).concat(D.tournaments.map(t=>t.year))
+  )].sort((a,b)=>a-b);
+
+  // Multi-appearance competitors are the actual arcs. Ordered by best finish,
+  // then by number of appearances, so the colour slots go to the players whose
+  // careers carry the most signal.
+  const multi=Object.entries(finishes).filter(([,f])=>f.length>1)
+    .sort((a,b)=>{
+      const ba=Math.min(...a[1].map(x=>x.place)), bb=Math.min(...b[1].map(x=>x.place));
+      return ba-bb || b[1].length-a[1].length;
+    });
+  const solo=Object.entries(finishes).filter(([,f])=>f.length===1);
+
+  // Axis depth follows the largest field ever fielded (12 in 2019 and 2021),
+  // so nobody gets truncated off the bottom.
+  const maxPlace=Math.max(...D.tournaments.map(t=>t.players.length));
+  const W=1000,padL=54,padR=150,padT=22,padB=40,H=380;
+  const x=y=>padL+(years.indexOf(y)/(years.length-1||1))*(W-padL-padR);
+  const yy=p=>padT+((p-1)/(maxPlace-1))*(H-padT-padB);
+
+  const svg=el('svg',{viewBox:`0 0 ${W} ${H}`,role:'img','aria-label':'Career arc: finishing position by year'});
+  const ticks=[1]; for(let p=3;p<=maxPlace;p+=3) ticks.push(p);
+  if(ticks[ticks.length-1]!==maxPlace) ticks.push(maxPlace);
+  ticks.forEach(p=>{
+    svg.appendChild(el('line',{x1:padL,x2:W-padR,y1:yy(p),y2:yy(p),
+      stroke:p===1?'var(--gold-dim)':'var(--grid)','stroke-width':1,opacity:p===1?.55:1}));
+    svg.appendChild(el('text',{x:padL-10,y:yy(p)+4,'text-anchor':'end',fill:'var(--muted)','font-size':12.5},
+      p===1?'CHAMP':ordinal(p)));
+  });
+  years.forEach(y=>{
+    svg.appendChild(el('line',{x1:x(y),x2:x(y),y1:padT,y2:H-padB,stroke:'var(--grid)','stroke-width':1}));
+    svg.appendChild(el('text',{x:x(y),y:H-padB+18,'text-anchor':'middle',
+      fill:'var(--ink-2)','font-size':13,'font-weight':700},String(y)));
+    const t=D.tournaments.find(tt=>tt.year===y);
+    if(t) svg.appendChild(el('text',{x:x(y),y:H-padB+31,'text-anchor':'middle',
+      fill:'var(--muted)','font-size':10.5},t.players.length+' players'));
+  });
+
+  // Every multi-appearance competitor gets their own line and legend row.
+  // Top finishers take validated categorical hues; the rest share the neutral
+  // context grey but stay individually labelled - never merged into "other".
+  const endLab=[];
+  multi.forEach(([name,f],i)=>{
+    const col = i<5 ? SERIES_HEX[i] : CONTEXT;
+    const pts=f.slice().sort((a,b)=>a.year-b.year);
+    const dim = ISOLATE && ISOLATE!==name;
+    // Solid between consecutive tournaments; dashed where a competitor sat a
+    // year out, so a gap reads as "did not play" rather than a real trajectory.
+    for(let j=1;j<pts.length;j++){
+      const a=pts[j-1], b=pts[j];
+      const consecutive = years.indexOf(b.year)-years.indexOf(a.year)===1;
+      svg.appendChild(el('line',{x1:x(a.year),y1:yy(a.place),x2:x(b.year),y2:yy(b.place),
+        stroke:col,'stroke-width':dim?1.4:2.4,'stroke-linecap':'round',
+        'stroke-dasharray':consecutive?'':'5 5',opacity:dim?0.18:(col===CONTEXT?0.7:0.95)}));
+    }
+    pts.forEach(p=>{
+      svg.appendChild(el('circle',{cx:x(p.year),cy:yy(p.place),r:p.place===1?6:4.6,
+        fill:p.place===1?'var(--gold)':col,stroke:'var(--surface)','stroke-width':2,
+        opacity:dim?0.22:1}));
+    });
+    const lp=pts[pts.length-1];
+    endLab.push({x:x(lp.year)+11,y:yy(lp.place),col:dim?'var(--muted)':col,op:dim?.35:1,text:name});
+
+    const li=document.createElement('div'); li.className='li'+(dim?' off':'');
+    const titles=pts.filter(p=>p.place===1).length;
+    li.innerHTML=`<span class="sw" style="background:${col}"></span>${name}`+
+      (titles?`<span style="color:var(--gold)">&nbsp;${'★'.repeat(titles)}</span>`:'')+
+      `<span style="opacity:.5">&nbsp;${pts.length}&times;</span>`;
+    li.title=`${name}: ${pts.length} tournaments, best finish ${ordinal(Math.min(...pts.map(p=>p.place)))}`;
+    li.onclick=()=>{ISOLATE=ISOLATE===name?null:name;renderCA();};
+    legendBox.appendChild(li);
+  });
+
+  // Single-appearance competitors: still plotted and still labelled on hover.
+  solo.forEach(([name,f])=>{
+    const p=f[0];
+    const c=el('circle',{cx:x(p.year),cy:yy(p.place),r:3.8,fill:CONTEXT,opacity:.8});
+    c.appendChild(el('title',{},`${name} - ${ordinal(p.place)}, ${p.year} (only appearance)`));
+    svg.appendChild(c);
+  });
+
+  endLab.sort((a,b)=>a.y-b.y);
+  for(let i=1;i<endLab.length;i++){ if(endLab[i].y-endLab[i-1].y<13) endLab[i].y=endLab[i-1].y+13; }
+  endLab.forEach(l=>svg.appendChild(el('text',{x:l.x,y:l.y+3.5,fill:l.col,
+    'font-size':13,'font-weight':700,opacity:l.op},l.text)));
+
+  host.appendChild(svg);
+  $('#caNote').innerHTML =
+    `Every tournament on record now has a full scorecard, so these are real finishing positions &mdash;
+     gold dots are championships. A <strong>dashed segment</strong> means the competitor sat that
+     tournament out, so the gap reads as an absence rather than a trajectory. Grey dots are
+     competitors with a single appearance; hover for their result.`;
+}
+
+/* ================= hero, tiles, moments, field notes ================= */
+function renderHero(){
+  const box=$('#hero'); box.innerHTML='';
+  const t=D.tournaments.find(x=>x.year===YEAR);
+  const add=(k,v,sub,gold)=>{
+    const d=document.createElement('div'); d.className='stat';
+    d.innerHTML=`<div class="k">${k}</div><div class="v${gold?' gold':''}">${v}</div>`+(sub?`<div class="sub">${sub}</div>`:'');
+    box.appendChild(d);
+  };
+  if(!t){
+    // ALL-TIME hero stats - every value derived, nothing hardcoded.
+    const yrs=D.tournaments.map(x=>x.year).sort((a,b)=>a-b);
+    const best=D.tournaments.slice().sort((a,b)=>b.championPoints-a.championPoints)[0];
+    const wins={}; D.tournaments.forEach(x=>{ wins[x.champion]=(wins[x.champion]||0)+1; });
+    const repeat=Object.entries(wins).filter(([,n])=>n>1).sort((a,b)=>b[1]-a[1]);
+    const allPlayers=new Set(); D.tournaments.forEach(x=>x.players.forEach(p=>allPlayers.add(p.name)));
+    add('TOURNAMENTS',D.tournaments.length,`${yrs[0]} &ndash; ${yrs[yrs.length-1]}`);
+    add('CHAMPIONS',Object.keys(wins).length,
+        repeat.length?`${repeat[0][0]} leads with ${repeat[0][1]}`:'no repeat winners');
+    add('RECORD SCORE',best.championPoints,`${best.champion}, ${best.year}`,true);
+    add('COMPETITORS',allPlayers.size,'all-time');
+    add('EVENTS CONTESTED',
+        new Set(D.tournaments.flatMap(x=>x.events.map(e=>e.name))).size,'distinct events');
+    return;
+  }
+  const r=rankedPlayers(t);
+  add('CHAMPION',t.champion,`${t.championPoints} of ${t.maxPoints} points`,true);
+  add('RUNNER-UP',r[1].name,`${r[1].total} points`);
+  add('MARGIN',(r[0].total-r[1].total)+' pts',`over ${r[1].name.split(' ')[1]}`);
+  add('FIELD',t.players.length+' players',t.events.length+' events');
+  add('DATES',t.dates.replace(/, \d{4}/,''),t.location);
+}
+
+function renderTiles(){
+  const box=$('#tiles'); box.innerHTML='';
+  const t=D.tournaments.find(x=>x.year===YEAR);
+  if(!t){ box.innerHTML=''; return; }
+  t.events.forEach(e=>{
+    // Illustrated badges already carry the event name in the artwork, so the
+    // text label is suppressed for them and kept for the older flat icons.
+    const isBadge = /\/badges\//.test(e.icon||'');
+    const d=document.createElement('button');
+    d.className='tile '+(isBadge?'badge':'legacy'); d.type='button';
+    d.innerHTML=`<span class="num">${String(e.n).padStart(2,'0')}</span>
+      <img src="${e.icon}" alt="${e.name}" loading="lazy">
+      ${isBadge?'':`<div class="nm">${e.name}</div>`}
+      <div class="mt">${e.day}${e.time?' '+e.time:''}</div>
+      <div class="mt" style="opacity:.75">${e.venue||''}</div>
+      ${e.pair?'<span class="pair">PAIRS</span>':''}`;
+    d.onclick=()=>{
+      document.getElementById('tab-notes').click();
+      const target=document.getElementById('note-'+e.n);
+      if(target){ target.scrollIntoView({behavior:'smooth',block:'center'});
+        target.style.borderColor='var(--gold)'; setTimeout(()=>target.style.borderColor='',1600); }
+    };
+    box.appendChild(d);
+  });
+}
+
+function renderMoments(){
+  const box=$('#moments'); box.innerHTML='';
+  const t=D.tournaments.find(x=>x.year===YEAR);
+  const cards=[];
+
+  if(t){
+    const ranked=rankedPlayers(t);
+    // biggest single-event swing for the champion
+    const champ=t.players.find(p=>p.name===t.champion);
+    const tens=t.events.map((e,i)=>({e,v:champ.points[i]})).filter(o=>o.v===10);
+    cards.push({tag:'THE RUN',h:`${t.champion} takes the title`,
+      meta:`${t.year} &middot; ${t.championPoints} points`,
+      p:`Two perfect 10s &mdash; ${tens.map(o=>o.e.name).join(' and ')} &mdash; and a 9.5 in Golden Tee built a lead the field never closed.
+         Final margin over ${ranked[1].name}: ${(ranked[0].total-ranked[1].total)} points.`});
+
+    // zeros
+    const zeros=[];
+    t.players.forEach(p=>p.points.forEach((v,i)=>{ if(v===0) zeros.push({p:p.name,e:t.events[i]}); }));
+    if(zeros.length) cards.push({tag:'THE COLLAPSE',h:'Three zeros on the board',
+      meta:`${t.year} &middot; scored as a missed event`,
+      p: zeros.map(z=>`${z.p} posted a 0 in ${z.e.name}`).join('. ')+'. Under the rules a missed event scores nothing at all &mdash; no consolation point.'});
+
+    // the arithmetic anomaly - a real finding, not a flourish
+    cards.push({tag:'THE ANOMALY',h:'Four columns that don&rsquo;t add up',
+      meta:`${t.year} &middot; scorekeeping drift`,
+      p:`Every event should distribute exactly 55 points. Six of the ten do. Skeet totals 46, Darts and
+         Golden Tee 51, TopGolf 54 &mdash; Skeet never awards a 9, Golden Tee never awards a 6. The pair
+         events, by contrast, reconcile perfectly. Recorded as found, uncorrected.`});
+
+    // the 9pm pile-up
+    cards.push({tag:'THE GAUNTLET',h:'Three events, one bar, one night',
+      meta:`${t.year} &middot; Stars Sports Bar, 9:00pm`,
+      p:`Golden Tee, Shuffle Board and Darts all ran at 9pm on the Friday &mdash; a third of the entire
+         tournament settled in a single sitting, with a Goldschlager shot for a zero on the shuffleboard
+         and a cosmopolitan waiting for anyone under 20 on the dartboard.`});
+  }
+
+  cards.push({tag:'THE CLIMB',h:'Ben Murrill: 8th to champion',
+    meta:'2015 &rarr; 2018',
+    p:`Finished 8th of 10 in the inaugural tournament with 42 points. Three years later he posted 81 &mdash;
+       still the highest winning score on record.`});
+  cards.push({tag:'THE DUEL',h:'The only tie in tournament history',
+    meta:'2022 &middot; sudden death',
+    p:`Cameron Brown and Terry Register finished level on 65. The title went to a heads-up washers duel;
+       the wind, by all accounts, decided it.`});
+
+  cards.forEach(c=>{
+    const d=document.createElement('article'); d.className='note-card';
+    d.innerHTML=`<span class="tag">${c.tag}</span><h3>${c.h}</h3><div class="meta">${c.meta}</div><p>${c.p}</p>`;
+    box.appendChild(d);
+  });
+}
+
+/* ================= FIELD NOTES: the field guide =================
+   A page per event ever contested. Events renamed between years are merged
+   into one canonical guide (Chinese Stars IS Shuriken), so per-event history
+   doesn't get split across two half-empty pages. Everything below is derived,
+   so a correction in the data file flows straight through. */
+
+// Renames -> canonical name. Keep in sync with data/UNVERIFIED-claims.md.
+const ALIAS = {
+  "Chinese Stars":"Shuriken",
+  ".22 Shoot":"Shooting Gallery",
+  "Long Golf Ball":"Long Drive"
+};
+const canonical = n => ALIAS[n] || n;
+const slugify = n => n.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+
+/* Build the registry once: every canonical event, with each appearance and the
+   full result set for that appearance. */
+function buildGuide(){
+  const reg={};
+  D.tournaments.forEach(t=>{
+    t.events.forEach((e,ei)=>{
+      const name=canonical(e.name);
+      const g = reg[name] || (reg[name]={name,slug:slugify(name),appearances:[],aliases:new Set()});
+      if(e.name!==name) g.aliases.add(e.name);
+      // Results for this event: [{player, points}] ignoring non-participants.
+      const rows=t.players.map(p=>({player:p.name,pts:p.points[ei]}))
+                          .filter(r=>r.pts!=null)
+                          .sort((a,b)=>b.pts-a.pts);
+      g.appearances.push({year:t.year,event:e,rows,tournament:t});
+    });
+  });
+  // Per-event analytics.
+  Object.values(reg).forEach(g=>{
+    g.appearances.sort((a,b)=>a.year-b.year);
+    g.years=g.appearances.map(a=>a.year);
+    g.lastYear=g.years[g.years.length-1];
+    g.retired = g.lastYear !== D.tournaments[D.tournaments.length-1].year;
+
+    const winCount={}, allPts=[], margins=[];
+    g.appearances.forEach(a=>{
+      if(!a.rows.length) return;
+      const top=a.rows[0].pts;
+      const winners=a.rows.filter(r=>r.pts===top);
+      winners.forEach(w=>{ winCount[w.player]=(winCount[w.player]||0)+1; });
+      a.winners=winners.map(w=>w.player);
+      a.topScore=top;
+      const beaten=a.rows.find(r=>r.pts<top);
+      a.margin = beaten!=null ? +(top-beaten.pts).toFixed(2) : null;
+      if(a.margin!=null) margins.push(a.margin);
+      a.rows.forEach(r=>allPts.push(r.pts));
+    });
+    g.winCount=winCount;
+    g.mostWins=Object.entries(winCount).sort((a,b)=>b[1]-a[1]);
+    g.avgPts = allPts.length ? +(allPts.reduce((x,y)=>x+y,0)/allPts.length).toFixed(2) : null;
+    g.avgMargin = margins.length ? +(margins.reduce((x,y)=>x+y,0)/margins.length).toFixed(2) : null;
+    g.isPair = g.appearances.some(a=>a.event.pair);
+    g.venues=[...new Set(g.appearances.map(a=>a.event.venue).filter(Boolean))];
+    // Best all-time average for a player with 2+ appearances at this event.
+    const byPlayer={};
+    g.appearances.forEach(a=>a.rows.forEach(r=>{ (byPlayer[r.player]=byPlayer[r.player]||[]).push(r.pts); }));
+    g.playerAvg=Object.entries(byPlayer)
+      .filter(([,v])=>v.length>1)
+      .map(([p,v])=>({player:p,n:v.length,avg:+(v.reduce((x,y)=>x+y,0)/v.length).toFixed(2)}))
+      .sort((a,b)=>b.avg-a.avg);
+    g.icon = g.appearances[g.appearances.length-1].event.icon;
+  });
+  return reg;
+}
+const GUIDE = buildGuide();
+
+function renderFieldNotes(){
+  const grid=$('#guideGrid'); if(!grid) return; grid.innerHTML='';
+  const list=Object.values(GUIDE).sort((a,b)=>
+    (a.retired?1:0)-(b.retired?1:0) || b.years.length-a.years.length || a.name.localeCompare(b.name));
+  list.forEach(g=>{
+    const d=document.createElement('button'); d.type='button'; d.className='guide-card';
+    d.innerHTML=`${g.retired?'<span class="inactive">INACTIVE</span>':'<span class="active-badge">ACTIVE</span>'}
+      <img src="${g.icon}" alt="${g.name}" loading="lazy">
+      <div class="gname">${g.name}</div>
+      <div class="gmeta">${g.years.length} tournament${g.years.length===1?'':'s'} &middot; ${g.isPair?'Pairs':'Individual'}</div>
+      <div class="gyears">${g.years.join(' · ')}</div>`;
+    d.onclick=()=>openGuide(g.slug,true);
+    grid.appendChild(d);
+  });
+}
+
+/* Photos for an event, newest first. Sourced from data/media.js, matched
+   on the CANONICAL event name so a photo tagged "Chinese Stars" still lands on
+   the Shuriken guide. */
+function photosFor(g){
+  const all = window.DD_MEDIA || [];
+  return all.filter(m => canonical(m.event) === g.name)
+            .sort((a,b) => (b.year||0) - (a.year||0));
+}
+
+/* One short derived insight per appearance for the roll of honour. Only says
+   something when the data actually supports it - no filler. */
+function yearInsight(g,a){
+  const out=[];
+  const scores=g.appearances.map(x=>x.topScore).filter(v=>v!=null);
+  const margins=g.appearances.map(x=>x.margin).filter(v=>v!=null);
+  // A superlative only means something if the values actually vary. Where every
+  // year produced the same winning score - which is the norm for events scored
+  // on placement points - labelling all of them "Best winning score" is noise,
+  // and tagging one row "Closest finish" AND "Biggest blowout" is nonsense.
+  const varyScore = new Set(scores).size>1;
+  const varyMargin = new Set(margins).size>1;
+  if(varyScore && a.topScore!=null && a.topScore===Math.max(...scores)) out.push('Best winning score');
+  if(varyMargin && a.margin!=null && a.margin===Math.min(...margins)) out.push('Closest finish');
+  if(varyMargin && a.margin!=null && a.margin===Math.max(...margins)) out.push('Biggest blowout');
+  if(a.winners && a.winners.length>1) out.push('Pair event');
+  if(a.event.newThisYear) out.push('Debut year');
+  if(a.year===g.years[0] && !a.event.newThisYear) out.push('First on record');
+  if(a.year===g.lastYear && g.retired) out.push('Last time played');
+  if(a.event.name!==g.name) out.push(`Played as &ldquo;${a.event.name}&rdquo;`);
+  // Did the event winner go on to take the whole tournament?
+  if(a.winners && a.tournament && a.winners.includes(a.tournament.champion)) out.push('Won by that year&rsquo;s champion');
+  return out.length ? out.join(' &middot; ') : '<span class="dim">&mdash;</span>';
+}
+
+/* Photo commentary, written from the scorecard rather than hand-typed.
+   Looks up how each tagged competitor ACTUALLY did in that event that year and
+   picks a line to match. The ribbing is aimed at the performance, never the
+   person - these are somebody's friends, and the data does the teasing. */
+function photoTake(g, m){
+  if(!m.people || !m.people.length || !m.year) return '';
+  const app = g.appearances.find(a => a.year === m.year);
+  if(!app) return '';
+  const field = app.rows.length;
+
+  const bits = m.people.map(person => {
+    const idx = app.rows.findIndex(r => r.player === person);
+    if(idx < 0) return `${person} doesn't appear on the ${m.year} card for this one.`;
+    const row = app.rows[idx], place = idx + 1, pts = row.pts;
+    const won = app.winners && app.winners.includes(person);
+
+    // How does this compare to their own record at this event?
+    const mine = g.playerAvg.find(p => p.player === person);
+    const vsSelf = mine ? +(pts - mine.avg).toFixed(1) : null;
+
+    if(won) return `<strong>${person}</strong> took the whole thing that year &mdash; ${pts} points. The photo is basically a victory portrait.`;
+    if(place <= 3) return `<strong>${person}</strong> finished ${ordinal(place)} of ${field} here in ${m.year} on ${pts} points. Genuinely one of the good ones at this event.`;
+    if(place > field * 0.75){
+      const extra = vsSelf != null && vsSelf < -1
+        ? ` Even by his own standards that was rough &mdash; ${Math.abs(vsSelf)} points below his career average at this event.`
+        : '';
+      return `<strong>${person}</strong> looks tremendously confident here for a man who went on to finish ${ordinal(place)} of ${field} with ${pts} points.${extra}`;
+    }
+    return `<strong>${person}</strong> landed ${ordinal(place)} of ${field} on ${pts} points &mdash; respectable, unspectacular, no beer owed.`;
+  });
+
+  return bits.join(' ');
+}
+
+/* Guide order matches the index grid so prev/next cycles in the same sequence
+   the user just saw: active events first, then by number of appearances. */
+function guideOrder(){
+  return Object.values(GUIDE).sort((a,b)=>
+    (a.retired?1:0)-(b.retired?1:0) || b.years.length-a.years.length || a.name.localeCompare(b.name));
+}
+
+function openGuide(slug,push){
+  const g=Object.values(GUIDE).find(x=>x.slug===slug);
+  if(!g){ closeGuide(false); return; }
+  const order=guideOrder(), gi=order.findIndex(x=>x.slug===g.slug);
+  const prev=order[(gi-1+order.length)%order.length];   // wraps, so it never dead-ends
+  const next=order[(gi+1)%order.length];
+  const box=$('#notesDetail');
+  $('#notesIndex').hidden=true; box.hidden=false;
+  if(push) history.replaceState(null,'',`?event=${slug}#notes`);
+
+  // Explicit map rather than deriving from the name - "Skeet Shooting" would
+  // derive to banner-SkeetShooting.webp, but the asset is banner-Skeet.webp.
+  // Missing entries fall back to the no-banner treatment via onerror.
+  const BANNERS={ "Skeet Shooting":"banner-Skeet.webp", "Corn Hole":"banner-CornHole.webp" };
+  const banner=`/images/banners/${BANNERS[g.name]||'__none__'}`;
+  const latest=g.appearances[g.appearances.length-1];
+  const st=(k,v,s)=>`<div class="gstat"><div class="k">${k}</div><div class="v">${v}</div>${s?`<div class="s">${s}</div>`:''}</div>`;
+
+  const topWin=g.mostWins[0];
+  const tiedTop=g.mostWins.filter(w=>topWin&&w[1]===topWin[1]);
+  const bestAvg=g.playerAvg[0];
+
+  // Tactical read, derived rather than asserted.
+  const edge=[];
+  if(tiedTop.length===1) edge.push(`<strong>${tiedTop[0][0]}</strong> owns this event &mdash; ${tiedTop[0][1]} win${tiedTop[0][1]===1?'':'s'} out of ${g.years.length}. Beat them and you have probably won the event.`);
+  else if(tiedTop.length>1) edge.push(`Wide open: ${tiedTop.map(w=>w[0]).join(', ')} are tied on ${topWin[1]} win${topWin[1]===1?'':'s'} apiece. No one owns it.`);
+  if(bestAvg) edge.push(`Most consistent scorer: <strong>${bestAvg.player}</strong>, averaging ${bestAvg.avg} points across ${bestAvg.n} appearances.`);
+  const pts=n=>`${n} point${n===1?'':'s'}`;
+  if(g.avgMargin!=null) edge.push(g.avgMargin<=1
+    ? `Margins are razor thin &mdash; the winner clears second place by just <strong>${pts(g.avgMargin)}</strong> on average. Every throw counts.`
+    : `The winner typically clears second place by <strong>${pts(g.avgMargin)}</strong>, so a strong showing here moves the overall standings.`);
+  if(g.isPair) edge.push(`Pair event: your partner is half your score. The standings leader picks first, so climbing the table before this event buys you a better teammate.`);
+  const snafus=[...new Set(g.appearances.map(a=>a.event.snafu).filter(Boolean))];
+  if(snafus.length) edge.push(`Avoid the SNAFU: ${snafus[0]}`);
+  if(g.retired) edge.push(`<strong>Inactive.</strong> Last contested in ${g.lastYear}. A champion can always bring it back.`);
+
+  /* The briefing: prose carried over from the v1 per-event rules pages and the
+     2015 rules deck. Keyed on the canonical event name. Events with no entry
+     just skip the block - nothing is invented to fill the space. */
+  const note=(window.DD_EVENT_NOTES||{})[g.name];
+  const briefing = note ? `
+    <div class="gbrief">
+      <p class="glede">${note.blurb}</p>
+      ${(note.rules&&note.rules.length)?`
+        <div class="gruleset">
+          <h3>How it's played</h3>
+          <ul>${note.rules.map(r=>`<li>${r}</li>`).join('')}</ul>
+        </div>`:''}
+      ${(note.snafu||note.savior)?`
+        <div class="gcards">
+          ${note.snafu?`<div class="gcard snafu"><div class="ck">SNAFU</div><p>${note.snafu}</p></div>`:''}
+          ${note.savior?`<div class="gcard savior"><div class="ck">SAVIOR</div><p>${note.savior}</p></div>`:''}
+        </div>`:''}
+      ${note.source==='unrecorded'
+        ? `<p class="gsrc">No rules sheet survives for this event &mdash; the description above is written from the scorecard alone.</p>`
+        : `<p class="gsrc">Rules as published ${note.source==='2015 deck'?'in the 2015 rules deck':'on the tournament rules page'}.</p>`}
+    </div>` : '';
+
+  const navBar=`
+    <div class="gnav">
+      <button class="gnavbtn" data-go="${prev.slug}" title="${prev.name}">
+        <span class="dir">&larr; PREV</span><span class="nm">${prev.name}</span></button>
+      <button class="gback" id="gback">All events</button>
+      <button class="gnavbtn right" data-go="${next.slug}" title="${next.name}">
+        <span class="dir">NEXT &rarr;</span><span class="nm">${next.name}</span></button>
+    </div>`;
+
+  box.innerHTML=`
+    ${navBar}
+    <div class="gbanner" id="gban">
+      <img src="${banner}" alt="" onerror="this.closest('.gbanner').classList.add('nobanner');this.remove();">
+      <img class="gbadge" src="${g.icon}" alt="" style="display:none">
+      <div class="gscrim"></div>
+      <div class="gcap">
+        <div class="gsub">${g.isPair?'PAIR EVENT':'INDIVIDUAL EVENT'}${g.retired?' &middot; INACTIVE':''}</div>
+        <h2>${g.name}</h2>
+        <div class="gtag">${latest.event.basis||''}${g.aliases.size?` &middot; also played as ${[...g.aliases].join(', ')}`:''}</div>
+      </div>
+    </div>
+
+    ${briefing}
+
+    <div class="gstats">
+      ${st('TOURNAMENTS',g.years.length,g.years.join(', '))}
+      ${st('MOST WINS',tiedTop.length?`${topWin[1]}&times;`:'&mdash;',tiedTop.length?tiedTop.map(w=>w[0]).join(', '):'no data')}
+      ${st('AVG SCORE',g.avgPts??'&mdash;','across every competitor, all years')}
+      ${st('AVG MARGIN',g.avgMargin!=null?g.avgMargin+' pts':'&mdash;','winner over runner-up')}
+      ${st('FORMAT',g.isPair?'Pairs':'Individual',g.venues.length?g.venues[g.venues.length-1]:'')}
+    </div>
+
+    ${edge.length?`<div class="gedge"><h3>How to gain an edge</h3><ul>${edge.map(e=>`<li>${e}</li>`).join('')}</ul></div>`:''}
+
+    <div class="gsection">
+      <h3>Roll of honour</h3>
+      <table class="roll">
+        <thead><tr><th>Year</th><th>Winner</th><th class="num">Pts</th><th class="num">Margin</th><th>Notes</th></tr></thead>
+        <tbody>
+        ${g.appearances.slice().reverse().map(a=>`
+          <tr>
+            <td class="ry">${a.year}</td>
+            <td class="rw">${a.winners?a.winners.join(' &amp; '):'&mdash;'}</td>
+            <td class="num">${a.topScore??'&mdash;'}</td>
+            <td class="num ${a.margin!=null&&a.margin<=0.5?'tight':''}">${a.margin!=null?a.margin:'&mdash;'}</td>
+            <td class="rn">${yearInsight(g,a)}</td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+      ${(()=>{ // Rules only differ in a few years - show the distinct ones once, collapsed.
+        const seen=new Map();
+        g.appearances.forEach(a=>{
+          const k=[a.event.basis,a.event.rules,a.event.snafu].join('|');
+          if(!seen.has(k)) seen.set(k,{a,years:[a.year]}); else seen.get(k).years.push(a.year);
+        });
+        const variants=[...seen.values()].filter(v=>v.a.event.basis||v.a.event.rules||v.a.event.snafu);
+        if(!variants.length) return '';
+        return `<details class="rules"><summary>Rules &amp; SNAFUs (${variants.length} variant${variants.length===1?'':'s'} on record)</summary>
+          ${variants.map(v=>`<div class="rv"><span class="rvy">${v.years.join(', ')}</span>
+            ${v.a.event.basis?`<strong>${v.a.event.basis}.</strong> `:''}${v.a.event.rules||''}
+            ${v.a.event.snafu?`<div class="gsnafu"><strong>SNAFU:</strong> ${v.a.event.snafu}</div>`:''}</div>`).join('')}
+        </details>`;
+      })()}
+    </div>
+
+    <div class="gsection">
+      <h3>All-time leaderboard</h3>
+      <div class="tblwrap"><table class="dv"><caption>Average points per appearance (2+ appearances)</caption>
+      <thead><tr><th>Competitor</th><th>Apps</th><th>Wins</th><th>Avg pts</th></tr></thead><tbody>
+      ${g.playerAvg.slice(0,12).map(p=>`<tr><td>${p.player}</td><td>${p.n}</td><td>${g.winCount[p.player]||0}</td><td><b>${p.avg}</b></td></tr>`).join('')}
+      </tbody></table></div>
+    </div>
+
+    <div class="gsection">
+      <h3>From the field</h3>
+      ${photosFor(g).length ? `<div class="gallery">${photosFor(g).map(m=>`
+          <figure class="shot">
+            <img src="${m.file}" alt="${m.caption||g.name}" loading="lazy"
+                 onerror="this.closest('.shot').remove()">
+            <figcaption>
+              ${m.caption||''}
+              ${photoTake(g,m) ? `<span class="take">${photoTake(g,m)}</span>` : ''}
+              <span class="shotmeta">${[m.year,m.venue,(m.people&&m.people.length)?m.people.join(' &amp; '):''].filter(Boolean).join(' &middot; ')}</span>
+            </figcaption>
+          </figure>`).join('')}</div>`
+        : `<div class="gphotos">
+             <div style="font-size:15px;color:var(--ink-2);margin-bottom:12px">No photos filed for this event yet.</div>
+             <button class="upbtn" data-upload="${g.slug}">Add a photo</button>
+             <div class="upnote">Uploads need the media service switched on &mdash; see below.</div>
+           </div>`}
+      <p style="font-size:13px;color:var(--muted);margin:12px 0 0;line-height:1.6">
+        No conditions report filed for the next tournament yet. Competitor commentary
+        and live conditions land here once a tournament is scheduled.</p>
+    </div>
+    ${navBar}`;
+
+  box.querySelectorAll('#gback').forEach(b=>b.onclick=()=>closeGuide(true));
+  box.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>openGuide(b.dataset.go,true));
+  box.querySelectorAll('[data-upload]').forEach(b=>b.onclick=()=>{
+    // Deliberately does NOT pretend to upload. A static site has nowhere to put
+    // the file: this needs the Azure Static Web Apps managed Functions API plus
+    // Blob Storage (the `media` table in data/schema.sql is already shaped for
+    // it, including upload_source='qr_feed' for the on-site QR feed). Auto
+    // captioning needs a vision call on top of that. Until both exist, tell the
+    // truth rather than ship a button that silently drops photos.
+    alert(
+      "Photo upload isn't switched on yet.\n\n"+
+      "It needs two pieces that aren't built:\n"+
+      "  1. An upload endpoint + Blob Storage to hold the file\n"+
+      "  2. A vision call to draft the caption automatically\n\n"+
+      "Until then: drop the image into images/ and add an entry to "+
+      "data/media.js. Tag the people in it and the site writes the "+
+      "commentary from their actual scores."
+    );
+  });
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function closeGuide(push){
+  $('#notesDetail').hidden=true; $('#notesIndex').hidden=false;
+  if(push) history.replaceState(null,'','#notes');
+}
+
+/* ---------- render ----------
+   Every panel is rebuilt from window.DD_DATA on each call, so editing
+   data/tournaments.js (fixing a bad score, adding a new tournament)
+   propagates to every chart, tile, stat, ticker item and note with no code
+   changes. Nothing in the render path hardcodes a name, year or score. */
+function renderAll(){
+  renderTicker(); renderHero(); renderTiles();
+  renderWP(); renderCA(); renderMoments(); renderFieldNotes(); renderLiveSegs();
+}
+renderAll();
+})();
+</script>
+</body>
 </html>

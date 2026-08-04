@@ -1,6 +1,7 @@
 # Event badges
 
-Illustrated hex badges used as the event tiles on the `/live/` site.
+Illustrated hex badges used as the event tiles in the Chronicles view on the
+site homepage. Referenced from `data/tournaments.js` as `/images/badges/...`.
 
 ## Drop-in convention
 

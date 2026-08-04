@@ -1,0 +1,66 @@
+MIT License
+
+Copyright (c) 2015-2026 Scott Bateman
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+
+===============================================================================
+WHAT THIS COVERS
+===============================================================================
+
+Everything in this repository that is the copyright holder's to license: the
+code, the styling, the SQL schema, the tournament data files, the written
+recaps and event descriptions, and the artwork and logos made for the site.
+
+This is a hobby project about a backyard tournament. If you want to fork it,
+copy the scoring model, lift the layout, or run your own decathlon off the back
+of it, go ahead - that is what the MIT license is for. No attribution beyond
+keeping the notice above is expected.
+
+The "AS IS" paragraph is the point of this license as much as the permission
+grant is. Nothing here is warranted, nothing here is advice, and the copyright
+holder accepts no liability for anything that happens as a result of using it.
+
+
+===============================================================================
+TWO THINGS A COPYRIGHT LICENSE CANNOT GRANT
+===============================================================================
+
+These are not restrictions being added on top of the MIT grant. They are limits
+on what any copyright license is capable of transferring in the first place.
+
+1. PHOTOGRAPHS OF PEOPLE. The tournament photos show identifiable private
+   individuals. Copyright in the images is licensed above, but a person's right
+   to control commercial use of their own name, face and likeness belongs to
+   them and cannot be signed away by someone else. Reuse the photos for your
+   own project and that is between you and the people in them. Any participant
+   may ask for a photo to be removed from this site at any time, and it will be,
+   without discussion.
+
+2. THIRD-PARTY MATERIAL. The page template in assets/ is "Stellar" by HTML5 UP,
+   used under CC BY 3.0. Its license travels with it - see
+   assets/LICENSE-HTML5UP.txt - and the attribution in the site footer needs to
+   stay if you reuse the template. Brand and venue names that appear in these
+   pages (TopGolf, Kan Jam, Goldschlager and others) belong to their respective
+   owners and are used only to describe what was actually played and where. No
+   affiliation or endorsement is claimed or implied.
+
+See DISCLAIMER.md for the participant notice, the treatment of personal data,
+and the safety and content notes.
