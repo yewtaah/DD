@@ -8,7 +8,7 @@
 
 **10 Events. 2 Grueling Days. 1 Trophy Named Ron.**
 
-[![Live Site](https://img.shields.io/badge/LIVE-darwindecathlon.com-e8b33a?style=for-the-badge)](http://darwindecathlon.com/)
+[![Live Site](https://img.shields.io/badge/LIVE-darwindecathlon.com-e8b33a?style=for-the-badge)](https://darwindecathlon.com/)
 ![Tournaments](https://img.shields.io/badge/tournaments-6-3987e5?style=for-the-badge)
 ![Champions](https://img.shields.io/badge/champions-5-199e70?style=for-the-badge)
 
@@ -178,15 +178,20 @@ Some things the data turned up:
 ## Repository Layout
 
 ```
-├── index.html            # the classic site (darwindecathlon.com)
-├── live/                 # v2.0 broadcast site - DD Live / Chronicles / Field Notes
-│   ├── data/             # publishable tournament data (names + scores only)
-│   └── agent/            # Alex, the AI historian & social media coordinator
-├── data/                 # schema + CSV templates
-│   ├── schema.sql        # tournaments, players, events, venues, results, media
-│   └── *.template.csv    # dummy-data examples of every table
-└── images/               # logos, event icons, tournament photos
+├── index.html                # the site (darwindecathlon.com) - DD Live / Chronicles / Field Notes
+├── staticwebapp.config.json  # Azure Static Web Apps routing, headers, redirects
+├── agent/                    # Alex, the AI historian & social media coordinator
+├── data/                     # publishable tournament data + schema + CSV templates
+│   ├── tournaments.js        # every result, 2015-2023 (names + scores only)
+│   ├── media.js              # photo captions and people tags
+│   ├── schema.sql            # tournaments, players, events, venues, results, media
+│   └── *.template.csv        # dummy-data examples of every table
+├── images/                   # logos, event badges, banners, tournament photos
+└── *.html                    # legacy v1 event pages, kept for their inbound links
 ```
+
+The v2 site was built at `/live/` and now serves from the root; `/live/*` 301s
+to `/` so any link that escaped into the wild still lands.
 
 ### A note on data and privacy
 
@@ -201,6 +206,19 @@ with the sum of its own cells, **the printed total wins** and the discrepancy is
 documented rather than quietly corrected. See
 [`data/UNVERIFIED-claims.md`](data/UNVERIFIED-claims.md) for the full verification
 log &mdash; including the claims that didn't survive it.
+
+### License
+
+**[MIT](LICENSE)** &mdash; the whole thing. Fork it, copy the scoring model, lift the
+layout, run your own decathlon. That is what it's for.
+
+The other half of the license matters just as much: everything here is provided
+**as is**, with no warranty and no liability accepted for anything that comes of using
+it. Two things sit outside what any copyright license can grant &mdash; **photographs
+of people** (their likeness rights are theirs, not ours to pass along) and the
+**HTML5 UP "Stellar" template** in `assets/`, which stays under its own
+[CC BY 3.0](assets/LICENSE-HTML5UP.txt). Full detail in
+[`DISCLAIMER.md`](DISCLAIMER.md).
 
 ---
 

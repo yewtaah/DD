@@ -12,24 +12,38 @@ a commercial venture. Nothing here is sold, and no advertising revenue is collec
 
 ## Licensing model
 
-The repository is **deliberately split into two licenses.** This matters: a single
-permissive license across the whole repo would let anyone reuse participants'
-photographs and names commercially with nothing but an attribution line.
+**One license: [MIT](LICENSE).** It covers everything in this repository that is the
+copyright holder's to license — code, styling, schema, tournament data, written recaps,
+event descriptions, and the artwork made for the site.
 
-| What | License | Why |
-|---|---|---|
-| **Code** — HTML, CSS, JavaScript, SQL schema, build/config | [MIT](LICENSE-CODE.txt) | Short, universally understood, and carries both an "AS IS" warranty disclaimer and an explicit limitation of liability. Adequate for a hobby project. *(If you ever want an express patent grant and a formal contributor/NOTICE process — e.g. if outside contributors start filing PRs — switch to Apache-2.0.)* |
-| **Content** — photographs, video, scorecards, participant names, written recaps, tournament records | **All Rights Reserved** | Not openly licensed. These depict identifiable private individuals and are not ours to license away on their behalf. |
-| **Page template** — the HTML5 UP "Stellar" theme in `assets/` | [CC BY 3.0](LICENSE.txt) | Inherited from the template author. Attribution retained in the site footer as their license requires. |
+This is a hobby project about a backyard tournament. Fork it, copy the scoring model,
+lift the layout, run your own decathlon off the back of it. That is what the license is
+for.
 
-> **Note on `LICENSE.txt`:** that file is the *template's* CC BY 3.0 license, inherited
-> from HTML5 UP. It has never been the license for this project's own code or content,
-> and should not be read as one. It stays because the template's license requires it.
+MIT was chosen for two properties, and the second matters as much as the first:
 
-### If you want to reuse something here
+1. **Maximally permissive.** No attribution beyond keeping the notice, no copyleft, no
+   restrictions on commercial use. Nothing here is worth policing.
+2. **"AS IS", with an explicit limitation of liability.** Nothing in this repository is
+   warranted, nothing is advice, and the copyright holder accepts no liability for
+   anything arising from its use. That clause is the reason this file exists at all.
 
-- **Code** — go ahead, under Apache-2.0.
-- **Anything with a person in it** — ask first. The answer is not ours alone to give.
+*(The repository previously carried a split MIT-code / All-Rights-Reserved-content model
+plus the template's CC BY file at the root, which read as though CC BY were the project's
+license. That was consolidated to a single MIT `LICENSE`.)*
+
+### Two things no copyright license can grant
+
+These are not extra restrictions bolted onto MIT. They are limits on what any copyright
+license is capable of transferring.
+
+| | Why it sits outside the grant |
+|---|---|
+| **Photographs of people** | Copyright in the images is licensed. A person's right to control commercial use of their own name, face and likeness is **theirs**, and cannot be signed away by someone else. Reuse a photo and that is between you and the people in it. |
+| **Third-party material** | The HTML5 UP "Stellar" template in `assets/` is CC BY 3.0 — its license travels with it, in [`assets/LICENSE-HTML5UP.txt`](assets/LICENSE-HTML5UP.txt), and the footer attribution stays. Brand and venue names are used nominatively to describe what was played and where; no affiliation is claimed. |
+
+**Any participant may ask for a photo to be pulled at any time.** It comes down
+immediately, no questions asked. That standing offer is not affected by the license.
 
 ---
 
@@ -90,7 +104,7 @@ second source wherever one exists. Two conventions:
    its own visible cells — which happens in 2018, 2019, 2022 and 2023 — the printed
    total is treated as authoritative, because it is what the tournament actually
    published. Discrepancies are documented, not silently corrected.
-2. **Simulated figures are labeled as such.** The win-probability charts in `/live/` are
+2. **Simulated figures are labeled as such.** The win-probability charts in Chronicles are
    **retrospective Monte Carlo simulations, not recorded odds.** Nobody tracked live win
    probability at any tournament. The shape is derived from real scores; the percentages
    are model output and are labeled that way wherever they appear.
@@ -112,7 +126,7 @@ broadcaster or any real person. She is labeled as AI-generated wherever she appe
 ## No warranty
 
 This project is provided **as is**, without warranty of any kind, and the authors accept
-no liability arising from its use. See [`LICENSE-CODE.txt`](LICENSE-CODE.txt) for the
-full disclaimer of warranties and limitation of liability.
+no liability arising from its use. See [`LICENSE`](LICENSE) for the full disclaimer of
+warranties and limitation of liability.
 
 *Contact: scott@darwindecathlon.com*
