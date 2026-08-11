@@ -155,6 +155,8 @@ header.bar{
 .brand .dot{width:9px;height:9px;border-radius:50%;background:#e34948;box-shadow:0 0 0 0 rgba(227,73,72,.7);animation:pulse 1.8s infinite}
 @keyframes pulse{70%{box-shadow:0 0 0 9px rgba(227,73,72,0)}100%{box-shadow:0 0 0 0 rgba(227,73,72,0)}}
 .brand small{color:var(--gold);letter-spacing:.24em;font-size:13.5px;font-weight:700}
+.brand small a{color:inherit;text-decoration:none}
+.brand small a:hover{text-decoration:underline}
 nav.tabs{display:flex;gap:2px;margin-left:auto;flex-wrap:wrap}
 nav.tabs button{
   background:transparent;border:0;border-bottom:3px solid transparent;color:var(--ink-2);
@@ -667,7 +669,7 @@ footer a{color:var(--gold-dim)}
 
 <header class="bar">
   <div class="bar-inner">
-    <div class="brand"><span class="dot"></span>DARWIN DECATHLON <small>LIVE</small></div>
+    <div class="brand"><span class="dot"></span>DARWIN DECATHLON <small><a href="#live">LIVE</a></small></div>
     <nav class="tabs" role="tablist" aria-label="Sections">
       <button role="tab" id="tab-live" aria-controls="p-live" aria-selected="false">DD LIVE</button>
       <button role="tab" id="tab-chron" aria-controls="p-chron" aria-selected="true">CHRONICLES</button>
@@ -868,8 +870,35 @@ function selectTab(tb,push){
   document.body.dataset.seg = slug==='chronicles' ? 'chron' : slug;
   if(push && slug) history.replaceState(null,'','#'+slug);
   if(tb==='tab-chron') requestAnimationFrame(renderAll);
+  updateDidVisibility();
 }
 TABS.forEach(([tb])=>document.getElementById(tb).addEventListener('click',()=>selectTab(tb,true)));
+
+/* ---------- keep Natasha's D-ID widget confined to DD LIVE ----------
+   The embed script (agent.d-id.com) mounts its own floating panel as a
+   top-level element appended directly to <body> - it doesn't render
+   inside #didAgent, so there's no fixed selector to target ahead of
+   time. Watch for whatever body-level element it adds, then toggle
+   that element's display to match the active tab. */
+let didWidgetEl=null;
+function updateDidVisibility(){
+  if(!didWidgetEl) return;
+  didWidgetEl.style.display = document.body.dataset.seg==='live' ? '' : 'none';
+}
+(function watchForDidWidget(){
+  const before=new Set(document.body.children);
+  const mo=new MutationObserver(muts=>{
+    for(const m of muts) for(const n of m.addedNodes){
+      if(n.nodeType===1 && n.parentElement===document.body && !before.has(n)){
+        didWidgetEl=n;
+        updateDidVisibility();
+        mo.disconnect();
+        return;
+      }
+    }
+  });
+  mo.observe(document.body,{childList:true});
+})();
 (function fromHash(){
   const h=(location.hash||'').replace('#','').toLowerCase();
   const hit=TABS.find(x=>x[2]===h);
