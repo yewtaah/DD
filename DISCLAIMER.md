@@ -117,7 +117,7 @@ same bad numbers don't get re-imported later.
 
 ## AI-generated content
 
-The site includes **Alex**, an AI-generated presenter and tournament historian. Alex is a
+The site includes **Natasha**, an AI-generated presenter and virtual spectator. Natasha is a
 **fictional persona** — not based on, named after, or voiced to imitate any real
 broadcaster or any real person. She is labeled as AI-generated wherever she appears.
 

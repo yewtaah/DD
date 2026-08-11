@@ -180,7 +180,7 @@ Some things the data turned up:
 ```
 ├── index.html                # the site (darwindecathlon.com) - DD Live / Chronicles / Field Notes
 ├── staticwebapp.config.json  # Azure Static Web Apps routing, headers, redirects
-├── agent/                    # Alex, the AI historian & social media coordinator
+├── agent/                    # Natasha, the AI virtual spectator & PR director
 ├── data/                     # publishable tournament data + schema + CSV templates
 │   ├── tournaments.js        # every result, 2015-2023 (names + scores only)
 │   ├── media.js              # photo captions and people tags

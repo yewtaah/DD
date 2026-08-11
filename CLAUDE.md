@@ -16,9 +16,10 @@ Web Apps.
 - `Weather.html` — the one surviving v1 page, built on the HTML5 UP "Stellar" template
   (`assets/css/main.css`). It's a standalone 3-day-forecast widget with no equivalent
   in `index.html`, so it wasn't retired with the rest of the v1 event pages (see below).
-- `agent/alex-persona.md` — full system prompt / config spec for "Alex," a D-ID
-  AI persona embedded in the DD Live tab. This is a config document, not code that
-  runs in this repo.
+- `agent/natasha-persona.md` — record of the system prompt / config for "Natasha,"
+  the D-ID AI persona embedded in the DD Live tab (live, not just planned). This is
+  a config document, not code that runs in this repo — the source of truth is
+  D-ID's own dashboard, not this file.
 - `tools/*.py` — one-off Pillow scripts (`badge-key.py`, `optimize-images.py`) for
   image prep, run manually, not part of any pipeline.
 
@@ -79,10 +80,10 @@ between what's published and what's gitignored:
   `data/roster.csv`, `data/results.csv`, `data/venues.csv`,
   `data/tournament_events.csv` — real working data that carries emails, phone
   numbers, and one private home address.
-- **Never wire `index.html` (or the Alex agent) to the `.csv` files.** Only
+- **Never wire `index.html` (or the Natasha agent) to the `.csv` files.** Only
   `data/tournaments.js` and `data/schema.sql` are approved grounding sources — this
   is stated explicitly in the `index.html` header comment and in
-  `agent/alex-persona.md`.
+  `agent/natasha-persona.md`.
 - Venue entries carry a `precision` field (`rooftop` / `parcel` / `locality` /
   `unknown`) and a `private` flag. Anything `private:true` (e.g. "Bateman House",
   "Vacek Ranch") is deliberately geocoded only to locality precision — never
@@ -130,4 +131,4 @@ Everything in the repo is MIT (`LICENSE`) except: photographs of real people (a
 copyright license can't grant likeness rights) and the HTML5 UP "Stellar" template
 under `assets/` (CC BY 3.0, its own file, footer attribution required). See
 `DISCLAIMER.md` for the full participant-privacy and licensing notice — treat it as
-authoritative if a change touches attribution, participant data, or the Alex persona.
+authoritative if a change touches attribution, participant data, or the Natasha persona.
