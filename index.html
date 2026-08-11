@@ -698,31 +698,45 @@ footer a{color:var(--gold-dim)}
 
     <div class="host">
       <div class="host-video">
-        <!-- D-ID agent embed goes here. Until it's wired up this is a static card. -->
+        <!-- The live D-ID widget mounts as its own floating panel (data-position="right"),
+             not inline here - this card stays as the static intro/context. -->
         <div id="didAgent" class="host-slot">
-          <div class="host-avatar" aria-hidden="true">A</div>
-          <p class="host-slotnote">D-ID agent embed slot</p>
+          <div class="host-avatar" aria-hidden="true">N</div>
+          <p class="host-slotnote">Look for Natasha's chat panel in the corner of the screen</p>
         </div>
         <span class="ai-badge">AI-GENERATED HOST</span>
       </div>
       <div class="host-copy">
         <div class="host-kicker">YOUR GUIDE</div>
-        <h2 class="host-name">Alex</h2>
-        <div class="host-role">Historian &amp; Social Media Coordinator</div>
-        <p class="host-quote">&ldquo;Hey y&rsquo;all, Alex here &mdash; I keep the records <em>and</em> I&rsquo;m the one
-          who has to explain what happened at beer pong. Ask me about any player, any event,
-          any year. I&rsquo;ve got receipts.&rdquo;</p>
-        <p class="note" style="margin-top:12px">Alex is a fictional AI-generated presenter. She is not
+        <h2 class="host-name">Natasha</h2>
+        <div class="host-role">Public Relations Director</div>
+        <p class="note" style="margin-top:12px">Natasha is a fictional AI-generated presenter. She is not
           based on any real broadcaster, and she does not have access to any competitor&rsquo;s
           contact details.</p>
       </div>
     </div>
 
+    <!-- Natasha, D-ID agent embed. data-client-key is a client-side embed key by design
+         (same exposure model as the GA tag above) - not a secret, and likely domain-locked
+         to darwindecathlon.com on D-ID's end, so it won't mount on localhost or the Azure
+         preview hostname. Floating widget (data-position="right"), not inline. -->
+    <script type="module"
+      src="https://agent.d-id.com/v2/index.js"
+      data-mode="fabio"
+      data-client-key="ck_HRmtr4aX4eo5S8WGbMgAt"
+      data-agent-id="v2_agt_6eO4x32D"
+      data-name="did-agent"
+      data-monitor="true"
+      data-orientation="horizontal"
+      data-position="right"
+      data-open-mode="compact">
+    </script>
+
     <div class="empty" style="margin-top:20px">
       <h3>No Event In Progress</h3>
       <p>The next Darwin Decathlon has not been scheduled yet. When a tournament is live,
          this tab carries running standings, event-by-event scoring, and win probability
-         updating between events &mdash; with Alex calling it as it happens.</p>
+         updating between events &mdash; with Natasha calling it as it happens.</p>
       <p style="margin-top:14px"><button class="chip" id="toChron">Browse the Chronicles instead</button></p>
     </div>
   </section>
@@ -1888,7 +1902,7 @@ function renderVenueMap(){
     }
     bounds.push([v.lat,v.lon]);
   });
-  if(bounds.length) venueMap.fitBounds(bounds,{padding:[28,28]});
+  if(bounds.length) venueMap.fitBounds(bounds,{padding:[28,28],animate:false});
 
   const lg=$('#venueLegend'); lg.innerHTML='';
   [['2015–19 · Katy / West Houston',ERA1],
