@@ -3,10 +3,14 @@
 ## What this project is
 
 The Darwin Decathlon is a **private, non-commercial social gathering among friends.**
-This repository and the sites it publishes are a hobby project documenting it.
+This repository and the sites it publishes are a hobby project documenting it. The
+informal organization behind it is the **Darwin Decathlon Society**, founded and led
+by Scott Bateman as founder and president; other roles are undefined for now.
 
-It is **not** a business, a sanctioned sporting body, an event-management service, or
-a commercial venture. Nothing here is sold, and no advertising revenue is collected.
+It is **not currently** a business, a sanctioned sporting body, an event-management
+service, or a commercial venture. Nothing here is sold, and no advertising revenue is
+collected. If that changes, this notice changes with it — nothing here should be read
+as a claim about future plans.
 
 ---
 

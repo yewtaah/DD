@@ -233,6 +233,6 @@ of people** (their likeness rights are theirs, not ours to pass along) and the
 
 *"Hopefully this year's champion will be tossing the trophy between boats on Lake Travis during the victory parade."*
 
-**Cinco Ranch Gaming Commission**
+**Darwin Decathlon Society**
 
 </div>
