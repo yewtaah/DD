@@ -1556,6 +1556,19 @@ const ALIAS = {
 const canonical = n => ALIAS[n] || n;
 const slugify = n => n.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
 
+// The banner images under images/banners/ are crops of these original photos,
+// which are ALSO tagged in data/media.js for the same event - so the gallery
+// below the banner would otherwise show the identical shot twice on one page.
+// Cross-referenced against BANNERS in openGuide(); keep the two in sync.
+const BANNER_SOURCE_PHOTO = {
+  "Home Run Derby":"/images/HomeRunDerby.jpg", "Washers":"/images/Washers.jpg",
+  "Disc Golf":"/images/DiscGolf.jpg", "Kan Jam":"/images/KanJam.jpg",
+  "Long Drive":"/images/LongDrive.jpg", "Shuriken":"/images/Shuriken.jpg",
+  "Beer Pong":"/images/BeerPong.jpg", "Shuffle Board":"/images/Shuffleboard2.jpg",
+  "TopGolf":"/images/TopGolf.jpg", "Field Goal Kicking":"/images/FieldGoal.jpg",
+  "Go Karts":"/images/GoKarts.jpg"
+};
+
 /* Build the registry once: every canonical event, with each appearance and the
    full result set for that appearance. */
 function buildGuide(){
@@ -1632,7 +1645,8 @@ function renderFieldNotes(){
    the Shuriken guide. */
 function photosFor(g){
   const all = window.DD_MEDIA || [];
-  return all.filter(m => canonical(m.event) === g.name)
+  const bannerSource = BANNER_SOURCE_PHOTO[g.name];
+  return all.filter(m => canonical(m.event) === g.name && m.file !== bannerSource)
             .sort((a,b) => (b.year||0) - (a.year||0));
 }
 
@@ -1726,6 +1740,8 @@ function openGuide(slug,push){
     // Shooting Gallery, Golden Tee, Darts, Kickball have no source photo on
     // file (Shooting Gallery/Shuffle Board's originals are portrait-only or
     // unusable at this crop) - they fall through to the .nobanner treatment.
+    // Keep this map's keys in sync with BANNER_SOURCE_PHOTO above, which
+    // photosFor() uses to keep the banner's source shot out of the gallery.
   };
   const banner=`/images/banners/${BANNERS[g.name]||'__none__'}`;
   const latest=g.appearances[g.appearances.length-1];
