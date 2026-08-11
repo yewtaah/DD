@@ -1453,9 +1453,7 @@ function renderTiles(){
       ${e.pair?'<span class="pair">PAIRS</span>':''}`;
     d.onclick=()=>{
       document.getElementById('tab-notes').click();
-      const target=document.getElementById('note-'+e.n);
-      if(target){ target.scrollIntoView({behavior:'smooth',block:'center'});
-        target.style.borderColor='var(--gold)'; setTimeout(()=>target.style.borderColor='',1600); }
+      openGuide(slugify(canonical(e.name)),true);
     };
     box.appendChild(d);
   });
@@ -1688,7 +1686,18 @@ function openGuide(slug,push){
   // Explicit map rather than deriving from the name - "Skeet Shooting" would
   // derive to banner-SkeetShooting.webp, but the asset is banner-Skeet.webp.
   // Missing entries fall back to the no-banner treatment via onerror.
-  const BANNERS={ "Skeet Shooting":"banner-Skeet.webp", "Corn Hole":"banner-CornHole.webp" };
+  const BANNERS={
+    "Skeet Shooting":"banner-Skeet.webp", "Corn Hole":"banner-CornHole.webp",
+    "Home Run Derby":"banner-HomeRunDerby.webp", "Washers":"banner-Washers.webp",
+    "Disc Golf":"banner-DiscGolf.webp", "Kan Jam":"banner-KanJam.webp",
+    "Long Drive":"banner-LongDrive.webp", "Shuriken":"banner-Shuriken.webp",
+    "Beer Pong":"banner-BeerPong.webp", "Shuffle Board":"banner-ShuffleBoard.webp",
+    "TopGolf":"banner-TopGolf.webp", "Field Goal Kicking":"banner-FieldGoal.webp",
+    "Go Karts":"banner-GoKarts.webp"
+    // Shooting Gallery, Golden Tee, Darts, Kickball have no source photo on
+    // file (Shooting Gallery/Shuffle Board's originals are portrait-only or
+    // unusable at this crop) - they fall through to the .nobanner treatment.
+  };
   const banner=`/images/banners/${BANNERS[g.name]||'__none__'}`;
   const latest=g.appearances[g.appearances.length-1];
   const st=(k,v,s)=>`<div class="gstat"><div class="k">${k}</div><div class="v">${v}</div>${s?`<div class="s">${s}</div>`:''}</div>`;
