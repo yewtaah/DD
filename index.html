@@ -48,6 +48,10 @@
 <link rel="icon" href="/favicon.ico">
 <link rel="canonical" href="https://darwindecathlon.com/">
 
+<!-- Leaflet, for the venue story map in Chronicles. Pinned version + SRI. -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+  integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+
 <!-- Link previews, for when someone drops the URL in a group chat. -->
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Darwin Decathlon">
@@ -269,6 +273,18 @@ svg{display:block;width:100%;height:auto;overflow:visible}
 .tt .r{display:flex;justify-content:space-between;gap:14px;padding:2px 0;color:var(--ink-2)}
 .tt .r b{color:var(--ink);font-variant-numeric:tabular-nums}
 .tt .r .sw{width:9px;height:9px;border-radius:2px;display:inline-block;margin-right:6px}
+
+/* ---------- venue story map (Leaflet, dark-themed to match the chart surface) ---------- */
+#venueMap{height:420px;border-radius:10px;overflow:hidden;margin-top:12px;border:1px solid var(--ring);background:var(--surface)}
+.leaflet-container{background:var(--surface);font:inherit;color:var(--ink)}
+.leaflet-control-zoom a{background:var(--charcoal-2);color:var(--ink-2);border-color:var(--ring)!important}
+.leaflet-control-zoom a:hover{background:var(--charcoal);color:var(--ink)}
+.leaflet-control-attribution{background:rgba(13,13,13,.75);color:var(--muted);font-size:10.5px}
+.leaflet-control-attribution a{color:var(--ink-2)}
+.leaflet-popup-content-wrapper,.leaflet-popup-tip{background:#101010;color:var(--ink);border:1px solid var(--gold-dim)}
+.leaflet-popup-content{font-size:13.5px;line-height:1.55;margin:11px 13px}
+.leaflet-popup-content b{color:var(--ink)}
+.leaflet-popup-close-button{color:var(--muted)!important}
 
 .toolrow{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-top:10px}
 .linkbtn{background:none;border:1px solid var(--axis);color:var(--ink-2);font:600 11.5px var(--sans);
@@ -556,6 +572,7 @@ details.rules .rvy{display:inline-block;font-weight:800;color:var(--ink);margin-
   table.roll{font-size:13.5px}
   table.roll .rn{font-size:12px}
   .gbanner .gcap{padding:12px 13px}
+  #venueMap{height:280px}
 }
 /* Narrow: drop Margin then Notes rather than let the table squeeze the page.
    Breakpoint is 560 (not 460) - real phone viewports report wider than the
@@ -752,6 +769,19 @@ footer a{color:var(--gold-dim)}
         and the numbers that don't add up.</p>
       <div class="notes" id="moments" style="margin-top:14px"></div>
     </div>
+
+    <div class="card">
+      <h2>The <span class="accent">Venues</span></h2>
+      <p class="desc">Three eras, three homes. 2015&ndash;2019 was scattered across the Katy and West
+        Houston suburbs; 2020 was cancelled outright; 2021 onward moved everything under one sky at
+        Vacek Ranch.</p>
+      <div class="legend" id="venueLegend"></div>
+      <div id="venueMap"></div>
+      <p class="note">Private property (Bateman House, Vacek Ranch) is shown as an approximate area,
+        never a pinned address &mdash; see <a href="/DISCLAIMER.md" style="color:inherit">DISCLAIMER.md</a>.
+        Stars Sports Bar (2015, Golden Tee / Shuffle Board / Darts) was never geocoded and isn't
+        mapped, rather than guess at a location.</p>
+    </div>
   </section>
 
   <!-- ================= FIELD NOTES ================= -->
@@ -786,6 +816,8 @@ footer a{color:var(--gold-dim)}
 
 <div class="tt" id="tt" role="status" aria-live="polite"></div>
 
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+  integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 <script src="/data/tournaments.js"></script>
 <script src="/data/event-notes.js"></script>
 <script src="/data/media.js"></script>
@@ -1815,11 +1847,66 @@ function closeGuide(push){
    data/tournaments.js (fixing a bad score, adding a new tournament)
    propagates to every chart, tile, stat, ticker item and note with no code
    changes. Nothing in the render path hardcodes a name, year or score. */
+/* ---------- venue story map ----------
+   Built once, lazily: Leaflet needs a container with real pixel dimensions,
+   and Chronicles can be hidden (display:none) at first paint if the page
+   loaded on #live/#notes. So we skip init while the container has zero
+   width and retry on the next renderAll() (tab switches call it). Once
+   built we just invalidateSize() on later calls - cheap, and it fixes up
+   layout after the panel becomes visible or the window resizes. */
+let venueMap=null;
+function renderVenueMap(){
+  const box=$('#venueMap');
+  if(!box || typeof L==='undefined') return;
+  if(venueMap){ venueMap.invalidateSize(); return; }
+  if(box.clientWidth===0) return; // panel not visible yet - try again next renderAll()
+
+  venueMap=L.map(box,{scrollWheelZoom:false}).setView([29.9,-96.2],7);
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{
+    attribution:'&copy; <a href="https://carto.com/attributions">CARTO</a> &copy; '+
+      '<a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+    subdomains:'abcd', maxZoom:18
+  }).addTo(venueMap);
+
+  const ERA1=SERIES_HEX[0], ERA3=SERIES_HEX[2], PRIVATE='#e8b33a';
+  const bounds=[];
+  (D.venues||[]).forEach(v=>{
+    if(v.lat==null||v.lon==null) return; // unmapped on purpose - see card note, don't guess
+    const era3 = v.years.some(y=>y>=2021);
+    const color = era3 ? ERA3 : ERA1;
+    const when = v.years.join(', ');
+    const what = (v.events||[]).join(', ');
+    if(v.private){
+      L.circle([v.lat,v.lon],{radius:3200,color:PRIVATE,weight:1.5,dashArray:'5 4',fillColor:PRIVATE,fillOpacity:.10})
+        .addTo(venueMap)
+        .bindPopup(`<b>${v.name}</b> &middot; private property<br>${v.city}<br>${when}<br>${what}`+
+                   `<br><span style="opacity:.65">Approximate area only</span>`);
+    } else {
+      L.circleMarker([v.lat,v.lon],{radius:7,color,weight:1.5,fillColor:color,fillOpacity:.85})
+        .addTo(venueMap)
+        .bindPopup(`<b>${v.name}</b><br>${v.city}<br>${when}<br>${what}`);
+    }
+    bounds.push([v.lat,v.lon]);
+  });
+  if(bounds.length) venueMap.fitBounds(bounds,{padding:[28,28]});
+
+  const lg=$('#venueLegend'); lg.innerHTML='';
+  [['2015–19 · Katy / West Houston',ERA1],
+   ['2021–present · Vacek Ranch',ERA3],
+   ['Private property (area, not address)',PRIVATE]
+  ].forEach(([label,c])=>{
+    const li=document.createElement('div'); li.className='li';
+    li.innerHTML=`<span class="sw" style="background:${c}"></span>${label}`;
+    lg.appendChild(li);
+  });
+}
+
 function renderAll(){
   renderTicker(); renderHero(); renderTiles();
-  renderWP(); renderCA(); renderMoments(); renderFieldNotes(); renderLiveSegs();
+  renderWP(); renderCA(); renderMoments(); renderVenueMap(); renderFieldNotes(); renderLiveSegs();
 }
 renderAll();
+addEventListener('resize',()=>{ if(venueMap) venueMap.invalidateSize(); });
 })();
 </script>
 </body>
