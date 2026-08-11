@@ -187,8 +187,13 @@ Some things the data turned up:
 │   ├── schema.sql            # tournaments, players, events, venues, results, media
 │   └── *.template.csv        # dummy-data examples of every table
 ├── images/                   # logos, event badges, banners, tournament photos
-└── *.html                    # legacy v1 event pages, kept for their inbound links
+└── Weather.html              # standalone 3-day forecast widget; not superseded by /live/
 ```
+
+The v1 per-event pages (`Skeet.html`, `Champs.html`, and friends) duplicated what the
+Field Guide and Chronicles now do properly, so they were retired in favor of the pages
+that replaced them. Their URLs still work: `staticwebapp.config.json` 301-redirects each
+one to its field-guide entry or Chronicles, so nothing that linked to them breaks.
 
 The v2 site was built at `/live/` and now serves from the root; `/live/*` 301s
 to `/` so any link that escaped into the wild still lands.

@@ -11,6 +11,61 @@
       "statusCode": 301
     },
     {
+      "route": "/Champs.html",
+      "redirect": "/#chronicles",
+      "statusCode": 301
+    },
+    {
+      "route": "/Skeet.html",
+      "redirect": "/?event=skeet-shooting#notes",
+      "statusCode": 301
+    },
+    {
+      "route": "/HomeRunDerby.html",
+      "redirect": "/?event=home-run-derby#notes",
+      "statusCode": 301
+    },
+    {
+      "route": "/Washers.html",
+      "redirect": "/?event=washers#notes",
+      "statusCode": 301
+    },
+    {
+      "route": "/DiscGolf.html",
+      "redirect": "/?event=disc-golf#notes",
+      "statusCode": 301
+    },
+    {
+      "route": "/KanJam.html",
+      "redirect": "/?event=kan-jam#notes",
+      "statusCode": 301
+    },
+    {
+      "route": "/Shooting.html",
+      "redirect": "/?event=shooting-gallery#notes",
+      "statusCode": 301
+    },
+    {
+      "route": "/LongDrive.html",
+      "redirect": "/?event=long-drive#notes",
+      "statusCode": 301
+    },
+    {
+      "route": "/Shuriken.html",
+      "redirect": "/?event=shuriken#notes",
+      "statusCode": 301
+    },
+    {
+      "route": "/CornHole.html",
+      "redirect": "/?event=corn-hole#notes",
+      "statusCode": 301
+    },
+    {
+      "route": "/BeerPong.html",
+      "redirect": "/?event=beer-pong#notes",
+      "statusCode": 301
+    },
+    {
       "route": "/images/*",
       "headers": {
         "cache-control": "public, max-age=604800, immutable"
