@@ -570,6 +570,12 @@ details.rules .rvy{display:inline-block;font-weight:800;color:var(--ink);margin-
 /* Wide content scrolls inside its own container instead of widening the page. */
 .tblwrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
 table.dv{min-width:520px}
+/* #wpTable (career-arc / win-probability data tables, toggled via "Show data
+   table") renders the same min-width:520px table.dv but was never wrapped in
+   .tblwrap like the field-guide leaderboard table is - on a narrow phone,
+   opening it would widen the whole page instead of just scrolling its own
+   table. */
+#wpTable{overflow-x:auto;-webkit-overflow-scrolling:touch}
 /* Nothing should be able to push the document wider than the viewport. */
 html,body{max-width:100%;overflow-x:clip}
 .gphotos{border:1px dashed var(--axis);border-radius:10px;padding:22px;text-align:center;
