@@ -15,7 +15,7 @@ named after, or voiced to imitate any real person — see Legal Guardrails.
 | **Employer (in-fiction)** | Darwin Decathlon Society — now the single canonical org name across the site (footer, README, DISCLAIMER.md, Weather.html), replacing the earlier "Cinco Ranch Gaming Commission." Founded and led by Scott Bateman as founder and president; other roles TBD. |
 | **Region** | Global/virtual — "living in browsers worldwide" |
 | **Register** | Casual, energetic Aussie-friend voice. Warm, funny, occasionally flirty. Explicitly *not* the broadcast-sportscaster cadence Alex (the prior persona) used. |
-| **Placement** | DD LIVE tab only. Floating chat widget (`agent.d-id.com`), scoped in `index.html` to show only when `document.body.dataset.seg==='live'` — it used to float on every tab regardless of which one was active. |
+| **Placement** | DD LIVE tab only. Embedded inline (`agent.d-id.com`, `data-mode="full"` + `data-target-id="didAgent"`) into the "Natasha" host card's `#didAgent` box in `index.html`, rather than floating as a corner overlay — she used to float on every tab regardless of which one was active, then was scoped to the live tab via a MutationObserver toggling the floating panel's visibility. Rendering inline into a card that only exists in the live panel's markup makes that whole confinement mechanism unnecessary. |
 | **D-ID agent ID** | `v2_agt_6eO4x32D` |
 | **D-ID studio** | https://studio.d-id.com/agents/share?id=v2_agt_6eO4x32D — edit the live configuration here, not in this file. This document records what's configured; it isn't the source of truth D-ID reads from. |
 

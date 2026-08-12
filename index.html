@@ -623,11 +623,7 @@ html,body{max-width:100%;overflow-x:clip}
 @media(max-width:640px){.host{grid-template-columns:1fr}}
 .host-video{position:relative}
 .host-slot{aspect-ratio:3/4;border:1px dashed var(--axis);border-radius:10px;background:#141413;
-  display:grid;place-items:center;align-content:center;gap:10px}
-.host-avatar{width:82px;height:82px;border-radius:50%;display:grid;place-items:center;
-  background:linear-gradient(150deg,var(--gold),var(--gold-dim));color:#1a1a19;
-  font:800 34px var(--sans)}
-.host-slotnote{color:var(--muted);font-size:13.5px;letter-spacing:.14em;margin:0}
+  overflow:hidden}
 .ai-badge{position:absolute;top:9px;right:9px;background:rgba(13,13,13,.86);border:1px solid var(--gold-dim);
   color:var(--gold);font-size:11.5px;font-weight:800;letter-spacing:.13em;padding:3px 7px;border-radius:4px}
 .host-kicker{font-size:13px;letter-spacing:.24em;color:var(--gold);font-weight:700}
@@ -702,10 +698,7 @@ footer a{color:var(--gold-dim)}
       <div class="host-video">
         <!-- The live D-ID widget mounts as its own floating panel (data-position="right"),
              not inline here - this card stays as the static intro/context. -->
-        <div id="didAgent" class="host-slot">
-          <div class="host-avatar" aria-hidden="true">N</div>
-          <p class="host-slotnote">Look for Natasha's chat panel in the corner of the screen</p>
-        </div>
+        <div id="didAgent" class="host-slot"></div>
         <span class="ai-badge">AI-GENERATED HOST</span>
       </div>
       <div class="host-copy">
@@ -721,17 +714,18 @@ footer a{color:var(--gold-dim)}
     <!-- Natasha, D-ID agent embed. data-client-key is a client-side embed key by design
          (same exposure model as the GA tag above) - not a secret, and likely domain-locked
          to darwindecathlon.com on D-ID's end, so it won't mount on localhost or the Azure
-         preview hostname. Floating widget (data-position="right"), not inline. -->
+         preview hostname. Renders inline into #didAgent (data-mode="full" + data-target-id)
+         rather than as a floating corner widget, so it's naturally confined to DD Live -
+         that card only exists in the DOM's visible flow when #p-live is the active panel. -->
     <script type="module"
       src="https://agent.d-id.com/v2/index.js"
-      data-mode="fabio"
+      data-mode="full"
+      data-target-id="didAgent"
       data-client-key="ck_HRmtr4aX4eo5S8WGbMgAt"
       data-agent-id="v2_agt_6eO4x32D"
       data-name="did-agent"
       data-monitor="true"
-      data-orientation="horizontal"
-      data-position="right"
-      data-open-mode="compact">
+      data-orientation="horizontal">
     </script>
 
     <div class="empty" style="margin-top:20px">
@@ -870,35 +864,9 @@ function selectTab(tb,push){
   document.body.dataset.seg = slug==='chronicles' ? 'chron' : slug;
   if(push && slug) history.replaceState(null,'','#'+slug);
   if(tb==='tab-chron') requestAnimationFrame(renderAll);
-  updateDidVisibility();
 }
 TABS.forEach(([tb])=>document.getElementById(tb).addEventListener('click',()=>selectTab(tb,true)));
 
-/* ---------- keep Natasha's D-ID widget confined to DD LIVE ----------
-   The embed script (agent.d-id.com) mounts its own floating panel as a
-   top-level element appended directly to <body> - it doesn't render
-   inside #didAgent, so there's no fixed selector to target ahead of
-   time. Watch for whatever body-level element it adds, then toggle
-   that element's display to match the active tab. */
-let didWidgetEl=null;
-function updateDidVisibility(){
-  if(!didWidgetEl) return;
-  didWidgetEl.style.display = document.body.dataset.seg==='live' ? '' : 'none';
-}
-(function watchForDidWidget(){
-  const before=new Set(document.body.children);
-  const mo=new MutationObserver(muts=>{
-    for(const m of muts) for(const n of m.addedNodes){
-      if(n.nodeType===1 && n.parentElement===document.body && !before.has(n)){
-        didWidgetEl=n;
-        updateDidVisibility();
-        mo.disconnect();
-        return;
-      }
-    }
-  });
-  mo.observe(document.body,{childList:true});
-})();
 (function fromHash(){
   const h=(location.hash||'').replace('#','').toLowerCase();
   const hit=TABS.find(x=>x[2]===h);
