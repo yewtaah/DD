@@ -712,20 +712,19 @@ footer a{color:var(--gold-dim)}
     </div>
 
     <!-- Natasha, D-ID agent embed. data-client-key is a client-side embed key by design
-         (same exposure model as the GA tag above) - not a secret, and likely domain-locked
-         to darwindecathlon.com on D-ID's end, so it won't mount on localhost or the Azure
-         preview hostname. Renders inline into #didAgent (data-mode="full" + data-target-id)
-         rather than as a floating corner widget, so it's naturally confined to DD Live -
-         that card only exists in the DOM's visible flow when #p-live is the active panel. -->
+         (same exposure model as the GA tag above) - not a secret. Domain allowlist was
+         updated in D-ID's dashboard to include darwindecathlon.com. Renders inline into
+         #didAgent (data-mode="full" + data-target-id) rather than as a floating corner
+         widget, so it's naturally confined to DD Live - that card only exists in the
+         DOM's visible flow when #p-live is the active panel. -->
     <script type="module"
       src="https://agent.d-id.com/v2/index.js"
       data-mode="full"
-      data-target-id="didAgent"
       data-client-key="ck_HRmtr4aX4eo5S8WGbMgAt"
       data-agent-id="v2_agt_6eO4x32D"
       data-name="did-agent"
       data-monitor="true"
-      data-orientation="horizontal">
+      data-target-id="didAgent">
     </script>
 
     <div class="empty" style="margin-top:20px">
