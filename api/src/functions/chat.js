@@ -2,12 +2,19 @@ const { app } = require("@azure/functions");
 const { AnthropicFoundry } = require("@anthropic-ai/foundry-sdk");
 
 // PII BOUNDARY: this function must only ever ground itself in
-// data/tournaments.js, fetched live from this same deployment - the file is
-// PII-scrubbed by construction and is the only dataset index.html's header
-// comment approves for consumption. Never point this at data/*.csv (real
-// rosters/scorecards, gitignored - they carry emails, phone numbers, and a
-// home address).
-const GROUNDING_DATA_PATH = "/data/tournaments.js";
+// data/tournaments.js, fetched live from the deployed static site - the
+// file is PII-scrubbed by construction and is the only dataset index.html's
+// header comment approves for consumption. Never point this at data/*.csv
+// (real rosters/scorecards, gitignored - they carry emails, phone numbers,
+// and a home address).
+//
+// This Function runs as its own resource behind Azure Static Web Apps - it
+// does not share an origin with the static content, so the incoming
+// request's own URL/origin is internal to the Function App and cannot serve
+// /data/tournaments.js. Fetch from the site's default hostname instead,
+// which stays stable regardless of which custom domain (if any) is
+// currently attached.
+const GROUNDING_DATA_URL = "https://ashy-hill-05c5adc10.7.azurestaticapps.net/data/tournaments.js";
 
 const SYSTEM_PROMPT = `You are a factual Q&A assistant embedded on the Darwin Decathlon website, a private, non-commercial backyard tournament among friends. Answer questions about tournament history, scores, standings, champions, venues, and events using ONLY the tournament data provided below.
 
@@ -43,10 +50,10 @@ function getClient() {
 // same deployment (rather than bundling a copy into api/) keeps a single
 // source of truth with no build step, matching this repo's architecture.
 let groundingDataCache = null;
-async function getGroundingData(origin, context) {
+async function getGroundingData(context) {
   if (groundingDataCache) return groundingDataCache;
   try {
-    const res = await fetch(origin + GROUNDING_DATA_PATH);
+    const res = await fetch(GROUNDING_DATA_URL);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     groundingDataCache = await res.text();
     return groundingDataCache;
@@ -101,8 +108,7 @@ app.http("chat", {
       return { status: 400, jsonBody: { error: "no valid messages" } };
     }
 
-    const origin = new URL(request.url).origin;
-    const groundingData = await getGroundingData(origin, context);
+    const groundingData = await getGroundingData(context);
     if (!groundingData) {
       return { status: 503, jsonBody: { error: "Tournament data is temporarily unavailable, try again shortly." } };
     }
