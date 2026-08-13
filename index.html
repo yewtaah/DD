@@ -279,6 +279,12 @@ svg{display:block;width:100%;height:auto;overflow:visible}
 /* ---------- venue story map (Leaflet, dark-themed to match the chart surface) ---------- */
 #venueMap{height:420px;border-radius:10px;overflow:hidden;margin-top:12px;border:1px solid var(--ring);background:var(--surface)}
 .leaflet-container{background:var(--surface);font:inherit;color:var(--ink)}
+/* The global svg{width:100%;height:auto} rule above (for the hand-built chart
+   SVGs) also matches Leaflet's own absolutely-positioned renderer <svg>, whose
+   containing block (.leaflet-overlay-pane) has no CSS width - so width:100%
+   resolves to 0 and every venue marker silently fails to paint. Reset back to
+   the intrinsic size Leaflet sets via width/height attributes. */
+.leaflet-container svg{width:auto;height:auto}
 .leaflet-control-zoom a{background:var(--charcoal-2);color:var(--ink-2);border-color:var(--ring)!important}
 .leaflet-control-zoom a:hover{background:var(--charcoal);color:var(--ink)}
 .leaflet-control-attribution{background:rgba(13,13,13,.75);color:var(--muted);font-size:10.5px}
