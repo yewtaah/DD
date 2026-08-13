@@ -631,6 +631,24 @@ html,body{max-width:100%;overflow-x:clip}
 .host-role{color:var(--ink-2);font-size:15px;letter-spacing:.06em}
 .host-quote{margin:14px 0 0;font-size:16.5px;line-height:1.65;color:var(--ink);max-width:62ch}
 
+/* ---------- tournament Q&A chat ---------- */
+.chatbox{margin-top:18px;border:1px solid var(--ring);border-radius:10px;background:#141413;
+  display:flex;flex-direction:column;max-width:62ch}
+.chat-kicker{font-size:12px;letter-spacing:.18em;color:var(--muted);padding:10px 14px 0}
+.chat-log{overflow-y:auto;padding:10px 14px;display:flex;flex-direction:column;gap:8px;
+  min-height:80px;max-height:220px}
+.chat-msg{font-size:14px;line-height:1.55;padding:8px 11px;border-radius:9px;max-width:88%}
+.chat-msg-bot{background:rgba(255,255,255,.05);color:var(--ink-2);align-self:flex-start}
+.chat-msg-user{background:rgba(232,179,58,.14);color:var(--ink);align-self:flex-end}
+.chat-msg-error{color:#e08a8a}
+.chat-form{display:flex;gap:8px;padding:10px 14px;border-top:1px solid var(--ring)}
+.chat-input{flex:1;min-width:0;background:#0d0d0d;border:1px solid var(--axis);border-radius:7px;
+  color:var(--ink);padding:9px 11px;font-size:14px;font-family:var(--sans)}
+.chat-input:focus{outline:1px solid var(--gold-dim)}
+.chat-send{background:var(--gold);color:#241d16;border:0;border-radius:7px;font:800 12.5px var(--sans);
+  letter-spacing:.06em;padding:0 16px;cursor:pointer}
+.chat-send:disabled{opacity:.5;cursor:default}
+
 /* ---------- generic content ---------- */
 .empty{background:var(--surface);border:1px dashed var(--axis);border-radius:12px;padding:34px 22px;text-align:center}
 .empty h3{margin:0 0 8px;color:var(--gold);letter-spacing:.1em;font-size:16px;text-transform:uppercase}
@@ -708,6 +726,16 @@ footer a{color:var(--gold-dim)}
         <p class="note" style="margin-top:12px">Natasha is a fictional AI-generated presenter. She is not
           based on any real broadcaster, and she does not have access to any competitor&rsquo;s
           contact details.</p>
+        <div class="chatbox" id="ddChat">
+          <div class="chat-kicker">ASK ABOUT THE TOURNAMENT</div>
+          <div class="chat-log" id="chatLog" aria-live="polite">
+            <div class="chat-msg chat-msg-bot">Ask me anything about past Darwin Decathlons &mdash; champions, scores, venues, records.</div>
+          </div>
+          <form class="chat-form" id="chatForm">
+            <input type="text" id="chatInput" class="chat-input" placeholder="Who won in 2019?" autocomplete="off" maxlength="500">
+            <button type="submit" class="chat-send" id="chatSend">Ask</button>
+          </form>
+        </div>
       </div>
     </div>
 
@@ -881,6 +909,54 @@ addEventListener('hashchange',()=>{
 
 const toChron=$('#toChron');
 if(toChron) toChron.addEventListener('click',()=>document.getElementById('tab-chron').click());
+
+/* ---------- tournament Q&A chat - calls the /api/chat Azure Function,
+   which grounds itself in data/tournaments.js server-side (see api/src/
+   functions/chat.js for the PII boundary this mirrors from Natasha). ---------- */
+(function initChat(){
+  const form=document.getElementById('chatForm');
+  if(!form) return;
+  const log=document.getElementById('chatLog');
+  const input=document.getElementById('chatInput');
+  const sendBtn=document.getElementById('chatSend');
+  const chatHistory=[];
+
+  function addMsg(kind,text){
+    const div=document.createElement('div');
+    div.className='chat-msg '+(kind==='user' ? 'chat-msg-user' : kind==='error' ? 'chat-msg-bot chat-msg-error' : 'chat-msg-bot');
+    div.textContent=text;
+    log.appendChild(div);
+    log.scrollTop=log.scrollHeight;
+  }
+
+  form.addEventListener('submit', async (e)=>{
+    e.preventDefault();
+    const text=input.value.trim();
+    if(!text) return;
+    addMsg('user',text);
+    chatHistory.push({role:'user',content:text});
+    input.value='';
+    input.disabled=true;
+    sendBtn.disabled=true;
+    try{
+      const res=await fetch('/api/chat',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({messages:chatHistory})
+      });
+      const data=await res.json();
+      if(!res.ok) throw new Error(data.error||'Request failed');
+      addMsg('bot',data.reply);
+      chatHistory.push({role:'assistant',content:data.reply});
+    }catch(err){
+      addMsg('error',"Couldn't get an answer just now — try again in a bit.");
+    }finally{
+      input.disabled=false;
+      sendBtn.disabled=false;
+      input.focus();
+    }
+  });
+})();
 
 /* ---------- DD LIVE segment strip (derived) ----------
    Stands in for the live scoreboard until a tournament is actually running.

@@ -1,0 +1,14 @@
+{
+  "name": "dd-api",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Azure Function backend for the Darwin Decathlon tournament Q&A chatbot",
+  "main": "src/functions/*.js",
+  "scripts": {
+    "start": "func start"
+  },
+  "dependencies": {
+    "@azure/functions": "^4.16.2",
+    "@anthropic-ai/foundry-sdk": "^0.4.1"
+  }
+}
