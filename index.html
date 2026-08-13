@@ -629,7 +629,13 @@ html,body{max-width:100%;overflow-x:clip}
 @media(max-width:640px){.host{grid-template-columns:1fr}}
 .host-video{position:relative}
 .host-slot{aspect-ratio:3/4;border:1px dashed var(--axis);border-radius:10px;background:#141413;
-  overflow:hidden}
+  overflow:hidden;
+  /* D-ID's widget mounts via Shadow DOM, but CSS-inherited properties like
+     color still cross that boundary from the host element. Their own mic-
+     permission overlay doesn't set an explicit text color, so it inherits
+     our page's white and goes invisible on their light-gray panel. Reset it
+     here; anything D-ID styles explicitly (most of the UI) is unaffected. */
+  color:#1a1a1a}
 .ai-badge{position:absolute;top:9px;right:9px;background:rgba(13,13,13,.86);border:1px solid var(--gold-dim);
   color:var(--gold);font-size:11.5px;font-weight:800;letter-spacing:.13em;padding:3px 7px;border-radius:4px}
 .host-kicker{font-size:13px;letter-spacing:.24em;color:var(--gold);font-weight:700}
@@ -638,11 +644,12 @@ html,body{max-width:100%;overflow-x:clip}
 .host-quote{margin:14px 0 0;font-size:16.5px;line-height:1.65;color:var(--ink);max-width:62ch}
 
 /* ---------- tournament Q&A chat ---------- */
-.chatbox{margin-top:18px;border:1px solid var(--ring);border-radius:10px;background:#141413;
-  display:flex;flex-direction:column;max-width:62ch}
+.chat-intro{margin:14px 0 0;font-size:14.5px;line-height:1.6;color:var(--ink-2);max-width:62ch}
+.chatbox{margin-top:12px;border:1px solid var(--ring);border-radius:10px;background:#141413;
+  display:flex;flex-direction:column;max-width:78ch}
 .chat-kicker{font-size:12px;letter-spacing:.18em;color:var(--muted);padding:10px 14px 0}
 .chat-log{overflow-y:auto;padding:10px 14px;display:flex;flex-direction:column;gap:8px;
-  min-height:80px;max-height:220px}
+  min-height:160px;max-height:380px}
 .chat-msg{font-size:14px;line-height:1.55;padding:8px 11px;border-radius:9px;max-width:88%}
 .chat-msg-bot{background:rgba(255,255,255,.05);color:var(--ink-2);align-self:flex-start}
 .chat-msg-user{background:rgba(232,179,58,.14);color:var(--ink);align-self:flex-end}
@@ -720,8 +727,8 @@ footer a{color:var(--gold-dim)}
 
     <div class="host">
       <div class="host-video">
-        <!-- The live D-ID widget mounts as its own floating panel (data-position="right"),
-             not inline here - this card stays as the static intro/context. -->
+        <!-- The live D-ID widget mounts inline into this box (data-mode="full" +
+             data-target-id="didAgent") - see the script tag below. -->
         <div id="didAgent" class="host-slot"></div>
         <span class="ai-badge">AI-GENERATED HOST</span>
       </div>
@@ -732,6 +739,8 @@ footer a{color:var(--gold-dim)}
         <p class="note" style="margin-top:12px">Natasha is a fictional AI-generated presenter. She is not
           based on any real broadcaster, and she does not have access to any competitor&rsquo;s
           contact details.</p>
+        <p class="chat-intro">Talk to Natasha directly &mdash; video and voice &mdash; in the panel on the
+          left, or type your questions to the tournament assistant below for a quick text answer.</p>
         <div class="chatbox" id="ddChat">
           <div class="chat-kicker">ASK ABOUT THE TOURNAMENT</div>
           <div class="chat-log" id="chatLog" aria-live="polite">
