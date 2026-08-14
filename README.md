@@ -181,6 +181,7 @@ Some things the data turned up:
 ├── index.html                # the site (darwindecathlon.com) - DD Live / Chronicles / Field Notes
 ├── staticwebapp.config.json  # Azure Static Web Apps routing, headers, redirects
 ├── agent/                    # Natasha, the AI virtual spectator & PR director
+├── api/                      # Azure Functions chat backend (Claude via Azure AI Foundry)
 ├── data/                     # publishable tournament data + schema + CSV templates
 │   ├── tournaments.js        # every result, 2015-2023 (names + scores only)
 │   ├── media.js              # photo captions and people tags
@@ -189,6 +190,20 @@ Some things the data turned up:
 ├── images/                   # logos, event badges, banners, tournament photos
 └── Weather.html              # standalone 3-day forecast widget; not superseded by /live/
 ```
+
+## Deployment
+
+The site runs on **two independent, fully-live cloud deployments** — AWS and
+Azure — both auto-deploying from this same repo on every push to `main`.
+AWS currently serves `darwindecathlon.com`; Azure is kept running as a warm
+fallback, reachable at its own `*.azurestaticapps.net` hostname. Both chatbot
+backends (AWS Lambda + Bedrock, Azure Functions + AI Foundry) ground every
+answer in the same `data/tournaments.js`, fetched live rather than bundled,
+so there's exactly one source of truth regardless of which cloud answers a
+request.
+
+Full architecture, request-flow diagrams, and a resource-by-resource
+comparison of both clouds: **[`DEPLOYMENT.md`](DEPLOYMENT.md)**.
 
 The v1 per-event pages (`Skeet.html`, `Champs.html`, and friends) duplicated what the
 Field Guide and Chronicles now do properly, so they were retired in favor of the pages

@@ -5,9 +5,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## What this is
 
 The public site for the Darwin Decathlon, a private backyard tournament among friends
-(darwindecathlon.com). It's a **static site with no build step, no bundler, no package
-manager, and no server-side code** — plain HTML/CSS/JS deployed as-is to Azure Static
-Web Apps.
+(darwindecathlon.com). The frontend is a **static site with no build step, no
+bundler, and no package manager** — plain HTML/CSS/JS. It does have a small
+server-side component (`api/`): a Q&A chatbot backend, duplicated as an Azure
+Function and an AWS Lambda so it can run on either of the two clouds the site
+is deployed to in parallel — see **Deployment**, below.
 
 - `index.html` — the whole v2.0 "LIVE" site: three tabs (DD Live, Chronicles, Field
   Notes) in one file, self-contained `<style>` and `<script>` blocks, no framework, no
@@ -20,8 +22,20 @@ Web Apps.
   the D-ID AI persona embedded in the DD Live tab (live, not just planned). This is
   a config document, not code that runs in this repo — the source of truth is
   D-ID's own dashboard, not this file.
+- `api/` — the chatbot backend that answers tournament Q&A in the DD Live tab.
+  Grounds itself only in `data/tournaments.js`, fetched live from whichever cloud is
+  serving it (see [`DEPLOYMENT.md`](DEPLOYMENT.md)) — never the gitignored CSVs.
 - `tools/*.py` — one-off Pillow scripts (`badge-key.py`, `optimize-images.py`) for
   image prep, run manually, not part of any pipeline.
+
+## Deployment
+
+This site runs on **two independent, fully-live cloud deployments at once** —
+AWS and Azure — both auto-deploying from every push to `main`. AWS currently
+serves `darwindecathlon.com`; Azure is kept running as a warm fallback,
+reachable at its own hostname. Full architecture, request-flow diagrams for
+both clouds, and the reasoning behind keeping both live:
+**[`DEPLOYMENT.md`](DEPLOYMENT.md)**.
 
 ## Running it locally
 
@@ -35,10 +49,11 @@ Then visit `http://localhost:8123/` (or `/?event=<slug>#notes`, `/?year=2019`,
 `/?year=ALL` to deep-link specific views — see Routing/state below).
 
 There is no test suite, linter, or build command. `.github/workflows/main.yml` is
-inert scaffolding (`echo Hello, world!`) — the real deploy pipeline is
-`.github/workflows/azure-static-web-apps-*.yml`, which pushes straight to Azure
-Static Web Apps on every push/PR to `main`. There is no CI gate to satisfy before
-committing.
+inert scaffolding (`echo Hello, world!`). There is no CI gate to satisfy before
+committing. `.github/workflows/azure-static-web-apps-*.yml` is one of the two
+deploy pipelines — see **Deployment**, above, for the other (AWS Amplify,
+which has no checked-in workflow file since it deploys via a direct
+repo webhook instead).
 
 To sanity-check a change visually, a headless-browser screenshot/DOM-dump against
 the local server (Edge `--headless=new --dump-dom` or `--screenshot`) is the
@@ -121,8 +136,13 @@ between what's published and what's gitignored:
   pointing at its field-guide entry (`/?event=<slug>#notes`) or Chronicles
   (`/#chronicles`). Azure SWA route rules apply before static file serving, so this
   works even though the files no longer exist — same mechanism as the `/live`
-  redirects above. These redirects are **Azure-only**: `python -m http.server`
-  won't honor them, so a locally served old URL will just 404. `Weather.html` was
+  redirects above. **This file governs Azure's deployment specifically** — the AWS
+  deployment reads none of it; its equivalent redirect/header rules live in AWS
+  Amplify's own app config, ported by hand from this file (see
+  [`DEPLOYMENT.md`](DEPLOYMENT.md)). If you change routing behavior here, the
+  Amplify side needs the same change made separately or the two clouds will
+  silently diverge. Either way, none of these redirects fire under
+  `python -m http.server`: a locally served old URL just 404s. `Weather.html` was
   kept as-is since nothing in `index.html` replaces it.
 
 ## Licensing note

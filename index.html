@@ -1749,18 +1749,9 @@ function photoTake(g, m){
     const row = app.rows[idx], place = idx + 1, pts = row.pts;
     const won = app.winners && app.winners.includes(person);
 
-    // How does this compare to their own record at this event?
-    const mine = g.playerAvg.find(p => p.player === person);
-    const vsSelf = mine ? +(pts - mine.avg).toFixed(1) : null;
-
     if(won) return `<strong>${person}</strong> took the whole thing that year &mdash; ${pts} points. The photo is basically a victory portrait.`;
     if(place <= 3) return `<strong>${person}</strong> finished ${ordinal(place)} of ${field} here in ${m.year} on ${pts} points. Genuinely one of the good ones at this event.`;
-    if(place > field * 0.75){
-      const extra = vsSelf != null && vsSelf < -1
-        ? ` Even by his own standards that was rough &mdash; ${Math.abs(vsSelf)} points below his career average at this event.`
-        : '';
-      return `<strong>${person}</strong> looks tremendously confident here for a man who went on to finish ${ordinal(place)} of ${field} with ${pts} points.${extra}`;
-    }
+    if(place > field * 0.75) return `<strong>${person}</strong> finished ${ordinal(place)} of ${field} here in ${m.year} on ${pts} points &mdash; not his best event, but he showed up and gave it a shot.`;
     return `<strong>${person}</strong> landed ${ordinal(place)} of ${field} on ${pts} points &mdash; respectable, unspectacular, no beer owed.`;
   });
 
