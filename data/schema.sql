@@ -312,13 +312,16 @@ INSERT INTO events (name, slug, icon_asset, scoring_direction, is_active) VALUES
     ('Field Goal Kicking', 'field-goal-kicking', 'images/badges/badge-FieldGoal.webp',   'high', FALSE),
     ('Go Karts',           'go-karts',           'images/badges/badge-GoKarts.webp',     'high', FALSE);
 
--- The Golden Tee scorekeeping trial - a standalone, non-decathlon tournament
--- row so live-entered scores have somewhere real to attach to. Excluded from
+-- The live scorekeeping trial - a standalone, non-decathlon tournament row so
+-- live-entered scores have somewhere real to attach to. Excluded from
 -- standings/win-count views by tournament_type, so it never inflates a
--- career record. Edit year/dates/location/notes once actually scheduled.
+-- career record. Started with Golden Tee only, Corn Hole added the same
+-- weekend once that pilot proved out - more events land here over time as
+-- each gets its own scorekeeping form. Edit year/dates/location/notes once
+-- actually scheduled.
 INSERT INTO tournaments (year, name, tournament_type, notes) VALUES
-    (2026, 'Golden Tee Scorekeeping Trial', 'training',
-     'Standalone single-event test of the live scorekeeping system ahead of the next full Darwin Decathlon. Golden Tee only, not a scored decathlon.');
+    (2026, 'Live Scorekeeping Trial', 'training',
+     'Standalone test of the live scorekeeping system ahead of the next full Darwin Decathlon. Golden Tee and Corn Hole so far, not a scored decathlon.');
 
 INSERT INTO tournament_events (tournament_id, event_id, is_pair_event, scoring_basis, rules_text, snafu_text)
 SELECT
@@ -329,4 +332,22 @@ SELECT
     'Nine holes on the barroom machine. Upgraded clubs, balls and tees are all fair game - spend the currency.',
     'Drink every time you land in the rough or a bunker. Find the water and it is a Grape Ape shot.'
 FROM tournaments t, events e
-WHERE t.name = 'Golden Tee Scorekeeping Trial' AND e.slug = 'golden-tee';
+WHERE t.name = 'Live Scorekeeping Trial' AND e.slug = 'golden-tee';
+
+-- Corn Hole tracks only the final score, not individual throws - see
+-- result_details usage below (one 'belized_win' flag per result, not a
+-- per-bag log). raw_score is per TEAM: both partners' results rows get the
+-- same value, and cross-reference each other via partner_player_id, so
+-- standard per-player aggregation and partner-pairing analytics both work
+-- without special-casing pairs.
+INSERT INTO tournament_events (tournament_id, event_id, is_pair_event, scoring_basis, rules_text, snafu_text, savior_text)
+SELECT
+    t.tournament_id,
+    e.event_id,
+    TRUE,
+    'Play to 21, no penalty for going over',
+    'Pair event. Partners stay on the same side of the boards. Play to 21, no penalty for going over. Single elimination bracket.',
+    'Miss the board with all four bags and it costs you 10 push-ups.',
+    'All four bags in the hole by a single player in one turn is an immediate walk-off win for the team. You got Belize''d.'
+FROM tournaments t, events e
+WHERE t.name = 'Live Scorekeeping Trial' AND e.slug = 'corn-hole';

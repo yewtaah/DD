@@ -120,7 +120,75 @@ def handle_login(body):
     return _response(200, {"ok": True, "name": name})
 
 
-def handle_submit_score(body):
+def _int_field(body, key, default=0):
+    v = body.get(key)
+    if v in (None, ""):
+        return default
+    try:
+        return int(v)
+    except (TypeError, ValueError):
+        return default
+
+
+def _upsert_result(teid, player_id, raw_score, entered_by, partner_player_id=None,
+                    placement=None, details=None):
+    """Insert or update one player's result row for a tournament_event, replace
+    its result_details, and log the write to results_audit. Shared by every
+    event-specific submit handler - Golden Tee (individual) and Corn Hole
+    (one call per partner) both go through this."""
+    existing = _rows(_sql(
+        "SELECT result_id FROM results WHERE tournament_event_id = :teid AND player_id = :pid",
+        [_param("teid", teid), _param("pid", player_id)],
+    ))
+
+    new_values = {
+        "raw_score": raw_score, "entered_by": entered_by,
+        "partner_player_id": partner_player_id, "placement": placement,
+        "details": details or {},
+    }
+
+    if existing:
+        result_id = existing[0]["result_id"]
+        old = _rows(_sql("SELECT * FROM results WHERE result_id = :rid", [_param("rid", result_id)]))[0]
+        _sql(
+            """UPDATE results SET raw_score = :score, partner_player_id = :partner,
+                   placement = :placement, updated_by = :who, updated_at = now()
+               WHERE result_id = :rid""",
+            [_param("score", raw_score), _param("partner", partner_player_id),
+             _param("placement", placement), _param("who", entered_by), _param("rid", result_id)],
+        )
+        _sql("DELETE FROM result_details WHERE result_id = :rid", [_param("rid", result_id)])
+        action = "update"
+        old_values = old
+    else:
+        result_id = _rows(_sql(
+            """INSERT INTO results (tournament_event_id, player_id, partner_player_id, raw_score,
+                                     placement, entered_by, entered_at)
+               VALUES (:teid, :pid, :partner, :score, :placement, :who, now()) RETURNING result_id""",
+            [_param("teid", teid), _param("pid", player_id), _param("partner", partner_player_id),
+             _param("score", raw_score), _param("placement", placement), _param("who", entered_by)],
+        ))[0]["result_id"]
+        action = "insert"
+        old_values = None
+
+    for detail_type, value in (details or {}).items():
+        _sql(
+            "INSERT INTO result_details (result_id, detail_type, value) VALUES (:rid, :dt, :v)",
+            [_param("rid", result_id), _param("dt", detail_type), _param("v", float(value))],
+        )
+
+    _sql(
+        """INSERT INTO results_audit (result_id, action, changed_by, old_values, new_values)
+           VALUES (:rid, :action, :who, :old::jsonb, :new::jsonb)""",
+        [
+            _param("rid", result_id), _param("action", action), _param("who", entered_by),
+            _param("old", json.dumps(old_values)), _param("new", json.dumps(new_values)),
+        ],
+    )
+    return result_id
+
+
+def handle_submit_golden_tee(body):
     teid = int(body["tournament_event_id"])
     password = body.get("password", "")
     entered_by = (body.get("name") or "").strip()
@@ -132,83 +200,78 @@ def handle_submit_score(body):
     player_name = (body.get("player_name") or "").strip()
     if not player_name:
         return _response(400, {"error": "player_name is required"})
-
     try:
         strokes = float(body["strokes"])
     except (KeyError, TypeError, ValueError):
         return _response(400, {"error": "strokes must be a number"})
 
-    def _int_field(key):
-        v = body.get(key)
-        if v in (None, ""):
-            return 0
-        try:
-            return int(v)
-        except (TypeError, ValueError):
-            return 0
-
-    great_shot_points = _int_field("great_shot_points")
-    rough_bunker_count = _int_field("rough_bunker_count")
-    water_count = _int_field("water_count")
-
     player_id = _find_or_create_player(player_name)
-
-    existing = _rows(_sql(
-        "SELECT result_id FROM results WHERE tournament_event_id = :teid AND player_id = :pid",
-        [_param("teid", teid), _param("pid", player_id)],
-    ))
-
-    new_values = {
-        "raw_score": strokes,
-        "entered_by": entered_by,
-        "great_shot_points": great_shot_points,
-        "rough_bunker_count": rough_bunker_count,
-        "water_count": water_count,
+    details = {
+        "great_shot_points": _int_field(body, "great_shot_points"),
+        "rough_bunker_count": _int_field(body, "rough_bunker_count"),
+        "water_count": _int_field(body, "water_count"),
     }
-
-    if existing:
-        result_id = existing[0]["result_id"]
-        old = _rows(_sql("SELECT * FROM results WHERE result_id = :rid", [_param("rid", result_id)]))[0]
-        _sql(
-            """UPDATE results SET raw_score = :score, updated_by = :who, updated_at = now()
-               WHERE result_id = :rid""",
-            [_param("score", strokes), _param("who", entered_by), _param("rid", result_id)],
-        )
-        _sql("DELETE FROM result_details WHERE result_id = :rid", [_param("rid", result_id)])
-        action = "update"
-        old_values = old
-    else:
-        result_id = _rows(_sql(
-            """INSERT INTO results (tournament_event_id, player_id, raw_score, entered_by, entered_at)
-               VALUES (:teid, :pid, :score, :who, now()) RETURNING result_id""",
-            [_param("teid", teid), _param("pid", player_id), _param("score", strokes), _param("who", entered_by)],
-        ))[0]["result_id"]
-        action = "insert"
-        old_values = None
-
-    for detail_type, value in (
-        ("great_shot_points", great_shot_points),
-        ("rough_bunker_count", rough_bunker_count),
-        ("water_count", water_count),
-    ):
-        _sql(
-            "INSERT INTO result_details (result_id, detail_type, value) VALUES (:rid, :dt, :v)",
-            [_param("rid", result_id), _param("dt", detail_type), _param("v", float(value))],
-        )
-
-    _sql(
-        """INSERT INTO results_audit (result_id, action, changed_by, old_values, new_values)
-           VALUES (:rid, :action, :who, :old::jsonb, :new::jsonb)""",
-        [
-            _param("rid", result_id),
-            _param("action", action),
-            _param("who", entered_by),
-            _param("old", json.dumps(old_values)),
-            _param("new", json.dumps(new_values)),
-        ],
-    )
-
+    result_id = _upsert_result(teid, player_id, strokes, entered_by, details=details)
     return _response(200, {"ok": True, "result_id": result_id, "player_id": player_id})
+
+
+def handle_submit_corn_hole(body):
+    """Corn Hole is a pairs game to 21 (no bust). Records only the final score
+    per team, not individual throws - see result_details usage. Both partners
+    on a team get their own results row, each raw_score set to their team's
+    final score and each pointing at the other via partner_player_id, so
+    per-player aggregation and "who partners with whom" queries both work
+    without any pairs-specific view. A 'Belize'd' instant win (all 4 bags by
+    one player in one turn) is recorded as a result_details flag on the
+    winning team's two rows rather than a separate table - it's exactly the
+    kind of one-off per-event detail result_details exists for."""
+    teid = int(body["tournament_event_id"])
+    password = body.get("password", "")
+    entered_by = (body.get("name") or "").strip()
+    if not entered_by:
+        return _response(400, {"error": "Enter your name"})
+    if not _check_password(teid, password):
+        return _response(401, {"error": "Wrong password"})
+
+    def _name(key):
+        return (body.get(key) or "").strip()
+
+    team_a = [_name("team_a_player1"), _name("team_a_player2")]
+    team_b = [_name("team_b_player1"), _name("team_b_player2")]
+    if not all(team_a) or not all(team_b):
+        return _response(400, {"error": "All four player names are required"})
+
+    try:
+        score_a = float(body["team_a_score"])
+        score_b = float(body["team_b_score"])
+    except (KeyError, TypeError, ValueError):
+        return _response(400, {"error": "team_a_score and team_b_score must be numbers"})
+
+    belized_team = body.get("belized_team")  # 'a', 'b', or falsy/None
+    if belized_team not in ("a", "b", None, ""):
+        return _response(400, {"error": "belized_team must be 'a', 'b', or empty"})
+
+    a_ids = [_find_or_create_player(n) for n in team_a]
+    b_ids = [_find_or_create_player(n) for n in team_b]
+
+    a_won = belized_team == "a" or (not belized_team and score_a >= score_b)
+    b_won = belized_team == "b" or (not belized_team and score_b > score_a)
+
+    result_ids = []
+    for ids, score, partner_ids, won, is_team_a in (
+        (a_ids, score_a, a_ids, a_won, True), (b_ids, score_b, b_ids, b_won, False),
+    ):
+        for i, pid in enumerate(ids):
+            partner_id = partner_ids[1 - i]
+            details = {}
+            if belized_team == ("a" if is_team_a else "b"):
+                details["belized_win"] = 1
+            result_ids.append(_upsert_result(
+                teid, pid, score, entered_by,
+                partner_player_id=partner_id, placement=(1 if won else 2), details=details,
+            ))
+
+    return _response(200, {"ok": True, "result_ids": result_ids})
 
 
 def handle_get_event(params):
@@ -234,9 +297,12 @@ def handle_get_event(params):
 def handle_get_scores(params):
     teid = int(params["tournament_event_id"])
     results = _rows(_sql(
-        """SELECT r.result_id, p.first_name || ' ' || p.last_name AS player_name,
-                  r.raw_score, r.entered_by, r.entered_at, r.updated_by, r.updated_at
-           FROM results r JOIN players p ON p.player_id = r.player_id
+        """SELECT r.result_id, r.player_id, p.first_name || ' ' || p.last_name AS player_name,
+                  r.partner_player_id, pp.first_name || ' ' || pp.last_name AS partner_name,
+                  r.raw_score, r.placement, r.entered_by, r.entered_at, r.updated_by, r.updated_at
+           FROM results r
+           JOIN players p ON p.player_id = r.player_id
+           LEFT JOIN players pp ON pp.player_id = r.partner_player_id
            WHERE r.tournament_event_id = :teid
            ORDER BY r.raw_score ASC NULLS LAST""",
         [_param("teid", teid)],
@@ -266,8 +332,10 @@ def handler(event, context):
     try:
         if method == "POST" and path.endswith("/login"):
             return handle_login(json.loads(event.get("body") or "{}"))
-        if method == "POST" and path.endswith("/scores"):
-            return handle_submit_score(json.loads(event.get("body") or "{}"))
+        if method == "POST" and path.endswith("/scores/golden-tee"):
+            return handle_submit_golden_tee(json.loads(event.get("body") or "{}"))
+        if method == "POST" and path.endswith("/scores/corn-hole"):
+            return handle_submit_corn_hole(json.loads(event.get("body") or "{}"))
         if method == "GET" and path.endswith("/scores"):
             return handle_get_scores(event.get("queryStringParameters") or {})
         if method == "GET" and path.endswith("/event"):
