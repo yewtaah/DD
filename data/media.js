@@ -299,6 +299,12 @@ window.DD_MEDIA = [
     people: [], venue: "Rosenberger Construction"
   },
   {
+    event: "Shuffle Board", year: 2019,
+    file: "/images/DarwinRosenberger.jpg",
+    caption: "The Rosenberger Construction crew, Friday night.",
+    people: [], venue: "Rosenberger Construction"
+  },
+  {
     event: "TopGolf", year: 2018,
     file: "/images/DarwinTopGolf2018.jpg",
     caption: "The 2018 field at TopGolf.",
