@@ -886,8 +886,8 @@ footer a{color:var(--gold-dim)}
 
       <div class="sk-list">
         <table>
-          <thead><tr><th>Team</th><th>Score</th><th>Belize&rsquo;d</th><th>Entered by</th></tr></thead>
-          <tbody id="skCornHoleRows"><tr><td colspan="4" style="color:var(--muted)">No games entered yet.</td></tr></tbody>
+          <thead><tr><th>Team A</th><th>Team B</th><th>Entered by</th></tr></thead>
+          <tbody id="skCornHoleRows"><tr><td colspan="3" style="color:var(--muted)">No games entered yet.</td></tr></tbody>
         </table>
       </div>
     </div>
@@ -1087,6 +1087,34 @@ if(toChron) toChron.addEventListener('click',()=>document.getElementById('tab-ch
   });
 })();
 
+/* Groups Corn Hole's flat per-player result rows back into one entry per
+   game - two teams, each a partner pair - keyed by game_group (see the
+   column comment in data/schema.sql for why that's needed: nothing else
+   links "this team" to "the team they actually played" once more than one
+   game's worth of rows exist). Shared by the scorekeeper panel's own list
+   and the read-only Field Notes viewer so both render identically. */
+function groupCornHoleGames(results){
+  const byGroup={};
+  results.forEach(r=>{
+    const gid=r.game_group ?? r.result_id;
+    (byGroup[gid]=byGroup[gid]||[]).push(r);
+  });
+  return Object.values(byGroup).map(rows=>{
+    const seen=new Set(); const teams=[];
+    rows.forEach(r=>{
+      if(seen.has(r.result_id)) return;
+      const partner=rows.find(x=>x.player_id===r.partner_player_id);
+      seen.add(r.result_id); if(partner) seen.add(partner.result_id);
+      teams.push({
+        names:[r.player_name,r.partner_name||partner?.player_name].filter(Boolean).join(' & '),
+        score:r.raw_score, placement:r.placement,
+        belized:(r.details||{}).belized_win, enteredBy:r.entered_by
+      });
+    });
+    return teams;
+  });
+}
+
 /* ---------- live scorekeeping - calls /api/scorekeeper, which writes
    through to the Aurora Postgres database (see data/schema.sql,
    DEPLOYMENT.md). Auth is deliberately simple: one shared password per
@@ -1205,19 +1233,11 @@ if(toChron) toChron.addEventListener('click',()=>document.getElementById('tab-ch
         rowsEl.innerHTML='<tr><td colspan="4" style="color:var(--muted)">No games entered yet.</td></tr>';
         return;
       }
-      // One row per player; pair them up by partner_player_id so each team prints once.
-      const seen=new Set();
-      const teams=[];
-      results.forEach(r=>{
-        if(seen.has(r.result_id)) return;
-        const partner=results.find(x=>x.player_id===r.partner_player_id);
-        seen.add(r.result_id); if(partner) seen.add(partner.result_id);
-        teams.push({names:[r.player_name,r.partner_name||partner?.player_name].filter(Boolean).join(' & '),
-          score:r.raw_score, belized:(r.details||{}).belized_win, enteredBy:r.entered_by});
-      });
-      rowsEl.innerHTML=teams.map(t=>
-        `<tr><td class="name">${t.names}</td><td>${t.score}</td><td>${t.belized?'Yes':''}</td><td>${t.enteredBy||''}</td></tr>`
-      ).join('');
+      const games=groupCornHoleGames(results);
+      rowsEl.innerHTML=games.map(([a,b])=>{
+        const cell=t=>t?`${t.names} &mdash; ${t.score}${t.belized?" (Belize'd)":t.placement===1?' (W)':t.placement===2?' (L)':''}`:'&mdash;';
+        return `<tr><td class="name">${cell(a)}</td><td class="name">${cell(b)}</td><td>${(a||b)?.enteredBy||''}</td></tr>`;
+      }).join('');
     }catch{ /* leave the list as-is on a transient failure */ }
   }
 
@@ -2325,18 +2345,11 @@ const LIVE_SCORING_SLUGS={
     : '<p style="font-size:14px;color:var(--muted)">No scores entered yet.</p>',
   'corn-hole': (results)=>{
     if(!results.length) return '<p style="font-size:14px;color:var(--muted)">No games entered yet.</p>';
-    const seen=new Set(); const teams=[];
-    results.forEach(r=>{
-      if(seen.has(r.result_id)) return;
-      const partner=results.find(x=>x.player_id===r.partner_player_id);
-      seen.add(r.result_id); if(partner) seen.add(partner.result_id);
-      teams.push({names:[r.player_name,r.partner_name||partner?.player_name].filter(Boolean).join(' & '),
-        score:r.raw_score, belized:(r.details||{}).belized_win, placement:r.placement});
-    });
+    const games=groupCornHoleGames(results);
+    const cell=t=>t?`${t.names} &mdash; <b>${t.score}</b>${t.belized?" <span style=\"color:var(--gold)\">(Belize&rsquo;d)</span>":t.placement===1?' (W)':t.placement===2?' (L)':''}`:'&mdash;';
     return `<div class="tblwrap"><table class="dv">
-      <thead><tr><th>Team</th><th>Score</th><th>Result</th></tr></thead>
-      <tbody>${teams.map(t=>`<tr><td>${t.names}</td><td><b>${t.score}</b></td>`+
-        `<td>${t.belized?"Belize&rsquo;d walk-off":t.placement===1?'Won':t.placement===2?'&mdash;':''}</td></tr>`).join('')}</tbody>
+      <thead><tr><th>Team A</th><th>Team B</th></tr></thead>
+      <tbody>${games.map(([a,b])=>`<tr><td>${cell(a)}</td><td>${cell(b)}</td></tr>`).join('')}</tbody>
     </table></div>`;
   }
 };

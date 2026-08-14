@@ -152,6 +152,14 @@ CREATE TABLE results (
     -- teammate's row explicitly first - see delete_player() in
     -- tests/test_scorekeeper_api.py for the exact order.
     partner_player_id      INT NULL REFERENCES players(player_id),
+    -- Links every row from one multi-team submission (e.g. both players on
+    -- both Corn Hole teams from a single game) so the game can be displayed
+    -- as one line - "who played whom" isn't otherwise recoverable once more
+    -- than one game's worth of rows exist. Set to the lowest result_id among
+    -- the rows in that submission (stable across later score edits to the
+    -- same players, since UPDATE never changes result_id). NULL for
+    -- individual events, where there's nothing to group.
+    game_group              INT NULL,
     raw_score              NUMERIC(10,2) NULL,
     placement              INT NULL,          -- 1 = 1st place, etc.
     points_awarded          NUMERIC(5,2) NULL,

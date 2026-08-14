@@ -236,6 +236,7 @@ class CornHoleScoring(unittest.TestCase):
         status, body = self._submit(score_a=21, score_b=14)
         self.assertEqual(status, 200, body)
         self.assertEqual(len(body["result_ids"]), 4)
+        self.assertIn(body["game_group"], body["result_ids"])
 
         _, scores = http("GET", f"/scores?tournament_event_id={self.teid}")
         by_name = {r["player_name"]: r for r in scores["results"]
@@ -250,6 +251,19 @@ class CornHoleScoring(unittest.TestCase):
         self.assertEqual(by_name[self.A1]["placement"], 1)
         self.assertEqual(by_name[self.B1]["raw_score"], "14.00")
         self.assertEqual(by_name[self.B1]["placement"], 2)
+
+        # All four rows share one game_group, distinguishing this game from
+        # any other game recorded around the same time - see the column
+        # comment in data/schema.sql for why that link has to exist at all.
+        groups = {by_name[n]["game_group"] for n in (self.A1, self.A2, self.B1, self.B2)}
+        self.assertEqual(len(groups), 1)
+        self.assertEqual(groups.pop(), body["game_group"])
+
+    def test_game_group_stable_across_resubmit(self):
+        _, first = self._submit(score_a=21, score_b=14)
+        _, second = self._submit(score_a=21, score_b=17)  # same four players, corrected score
+        self.assertEqual(first["game_group"], second["game_group"],
+                          "resubmitting the same four players must reuse the game_group, not mint a new one")
 
     def test_belized_walkoff_overrides_score_based_winner(self):
         # Team B has fewer points but wins outright via the walk-off rule.

@@ -271,7 +271,17 @@ def handle_submit_corn_hole(body):
                 partner_player_id=partner_id, placement=(1 if won else 2), details=details,
             ))
 
-    return _response(200, {"ok": True, "result_ids": result_ids})
+    # Tag all four rows from this submission with a shared game_group so the
+    # UI can show "who played whom" as one line - see the column comment in
+    # data/schema.sql. Using the lowest result_id keeps this stable across
+    # later edits to the same four players (UPDATE never changes result_id).
+    game_group = min(result_ids)
+    _sql(
+        f"UPDATE results SET game_group = :gg WHERE result_id IN ({','.join(':id'+str(i) for i in range(len(result_ids)))})",
+        [_param("gg", game_group)] + [_param(f"id{i}", rid) for i, rid in enumerate(result_ids)],
+    )
+
+    return _response(200, {"ok": True, "result_ids": result_ids, "game_group": game_group})
 
 
 def handle_get_event(params):
@@ -299,7 +309,7 @@ def handle_get_scores(params):
     results = _rows(_sql(
         """SELECT r.result_id, r.player_id, p.first_name || ' ' || p.last_name AS player_name,
                   r.partner_player_id, pp.first_name || ' ' || pp.last_name AS partner_name,
-                  r.raw_score, r.placement, r.entered_by, r.entered_at, r.updated_by, r.updated_at
+                  r.game_group, r.raw_score, r.placement, r.entered_by, r.entered_at, r.updated_by, r.updated_at
            FROM results r
            JOIN players p ON p.player_id = r.player_id
            LEFT JOIN players pp ON pp.player_id = r.partner_player_id
