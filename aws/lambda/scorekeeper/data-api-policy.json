@@ -1,0 +1,15 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": ["rds-data:ExecuteStatement", "rds-data:BatchExecuteStatement", "rds-data:BeginTransaction", "rds-data:CommitTransaction", "rds-data:RollbackTransaction"],
+      "Resource": "arn:aws:rds:us-east-1:654700647887:cluster:dd-live-scoring"
+    },
+    {
+      "Effect": "Allow",
+      "Action": "secretsmanager:GetSecretValue",
+      "Resource": "arn:aws:secretsmanager:us-east-1:654700647887:secret:rds!cluster-fa08f829-599f-421d-a358-c173da062646-HVosre*"
+    }
+  ]
+}

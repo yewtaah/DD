@@ -662,6 +662,35 @@ html,body{max-width:100%;overflow-x:clip}
   letter-spacing:.06em;padding:0 16px;cursor:pointer}
 .chat-send:disabled{opacity:.5;cursor:default}
 
+/* ---------- scorekeeper (live entry) ----------
+   Deliberately styled like the chat box above - same surface, same input
+   treatment - so it reads as part of the site rather than a bolted-on admin
+   tool. Hidden by default; toggled by the Scorekeeper Login button. */
+.sk-toggle{margin-top:16px}
+.sk-panel{margin-top:14px;border:1px solid var(--ring);border-radius:10px;background:#141413;
+  padding:16px;max-width:78ch}
+.sk-panel[hidden]{display:none}
+.sk-panel h3{margin:0 0 4px;font-size:14px;letter-spacing:.14em;color:var(--gold);text-transform:uppercase}
+.sk-panel .sub{color:var(--ink-2);font-size:13.5px;margin:0 0 12px}
+.sk-row{display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap}
+.sk-row label{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--muted);flex:1;min-width:120px}
+.sk-row input{background:#0d0d0d;border:1px solid var(--axis);border-radius:7px;color:var(--ink);
+  padding:9px 11px;font-size:14px;font-family:var(--sans)}
+.sk-row input:focus{outline:1px solid var(--gold-dim)}
+.sk-btn{background:var(--gold);color:#241d16;border:0;border-radius:7px;font:800 12.5px var(--sans);
+  letter-spacing:.06em;padding:10px 18px;cursor:pointer;margin-top:4px}
+.sk-btn:disabled{opacity:.5;cursor:default}
+.sk-msg{font-size:13px;margin-top:8px}
+.sk-msg.err{color:#e08a8a}
+.sk-msg.ok{color:#28d17c}
+.sk-who{font-size:13px;color:var(--ink-2);margin-bottom:10px}
+.sk-list{margin-top:14px;border-top:1px solid var(--ring);padding-top:12px}
+.sk-list table{width:100%;border-collapse:collapse;font-size:13.5px}
+.sk-list th{text-align:left;color:var(--muted);font-size:11.5px;letter-spacing:.1em;padding:4px 8px;
+  text-transform:uppercase}
+.sk-list td{padding:5px 8px;border-top:1px solid var(--ring);color:var(--ink-2)}
+.sk-list td.name{color:var(--ink);font-weight:700}
+
 /* ---------- generic content ---------- */
 .empty{background:var(--surface);border:1px dashed var(--axis);border-radius:12px;padding:34px 22px;text-align:center}
 .empty h3{margin:0 0 8px;color:var(--gold);letter-spacing:.1em;font-size:16px;text-transform:uppercase}
@@ -776,6 +805,49 @@ footer a{color:var(--gold-dim)}
          this tab carries running standings, event-by-event scoring, and win probability
          updating between events &mdash; with Natasha calling it as it happens.</p>
       <p style="margin-top:14px"><button class="chip" id="toChron">Browse the Chronicles instead</button></p>
+    </div>
+
+    <!-- Live scorekeeping pilot: Golden Tee only, writes to the Aurora
+         Postgres database via api/scorekeeper (see DEPLOYMENT.md). Deliberately
+         plain - one shared password per event, free-text name for attribution,
+         no session beyond this browser tab. Read-only view of the same data
+         lives on Golden Tee's Field Notes page instead of here. -->
+    <div class="sk-toggle">
+      <button class="chip" id="skToggleBtn">Scorekeeper Login</button>
+    </div>
+
+    <div class="sk-panel" id="skLoginPanel" hidden>
+      <h3>Scorekeeper Login</h3>
+      <p class="sub">Golden Tee scoring only, for now. Ask whoever's running the event for the password.</p>
+      <div class="sk-row">
+        <label>Your name<input type="text" id="skName" placeholder="Scott" autocomplete="off"></label>
+        <label>Event password<input type="password" id="skPassword" autocomplete="off"></label>
+      </div>
+      <button class="sk-btn" id="skLoginBtn">Log in</button>
+      <div class="sk-msg" id="skLoginMsg"></div>
+    </div>
+
+    <div class="sk-panel" id="skEntryPanel" hidden>
+      <h3>Golden Tee &mdash; Enter a Score</h3>
+      <p class="sk-who" id="skWho"></p>
+      <div class="sk-row">
+        <label>Player<input type="text" id="skPlayer" placeholder="Full name" autocomplete="off"></label>
+        <label>Strokes (9 holes)<input type="number" id="skStrokes" min="9" max="100" inputmode="numeric"></label>
+      </div>
+      <div class="sk-row">
+        <label>Great shot points<input type="number" id="skGreatShot" min="0" max="50" value="0" inputmode="numeric"></label>
+        <label>Rough / bunker count<input type="number" id="skRough" min="0" max="50" value="0" inputmode="numeric"></label>
+        <label>Water count (Grape Ape)<input type="number" id="skWater" min="0" max="50" value="0" inputmode="numeric"></label>
+      </div>
+      <button class="sk-btn" id="skSubmitBtn">Save score</button>
+      <div class="sk-msg" id="skSubmitMsg"></div>
+
+      <div class="sk-list">
+        <table>
+          <thead><tr><th>Player</th><th>Strokes</th><th>Great shots</th><th>Rough/bunker</th><th>Water</th><th>Entered by</th></tr></thead>
+          <tbody id="skScoreRows"><tr><td colspan="6" style="color:var(--muted)">No scores entered yet.</td></tr></tbody>
+        </table>
+      </div>
     </div>
   </section>
 
@@ -971,6 +1043,151 @@ if(toChron) toChron.addEventListener('click',()=>document.getElementById('tab-ch
       input.focus();
     }
   });
+})();
+
+/* ---------- live scorekeeping (Golden Tee pilot) - calls /api/scorekeeper,
+   which writes through to the Aurora Postgres database (see data/schema.sql,
+   DEPLOYMENT.md). Auth is deliberately simple: one shared password per event,
+   re-sent with every write rather than a signed session token - this is a
+   low-stakes internal tool for a private tournament, not a system that needs
+   real session management. Password/name live in sessionStorage only - gone
+   when the tab closes, never sent anywhere but this API. ---------- */
+(function initScorekeeper(){
+  const toggleBtn=document.getElementById('skToggleBtn');
+  const loginPanel=document.getElementById('skLoginPanel');
+  const entryPanel=document.getElementById('skEntryPanel');
+  if(!toggleBtn) return;
+
+  const nameInput=document.getElementById('skName');
+  const passInput=document.getElementById('skPassword');
+  const loginBtn=document.getElementById('skLoginBtn');
+  const loginMsg=document.getElementById('skLoginMsg');
+  const whoEl=document.getElementById('skWho');
+  const playerInput=document.getElementById('skPlayer');
+  const strokesInput=document.getElementById('skStrokes');
+  const greatShotInput=document.getElementById('skGreatShot');
+  const roughInput=document.getElementById('skRough');
+  const waterInput=document.getElementById('skWater');
+  const submitBtn=document.getElementById('skSubmitBtn');
+  const submitMsg=document.getElementById('skSubmitMsg');
+  const rowsEl=document.getElementById('skScoreRows');
+
+  let eventId=null;
+  let refreshTimer=null;
+
+  async function resolveEventId(){
+    if(eventId) return eventId;
+    const res=await fetch('/api/scorekeeper/event?slug=golden-tee');
+    if(!res.ok) throw new Error('Could not find the Golden Tee event');
+    const data=await res.json();
+    eventId=data.tournament_event_id;
+    return eventId;
+  }
+
+  function session(){
+    try{ return JSON.parse(sessionStorage.getItem('ddScorekeeper')||'null'); }catch{ return null; }
+  }
+
+  async function refreshScores(){
+    try{
+      const teid=await resolveEventId();
+      const res=await fetch(`/api/scorekeeper/scores?tournament_event_id=${teid}`);
+      const data=await res.json();
+      const results=data.results||[];
+      if(!results.length){
+        rowsEl.innerHTML='<tr><td colspan="6" style="color:var(--muted)">No scores entered yet.</td></tr>';
+        return;
+      }
+      rowsEl.innerHTML=results.map(r=>{
+        const d=r.details||{};
+        return `<tr><td class="name">${r.player_name}</td><td>${r.raw_score}</td>`+
+          `<td>${d.great_shot_points??0}</td><td>${d.rough_bunker_count??0}</td>`+
+          `<td>${d.water_count??0}</td><td>${r.entered_by||''}</td></tr>`;
+      }).join('');
+    }catch{ /* leave the list as-is on a transient failure */ }
+  }
+
+  function showEntryPanel(sess){
+    loginPanel.hidden=true;
+    entryPanel.hidden=false;
+    whoEl.textContent=`Logged in as ${sess.name}`;
+    refreshScores();
+    if(refreshTimer) clearInterval(refreshTimer);
+    refreshTimer=setInterval(refreshScores,10000);
+  }
+
+  toggleBtn.addEventListener('click',()=>{
+    const sess=session();
+    if(sess){ showEntryPanel(sess); return; }
+    loginPanel.hidden=!loginPanel.hidden;
+  });
+
+  loginBtn.addEventListener('click', async ()=>{
+    const name=nameInput.value.trim();
+    const password=passInput.value;
+    if(!name){ loginMsg.textContent='Enter your name.'; loginMsg.className='sk-msg err'; return; }
+    loginBtn.disabled=true;
+    loginMsg.textContent=''; loginMsg.className='sk-msg';
+    try{
+      const teid=await resolveEventId();
+      const res=await fetch('/api/scorekeeper/login',{
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({tournament_event_id:teid, password, name})
+      });
+      const data=await res.json();
+      if(!res.ok) throw new Error(data.error||'Login failed');
+      sessionStorage.setItem('ddScorekeeper',JSON.stringify({name,password}));
+      passInput.value='';
+      showEntryPanel({name});
+    }catch(err){
+      loginMsg.textContent=err.message||'Login failed.';
+      loginMsg.className='sk-msg err';
+    }finally{
+      loginBtn.disabled=false;
+    }
+  });
+
+  submitBtn.addEventListener('click', async ()=>{
+    const sess=session();
+    if(!sess){ submitMsg.textContent='Log in again.'; submitMsg.className='sk-msg err'; return; }
+    const player=playerInput.value.trim();
+    const strokes=strokesInput.value;
+    if(!player || !strokes){
+      submitMsg.textContent='Player name and strokes are required.';
+      submitMsg.className='sk-msg err';
+      return;
+    }
+    submitBtn.disabled=true;
+    submitMsg.textContent=''; submitMsg.className='sk-msg';
+    try{
+      const teid=await resolveEventId();
+      const res=await fetch('/api/scorekeeper/scores',{
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({
+          tournament_event_id:teid, password:sess.password, name:sess.name,
+          player_name:player, strokes,
+          great_shot_points:greatShotInput.value, rough_bunker_count:roughInput.value,
+          water_count:waterInput.value
+        })
+      });
+      const data=await res.json();
+      if(!res.ok) throw new Error(data.error||'Save failed');
+      submitMsg.textContent=`Saved ${player}'s score.`;
+      submitMsg.className='sk-msg ok';
+      playerInput.value=''; strokesInput.value='';
+      greatShotInput.value='0'; roughInput.value='0'; waterInput.value='0';
+      refreshScores();
+    }catch(err){
+      submitMsg.textContent=err.message||'Save failed - the session password may be wrong, log in again.';
+      submitMsg.className='sk-msg err';
+    }finally{
+      submitBtn.disabled=false;
+    }
+  });
+
+  // Resume an existing browser-tab session without re-prompting for the password.
+  const existing=session();
+  if(existing) showEntryPanel(existing);
 })();
 
 /* ---------- DD LIVE segment strip (derived) ----------
@@ -1864,6 +2081,8 @@ function openGuide(slug,push){
 
     ${briefing}
 
+    ${g.slug==='golden-tee' ? '<div class="gsection" id="skFieldViewer"></div>' : ''}
+
     <div class="gstats">
       ${st('TOURNAMENTS',g.years.length,g.years.join(', '))}
       ${st('MOST WINS',tiedTop.length?`${topWin[1]}&times;`:'&mdash;',tiedTop.length?tiedTop.map(w=>w[0]).join(', '):'no data')}
@@ -1938,6 +2157,7 @@ function openGuide(slug,push){
 
   box.querySelectorAll('#gback').forEach(b=>b.onclick=()=>closeGuide(true));
   box.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>openGuide(b.dataset.go,true));
+  if(g.slug==='golden-tee') loadGoldenTeeScores();
   box.querySelectorAll('[data-upload]').forEach(b=>b.onclick=()=>{
     // Deliberately does NOT pretend to upload. A static site has nowhere to put
     // the file: this needs the Azure Static Web Apps managed Functions API plus
@@ -1961,6 +2181,37 @@ function openGuide(slug,push){
 function closeGuide(push){
   $('#notesDetail').hidden=true; $('#notesIndex').hidden=false;
   if(push) history.replaceState(null,'','#notes');
+}
+
+/* Read-only view of the live scorekeeping pilot's data (see initScorekeeper
+   above for the write side). Deliberately lives on Golden Tee's own Field
+   Notes page rather than Chronicles - this is a standalone training session,
+   not part of tournament history, and the database-side views that feed
+   Chronicles/all-time stats already exclude it by tournament_type. */
+async function loadGoldenTeeScores(){
+  const box=document.getElementById('skFieldViewer');
+  if(!box) return;
+  box.innerHTML='<h3>Live Scorekeeping</h3><p style="font-size:13px;color:var(--muted)">Loading&hellip;</p>';
+  try{
+    const evRes=await fetch('/api/scorekeeper/event?slug=golden-tee');
+    if(!evRes.ok) throw new Error();
+    const {tournament_event_id,tournament_name}=await evRes.json();
+    const res=await fetch(`/api/scorekeeper/scores?tournament_event_id=${tournament_event_id}`);
+    const data=await res.json();
+    const results=data.results||[];
+    box.innerHTML=`
+      <h3>Live Scorekeeping</h3>
+      <p style="font-size:13px;color:var(--ink-2);margin:0 0 10px">${tournament_name} &mdash; entered live by on-site scorekeepers, not part of tournament history.</p>
+      ${results.length ? `<div class="tblwrap"><table class="dv">
+        <thead><tr><th>Player</th><th>Strokes</th><th>Great shots</th><th>Rough/bunker</th><th>Water</th></tr></thead>
+        <tbody>${results.map(r=>{const d=r.details||{};
+          return `<tr><td>${r.player_name}</td><td><b>${r.raw_score}</b></td><td>${d.great_shot_points??0}</td>`+
+                 `<td>${d.rough_bunker_count??0}</td><td>${d.water_count??0}</td></tr>`;
+        }).join('')}</tbody></table></div>`
+        : '<p style="font-size:14px;color:var(--muted)">No scores entered yet.</p>'}`;
+  }catch{
+    box.innerHTML='<h3>Live Scorekeeping</h3><p style="font-size:13px;color:var(--muted)">Live data isn\'t available right now.</p>';
+  }
 }
 
 /* ---------- render ----------
