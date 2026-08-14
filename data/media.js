@@ -40,12 +40,9 @@ window.DD_MEDIA = [
     people: ["Terry Register"], venue: "Vacek Ranch"
   },
 
-  /* ---------- Aug 2026 photo drop: sorted by event from filenames + visual
-     inspection. A few were filed under the wrong event by their own name -
-     WashersConacher.jpg and BeerPongWallDrain.png both actually show the
-     tailgate-style cornhole board, not washers boxes or beer pong cups, so
-     they're filed here as Corn Hole instead. ShurikenAim.jpg turned out to
-     be an unrelated cookout candid and was left out of the gallery entirely -
+  /* ---------- Aug 2026 photo drop: sorted by event, mostly from filenames -
+     they're reliable enough to lead with. ShurikenAim.jpg turned out to be
+     an unrelated cookout candid and was left out of the gallery entirely -
      see images/updates/ for photos that didn't map to a scored event. ---------- */
   {
     event: "Skeet Shooting", year: null,
@@ -66,15 +63,15 @@ window.DD_MEDIA = [
     people: ["Scott Bateman", "Dan Vacek"], venue: "Vacek Ranch"
   },
   {
-    event: "Corn Hole", year: null,
+    event: "Washers", year: null,
     file: "/images/WashersConacher.jpg",
-    caption: "Indoor tailgate-board cornhole, game night.",
+    caption: "A washers game underway indoors, game night.",
     people: ["Andy Conacher"]
   },
   {
-    event: "Corn Hole", year: null,
+    event: "Beer Pong", year: null,
     file: "/images/BeerPongWallDrain.webp",
-    caption: "Another round on the indoor tailgate board.",
+    caption: "Racking cups on a folding table in the yard.",
     people: ["Jason Wall"]
   },
   {
