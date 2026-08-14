@@ -48,10 +48,13 @@ python -m http.server 8123
 Then visit `http://localhost:8123/` (or `/?event=<slug>#notes`, `/?year=2019`,
 `/?year=ALL` to deep-link specific views — see Routing/state below).
 
-There is no test suite, linter, or build command. `.github/workflows/main.yml` is
-inert scaffolding (`echo Hello, world!`). There is no CI gate to satisfy before
-committing. `.github/workflows/azure-static-web-apps-*.yml` is one of the two
-deploy pipelines — see **Deployment**, above, for the other (AWS Amplify,
+There is no linter or build command for the frontend. `tests/test_scorekeeper_api.py`
+is the one real test suite in the repo, covering the live-scorekeeping API
+(`aws/lambda/scorekeeper`) — integration tests against the actual deployed
+endpoint, not mocks; see the file's docstring for why and how to run it.
+`.github/workflows/main.yml` is inert scaffolding (`echo Hello, world!`). There is no
+CI gate to satisfy before committing. `.github/workflows/azure-static-web-apps-*.yml`
+is one of the two deploy pipelines — see **Deployment**, above, for the other (AWS Amplify,
 which has no checked-in workflow file since it deploys via a direct
 repo webhook instead).
 

@@ -143,7 +143,15 @@ CREATE TABLE results (
     result_id            INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     tournament_event_id   INT NOT NULL REFERENCES tournament_events(tournament_event_id),
     player_id             INT NOT NULL REFERENCES players(player_id),
-    partner_player_id      INT NULL REFERENCES players(player_id),  -- set only for pair events
+    -- Set only for pair events, cross-referencing the teammate's own results
+    -- row (see Corn Hole in the seed data below). No ON DELETE behavior is
+    -- set deliberately - nothing in the app deletes a player today, and
+    -- silently nulling out a teammate reference or cascading a delete across
+    -- someone else's row is worse than just refusing the delete. If a
+    -- player-delete feature ever lands, clear partner_player_id on the
+    -- teammate's row explicitly first - see delete_player() in
+    -- tests/test_scorekeeper_api.py for the exact order.
+    partner_player_id      INT NULL REFERENCES players(player_id),
     raw_score              NUMERIC(10,2) NULL,
     placement              INT NULL,          -- 1 = 1st place, etc.
     points_awarded          NUMERIC(5,2) NULL,

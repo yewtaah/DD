@@ -154,6 +154,50 @@ zone.
 
 ---
 
+## Live scorekeeping (AWS-only, new in 2.1.0)
+
+A second, independent AWS subsystem sits alongside the chat backend: a real
+relational database, written to directly from scorekeepers' phones during a
+live event rather than through the flat `data/*.js` files everything else on
+the site reads from.
+
+- **Aurora Serverless v2 (PostgreSQL)**, cluster `dd-live-scoring`, accessed
+  via the **RDS Data API** — same reasoning as the chat Lambda's Bedrock
+  calls: no VPC networking needed by either the schema migration or the
+  application Lambda, just IAM-authenticated HTTPS. Full schema:
+  [`data/schema.sql`](data/schema.sql).
+- **Lambda + API Gateway** at `/api/scorekeeper` (`aws/lambda/scorekeeper`),
+  proxied through the same Amplify-rewrite pattern as `/api/chat`. Routes:
+  `GET /event`, `GET /scores`, `POST /login`, `POST /scores/golden-tee`,
+  `POST /scores/corn-hole`.
+- **Auth** is one shared password per `tournament_event` (table
+  `scorekeeper_credentials`), re-checked on every write rather than via a
+  signed session token, plus a free-text scorekeeper name captured on each
+  row for attribution. Proportionate to a private friend-group tournament,
+  not a system that needs real session management.
+- **Audit trail**: every write goes through one `_upsert_result()` helper in
+  the Lambda that logs a before/after snapshot to `results_audit` — the
+  "CRUD-safe" requirement this was built against.
+- **Training vs. real tournaments**: piloted events (Golden Tee, Corn Hole so
+  far) attach to a `tournaments` row with `tournament_type = 'training'`,
+  which the standings/win-count views filter out by design — a scorekeeping
+  trial never inflates anyone's career record.
+- **Two IAM gotchas hit while building this**, worth knowing if it needs
+  rebuilding: `boto3.client("rds-data")` silently uses the caller's *local*
+  default AWS region rather than erroring if it doesn't match the cluster's
+  actual region (bit the test suite before it bit anything real); and
+  `results.partner_player_id` has no `ON DELETE` behavior, so deleting a
+  player who's still referenced as someone else's teammate fails on the FK —
+  see the comment on that column in `data/schema.sql` for the fix if a
+  player-delete feature ever lands.
+
+Adding the next event's scoring is meant to be cheap: one `tournament_event`
+row + a `scorekeeper_credentials` row in the database, one submit handler in
+the Lambda, one entry form + one line in `SK_EVENTS`/`LIVE_SCORING_SLUGS` in
+`index.html`. The login/session/audit/viewer plumbing is already shared.
+
+---
+
 ## Azure architecture (fallback, still running)
 
 ```mermaid
