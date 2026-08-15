@@ -2292,7 +2292,21 @@ function openGuide(slug,push){
         : `<div class="gphotos">
              <div style="font-size:15px;color:var(--ink-2);margin-bottom:12px">No photos filed for this event yet.</div>
              <button class="upbtn" data-upload="${g.slug}">Add a photo</button>
-             <div class="upnote">Uploads need the media service switched on &mdash; see below.</div>
+             <div class="upnote">Submitted photos are reviewed before they appear on the site.</div>
+             <div class="sk-panel" id="upPanel" hidden style="text-align:left">
+               <h3>Add a Photo</h3>
+               <p class="sub">Submitted photos are held for review &mdash; they don't go live immediately.</p>
+               <div class="sk-row">
+                 <label>Photo<input type="file" id="upFile" accept="image/jpeg,image/png,image/webp"></label>
+                 <label>Your name<input type="text" id="upName" placeholder="Scott" autocomplete="off"></label>
+               </div>
+               <label style="display:flex;gap:8px;align-items:flex-start;font-size:13px;color:var(--ink-2);margin-bottom:10px">
+                 <input type="checkbox" id="upConsent" style="margin-top:3px">
+                 <span>I have consent from everyone in this photo to share it publicly on this site.</span>
+               </label>
+               <button class="sk-btn" id="upSubmitBtn">Submit for review</button>
+               <div class="sk-msg" id="upMsg"></div>
+             </div>
            </div>`}
       <p style="font-size:13px;color:var(--muted);margin:12px 0 0;line-height:1.6">
         No conditions report filed for the next tournament yet. Competitor commentary
@@ -2304,22 +2318,47 @@ function openGuide(slug,push){
   box.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>openGuide(b.dataset.go,true));
   if(LIVE_SCORING_SLUGS[g.slug]) loadLiveScoringViewer(g.slug);
   box.querySelectorAll('[data-upload]').forEach(b=>b.onclick=()=>{
-    // Deliberately does NOT pretend to upload. A static site has nowhere to put
-    // the file: this needs the Azure Static Web Apps managed Functions API plus
-    // Blob Storage (the `media` table in data/schema.sql is already shaped for
-    // it, including upload_source='qr_feed' for the on-site QR feed). Auto
-    // captioning needs a vision call on top of that. Until both exist, tell the
-    // truth rather than ship a button that silently drops photos.
-    alert(
-      "Photo upload isn't switched on yet.\n\n"+
-      "It needs two pieces that aren't built:\n"+
-      "  1. An upload endpoint + Blob Storage to hold the file\n"+
-      "  2. A vision call to draft the caption automatically\n\n"+
-      "Until then: drop the image into images/ and add an entry to "+
-      "data/media.js. Tag the people in it and the site writes the "+
-      "commentary from their actual scores."
-    );
+    const panel=box.querySelector('#upPanel');
+    if(panel) panel.hidden=!panel.hidden;
   });
+  const upSubmitBtn=box.querySelector('#upSubmitBtn');
+  if(upSubmitBtn) upSubmitBtn.onclick=async()=>{
+    const fileInput=box.querySelector('#upFile');
+    const nameInput=box.querySelector('#upName');
+    const consentInput=box.querySelector('#upConsent');
+    const msg=box.querySelector('#upMsg');
+    const file=fileInput.files[0];
+    if(!file){ msg.textContent='Choose a photo first.'; msg.className='sk-msg err'; return; }
+    if(!nameInput.value.trim()){ msg.textContent='Enter your name.'; msg.className='sk-msg err'; return; }
+    if(!consentInput.checked){ msg.textContent='Consent from everyone in the photo is required.'; msg.className='sk-msg err'; return; }
+    if(file.size>8*1024*1024){ msg.textContent='Photo is too large (8MB max).'; msg.className='sk-msg err'; return; }
+    upSubmitBtn.disabled=true; msg.textContent='Uploading…'; msg.className='sk-msg';
+    try{
+      const b64=await new Promise((resolve,reject)=>{
+        const reader=new FileReader();
+        reader.onload=()=>resolve(reader.result.split(',')[1]);
+        reader.onerror=()=>reject(new Error('Could not read that file'));
+        reader.readAsDataURL(file);
+      });
+      const res=await fetch('/api/media/upload',{
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({
+          event_slug:g.slug, uploader_name:nameInput.value.trim(), consent:true,
+          filename:file.name, image_base64:b64
+        })
+      });
+      const data=await res.json();
+      if(!res.ok) throw new Error(data.error||'Upload failed');
+      msg.textContent='Thanks — submitted for review!';
+      msg.className='sk-msg ok';
+      fileInput.value=''; nameInput.value=''; consentInput.checked=false;
+    }catch(err){
+      msg.textContent=err.message||'Upload failed, try again.';
+      msg.className='sk-msg err';
+    }finally{
+      upSubmitBtn.disabled=false;
+    }
+  };
   window.scrollTo({top:0,behavior:'smooth'});
 }
 

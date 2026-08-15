@@ -198,6 +198,65 @@ the Lambda, one entry form + one line in `SK_EVENTS`/`LIVE_SCORING_SLUGS` in
 
 ---
 
+## Photo upload (AWS-only, new in 2.2.0)
+
+A third AWS-only subsystem, alongside chat and live scorekeeping: the "Add a
+photo" button in Field Notes (`index.html`'s `.gphotos` block) now actually
+accepts uploads instead of the `alert()` explaining it couldn't. Issue #11
+originally proposed Azure Functions + Blob Storage for this, but Azure isn't
+what serves `darwindecathlon.com` (see "Which cloud is live right now" above)
+— building it there only would ship a feature nobody could reach, so this
+follows the same AWS pattern as live scorekeeping instead.
+
+- **S3 bucket `dd-media-uploads-654700647887`** (`us-east-1`; the account ID
+  suffix was needed since S3 bucket names are globally unique and the plain
+  name was already taken by another AWS account), private, all public access
+  blocked. Objects sit under `pending/{uuid}.{ext}` until a moderator approves
+  them, then move to `approved/{uuid}.{ext}`. Deliberately a separate bucket
+  from the Amplify Hosting origin (`darwindecathlon.com`), which gets
+  overwritten wholesale on every push to `main` — not a safe place for
+  user-submitted content to live.
+- **`media` / `media_tags` tables**, added to the same `dd-live-scoring`
+  Aurora cluster live scorekeeping already uses (see `data/schema.sql`) —
+  no new database, just new tables on the existing one. `media.status`
+  (`pending` / `approved` / `rejected`) is the moderation gate: nothing is
+  ever served to the public site with `status != 'approved'`.
+- **Lambda `dd-media` + API Gateway HTTP API `dd-media-api`** at
+  `/api/media` (`aws/lambda/media`), same RDS Data API pattern as
+  `dd-scorekeeper`, proxied through the same kind of Amplify rewrite rule as
+  `/api/chat` and `/api/scorekeeper`. Routes: `POST /upload`,
+  `GET /pending` (admin), `POST /{id}/approve` (admin),
+  `POST /{id}/reject` (admin), `DELETE /{id}` (admin).
+- **Auto-captioning, scoped deliberately narrow**: the upload handler calls
+  Bedrock (Claude Haiku 4.5, same cross-region inference profile as
+  `dd-chat`) with the photo to draft a one-sentence caption and guess the
+  *activity* shown. It is explicitly instructed never to guess who is in the
+  photo — real participant identification would mean matching faces against
+  reference images of real, named private individuals, which needs its own
+  explicit-consent flow that doesn't exist yet. Until that's built,
+  participant names are typed in by hand by whoever moderates the upload.
+- **Moderation**: `admin/media-review.html` — a small, unlinked (URL-only)
+  page gated by one shared password in Secrets Manager
+  (`dd-media-admin-password`), same proportionate-to-a-friend-tournament
+  reasoning as the scorekeeper login's shared per-event password. Lists
+  pending photos via short-lived presigned S3 URLs (the bucket itself is
+  never made public), lets a moderator edit the AI-drafted caption, add
+  people by hand, and approve or reject.
+- **Same two IAM gotchas as `dd-chat`/`dd-scorekeeper`, worth knowing if this
+  needs rebuilding**: the cross-region Bedrock inference profile needs
+  `bedrock:InvokeModel` on the underlying foundation-model ARN with a
+  wildcard region, not just the profile ARN in this Lambda's own region
+  (`aws/lambda/media/permissions-policy.json`); and `boto3.client("rds-data")`
+  silently uses the caller's local default region rather than erroring if it
+  doesn't match the cluster's actual region.
+
+Not built yet, on purpose: the public Field Notes gallery still reads
+`data/media.js`, not the `media` table — wiring that up is real scope on its
+own (per the issue's own phrasing, that's meant to happen "once uploads
+work," as a follow-up once approved rows exist to query).
+
+---
+
 ## Azure architecture (fallback, still running)
 
 ```mermaid

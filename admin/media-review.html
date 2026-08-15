@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Darwin Decathlon &mdash; Photo Review</title>
+<!--
+  Not linked from site nav - reachable by URL only, like the QR-feed concept
+  it moderates for. Password-gated (issue #11's shared admin secret, same
+  proportionate-to-a-friend-tournament reasoning as the scorekeeper login).
+  Plain HTML/JS, no framework, matching this repo's no-build-step approach -
+  see CLAUDE.md.
+-->
+<style>
+:root{
+  --plane:#0d0d0d; --gold:#e8b33a; --gold-dim:#d4a02c;
+  --ink:#ffffff; --ink-2:#c3c2b7; --muted:#898781;
+  --axis:#383835; --ring:rgba(255,255,255,.10);
+  --sans:system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{background:var(--plane);color:var(--ink);font-family:var(--sans);min-height:100vh}
+.wrap{max-width:900px;margin:0 auto;padding:32px 20px 60px}
+h1{font-size:15px;letter-spacing:.18em;color:var(--gold);text-transform:uppercase;margin:0 0 24px}
+.sk-panel{margin-top:14px;border:1px solid var(--ring);border-radius:10px;background:#141413;
+  padding:16px;max-width:78ch}
+.sk-panel h3{margin:0 0 4px;font-size:14px;letter-spacing:.14em;color:var(--gold);text-transform:uppercase}
+.sk-panel .sub{color:var(--ink-2);font-size:13.5px;margin:0 0 12px}
+.sk-row{display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap}
+.sk-row label{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--muted);flex:1;min-width:120px}
+.sk-row input{background:#0d0d0d;border:1px solid var(--axis);border-radius:7px;color:var(--ink);
+  padding:9px 11px;font-size:14px;font-family:var(--sans)}
+.sk-row input:focus{outline:1px solid var(--gold-dim)}
+.sk-btn{background:var(--gold);color:#241d16;border:0;border-radius:7px;font:800 12.5px var(--sans);
+  letter-spacing:.06em;padding:10px 18px;cursor:pointer;margin-top:4px}
+.sk-btn:disabled{opacity:.5;cursor:default}
+.sk-btn.reject{background:#3a2424;color:#e08a8a}
+.sk-msg{font-size:13px;margin-top:8px}
+.sk-msg.err{color:#e08a8a}
+.sk-msg.ok{color:#28d17c}
+#pendingList{margin-top:24px;display:flex;flex-direction:column;gap:16px}
+.card{border:1px solid var(--ring);border-radius:10px;background:#141413;padding:16px;
+  display:flex;gap:16px;flex-wrap:wrap}
+.card img{width:220px;max-width:100%;border-radius:7px;object-fit:cover;display:block}
+.card .meta{flex:1;min-width:240px}
+.card .who{font-size:12.5px;color:var(--muted);margin-bottom:8px}
+.card .tag{display:inline-block;background:#1f1f1e;border:1px solid var(--axis);color:var(--ink-2);
+  font-size:11.5px;padding:3px 9px;border-radius:999px;margin-bottom:8px}
+.card textarea{width:100%;background:#0d0d0d;border:1px solid var(--axis);border-radius:7px;color:var(--ink);
+  padding:9px 11px;font-size:13.5px;font-family:var(--sans);resize:vertical;min-height:44px;margin-bottom:8px}
+.card .actions{display:flex;gap:8px;align-items:center}
+.empty{color:var(--muted);font-size:14px;margin-top:24px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Darwin Decathlon &mdash; Photo Review</h1>
+
+  <div class="sk-panel" id="loginPanel">
+    <h3>Moderator Login</h3>
+    <p class="sub">Enter the shared media-review password.</p>
+    <div class="sk-row">
+      <label>Password<input type="password" id="pw" autocomplete="off"></label>
+    </div>
+    <button class="sk-btn" id="loginBtn">Log in</button>
+    <div class="sk-msg" id="loginMsg"></div>
+  </div>
+
+  <div id="pendingList" hidden></div>
+  <div class="empty" id="emptyMsg" hidden>Nothing pending review.</div>
+</div>
+
+<script>
+let password=null;
+
+document.getElementById('loginBtn').onclick=async()=>{
+  const pw=document.getElementById('pw').value;
+  const msg=document.getElementById('loginMsg');
+  if(!pw){ msg.textContent='Enter the password.'; msg.className='sk-msg err'; return; }
+  msg.textContent='Checking…'; msg.className='sk-msg';
+  password=pw;
+  try{
+    await loadPending();
+    document.getElementById('loginPanel').hidden=true;
+  }catch(err){
+    password=null;
+    msg.textContent=err.message||'Wrong password';
+    msg.className='sk-msg err';
+  }
+};
+
+async function loadPending(){
+  const res=await fetch(`/api/media/pending?password=${encodeURIComponent(password)}`);
+  const data=await res.json();
+  if(!res.ok) throw new Error(data.error||'Could not load pending photos');
+  renderPending(data.pending||[]);
+}
+
+function renderPending(items){
+  const list=document.getElementById('pendingList');
+  const empty=document.getElementById('emptyMsg');
+  list.hidden=!items.length;
+  empty.hidden=!!items.length;
+  list.innerHTML=items.map(item=>{
+    const activity=(item.tags||[]).find(t=>t.type==='activity');
+    return `
+    <div class="card" data-id="${item.media_id}">
+      <img src="${item.preview_url}" alt="Pending photo" loading="lazy">
+      <div class="meta">
+        <div class="who">Submitted by ${item.uploaded_by||'unknown'} &middot; ${new Date(item.created_at).toLocaleString()}</div>
+        ${activity ? `<div class="tag">AI guess: ${activity.value}</div>` : ''}
+        <textarea class="caption-input" placeholder="Caption">${item.caption||''}</textarea>
+        <input type="text" class="people-input" placeholder="People in this photo (comma-separated)"
+               style="width:100%;background:#0d0d0d;border:1px solid var(--axis);border-radius:7px;
+                      color:var(--ink);padding:9px 11px;font-size:13.5px;font-family:var(--sans);margin-bottom:8px">
+        <div class="actions">
+          <button class="sk-btn approve">Approve</button>
+          <button class="sk-btn reject">Reject</button>
+          <span class="sk-msg card-msg"></span>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+
+  list.querySelectorAll('.card').forEach(card=>{
+    const id=card.dataset.id;
+    const msg=card.querySelector('.card-msg');
+    card.querySelector('.approve').onclick=async()=>{
+      const caption=card.querySelector('.caption-input').value.trim();
+      const people=card.querySelector('.people-input').value.split(',').map(s=>s.trim()).filter(Boolean);
+      msg.textContent='Approving…'; msg.className='sk-msg card-msg';
+      try{
+        const res=await fetch(`/api/media/${id}/approve`,{
+          method:'POST', headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({password, caption:caption||undefined, people})
+        });
+        const data=await res.json();
+        if(!res.ok) throw new Error(data.error||'Approve failed');
+        card.remove();
+      }catch(err){
+        msg.textContent=err.message||'Approve failed';
+        msg.className='sk-msg card-msg err';
+      }
+    };
+    card.querySelector('.reject').onclick=async()=>{
+      msg.textContent='Rejecting…'; msg.className='sk-msg card-msg';
+      try{
+        const res=await fetch(`/api/media/${id}/reject`,{
+          method:'POST', headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({password})
+        });
+        const data=await res.json();
+        if(!res.ok) throw new Error(data.error||'Reject failed');
+        card.remove();
+      }catch(err){
+        msg.textContent=err.message||'Reject failed';
+        msg.className='sk-msg card-msg err';
+      }
+    };
+  });
+}
+</script>
+</body>
+</html>
