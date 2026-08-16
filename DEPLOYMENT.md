@@ -249,6 +249,16 @@ follows the same AWS pattern as live scorekeeping instead.
   (`aws/lambda/media/permissions-policy.json`); and `boto3.client("rds-data")`
   silently uses the caller's local default region rather than erroring if it
   doesn't match the cluster's actual region.
+- **A third gotcha specific to this Lambda**: "Claude Haiku 4.5 via a
+  cross-region inference profile," as this doc describes it in prose, is not
+  the literal string Bedrock's API wants — the real inference profile ID
+  needs the model's release-date/version suffix
+  (`us.anthropic.claude-haiku-4-5-20251001-v1:0`, confirmed via
+  `aws bedrock list-inference-profiles`), not the paraphrased
+  `us.anthropic.claude-haiku-4-5` you'd guess from reading this. Hit this
+  first-hand building `dd-media` — the vision call failed with
+  `ValidationException: The provided model identifier is invalid.` until the
+  full ID was hardcoded in `aws/lambda/media/index.py`.
 
 Not built yet, on purpose: the public Field Notes gallery still reads
 `data/media.js`, not the `media` table — wiring that up is real scope on its
