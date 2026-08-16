@@ -2391,26 +2391,26 @@ function openGuide(slug,push){
               ${photoTake(g,m) ? `<span class="take">${photoTake(g,m)}</span>` : ''}
               <span class="shotmeta">${[m.year,m.venue,(m.people&&m.people.length)?m.people.join(' &amp; '):''].filter(Boolean).join(' &middot; ')}</span>
             </figcaption>
-          </figure>`).join('')}</div>`
-        : `<div class="gphotos">
-             <div style="font-size:15px;color:var(--ink-2);margin-bottom:12px">No photos filed for this event yet.</div>
-             <button class="upbtn" data-upload="${g.slug}">Add a photo</button>
-             <div class="upnote">Submitted photos are reviewed before they appear on the site.</div>
-             <div class="sk-panel" id="upPanel" hidden style="text-align:left">
-               <h3>Add a Photo</h3>
-               <p class="sub">Submitted photos are held for review &mdash; they don't go live immediately.</p>
-               <div class="sk-row">
-                 <label>Photo<input type="file" id="upFile" accept="image/jpeg,image/png,image/webp"></label>
-                 <label>Your name<input type="text" id="upName" placeholder="Scott" autocomplete="off"></label>
-               </div>
-               <label style="display:flex;gap:8px;align-items:flex-start;font-size:13px;color:var(--ink-2);margin-bottom:10px">
-                 <input type="checkbox" id="upConsent" style="margin-top:3px">
-                 <span>I have consent from everyone in this photo to share it publicly on this site.</span>
-               </label>
-               <button class="sk-btn" id="upSubmitBtn">Submit for review</button>
-               <div class="sk-msg" id="upMsg"></div>
-             </div>
-           </div>`}
+          </figure>`).join('')}</div>` : ''}
+      <div class="gphotos" style="${photosFor(g).length?'margin-top:16px':''}">
+        ${photosFor(g).length ? '' : `<div style="font-size:15px;color:var(--ink-2);margin-bottom:12px">No photos filed for this event yet.</div>`}
+        <button class="upbtn" data-upload="${g.slug}">Add a photo</button>
+        <div class="upnote">Submitted photos are reviewed before they appear on the site.</div>
+        <div class="sk-panel" id="upPanel" hidden style="text-align:left">
+          <h3>Add a Photo</h3>
+          <p class="sub">Submitted photos are held for review &mdash; they don't go live immediately.</p>
+          <div class="sk-row">
+            <label>Photo<input type="file" id="upFile" accept="image/jpeg,image/png,image/webp"></label>
+            <label>Your name<input type="text" id="upName" placeholder="Scott" autocomplete="off"></label>
+          </div>
+          <label style="display:flex;gap:8px;align-items:flex-start;font-size:13px;color:var(--ink-2);margin-bottom:10px">
+            <input type="checkbox" id="upConsent" style="margin-top:3px">
+            <span>I have consent from everyone in this photo to share it publicly on this site.</span>
+          </label>
+          <button class="sk-btn" id="upSubmitBtn">Submit for review</button>
+          <div class="sk-msg" id="upMsg"></div>
+        </div>
+      </div>
       <p style="font-size:13px;color:var(--muted);margin:12px 0 0;line-height:1.6">
         No conditions report filed for the next tournament yet. Competitor commentary
         and live conditions land here once a tournament is scheduled.</p>
