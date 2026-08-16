@@ -1,0 +1,31 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": ["rds-data:ExecuteStatement", "rds-data:BatchExecuteStatement", "rds-data:BeginTransaction", "rds-data:CommitTransaction", "rds-data:RollbackTransaction"],
+      "Resource": "arn:aws:rds:us-east-1:654700647887:cluster:dd-live-scoring"
+    },
+    {
+      "Effect": "Allow",
+      "Action": "secretsmanager:GetSecretValue",
+      "Resource": [
+        "arn:aws:secretsmanager:us-east-1:654700647887:secret:rds!cluster-fa08f829-599f-421d-a358-c173da062646-HVosre*",
+        "arn:aws:secretsmanager:us-east-1:654700647887:secret:dd-media-admin-password*"
+      ]
+    },
+    {
+      "Effect": "Allow",
+      "Action": ["s3:PutObject", "s3:GetObject", "s3:DeleteObject"],
+      "Resource": "arn:aws:s3:::dd-media-uploads-654700647887/*"
+    },
+    {
+      "Effect": "Allow",
+      "Action": "bedrock:InvokeModel",
+      "Resource": [
+        "arn:aws:bedrock:*::foundation-model/anthropic.claude-haiku-4-5-*",
+        "arn:aws:bedrock:us-east-1:654700647887:inference-profile/us.anthropic.claude-haiku-4-5*"
+      ]
+    }
+  ]
+}

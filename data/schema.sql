@@ -221,9 +221,10 @@ CREATE TABLE scorekeeper_credentials (
     created_at                 TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
--- Photos/video for the dashboard's live feed. Populated later (QR upload +
--- AI tagging phase, issue #11); table exists now so the schema doesn't need
--- to change when that phase starts.
+-- Photos/video for the dashboard's live feed. Populated by the upload API
+-- (issue #11): QR/admin upload -> AI-drafted caption -> moderation gate
+-- (status) -> approved rows are what a future gallery query reads. Never
+-- serves a photo to the public site until status = 'approved'.
 CREATE TABLE media (
     media_id              INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     tournament_id           INT NULL REFERENCES tournaments(tournament_id),
@@ -234,6 +235,8 @@ CREATE TABLE media (
     upload_source              VARCHAR(20) NOT NULL DEFAULT 'admin'
         CHECK (upload_source IN ('admin','qr_feed')),
     caption                   VARCHAR(500) NULL,
+    status                    VARCHAR(20) NOT NULL DEFAULT 'pending'
+        CHECK (status IN ('pending','approved','rejected')),
     created_at                 TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
