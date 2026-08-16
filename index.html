@@ -171,6 +171,14 @@ body[data-seg="live"] header.bar{border-bottom-color:#38d9f0;
   background:linear-gradient(180deg,#12283f,#0e1f33)}
 body[data-seg="live"] .brand small{color:#38d9f0}
 body[data-seg="notes"] header.bar{background:linear-gradient(180deg,#2e251b,#241d16)}
+nav.tabs button#tab-gallery[aria-selected="true"]{color:#e8869a;border-bottom-color:#e8869a}
+body[data-seg="gallery"] header.bar{border-bottom-color:#e8869a;
+  background:linear-gradient(180deg,#2f1b22,#241419)}
+body[data-seg="gallery"] .brand small{color:#e8869a}
+nav.tabs button#tab-stats[aria-selected="true"]{color:#28d17c;border-bottom-color:#28d17c}
+body[data-seg="stats"] header.bar{border-bottom-color:#28d17c;
+  background:linear-gradient(180deg,#132a20,#0f2018)}
+body[data-seg="stats"] .brand small{color:#28d17c}
 nav.tabs button:focus-visible{outline:2px solid var(--gold);outline-offset:-2px}
 
 /* ---------- ticker ---------- */
@@ -440,6 +448,14 @@ table.dv caption{text-align:left;color:var(--muted);font-size:14px;padding-botto
 .guide-card .active-badge{
   position:absolute;top:8px;right:8px;font-size:11px;letter-spacing:.12em;font-weight:800;
   color:#0e1f33;background:#28d17c;border-radius:3px;padding:2px 5px;
+}
+/* Fallback avatar for a player with no tagged photo yet - same slot an
+   untagged .guide-card img would otherwise sit in. */
+.pcard-noimg{
+  width:88px;height:88px;margin:4px auto 0;border-radius:50%;
+  background:linear-gradient(160deg,#33291d,#241c13);border:1px solid rgba(232,179,58,.28);
+  display:flex;align-items:center;justify-content:center;
+  font:800 28px var(--sans);color:var(--gold-dim);
 }
 
 /* --- single event guide --- */
@@ -730,6 +746,8 @@ footer a{color:var(--gold-dim)}
       <button role="tab" id="tab-live" aria-controls="p-live" aria-selected="false">DD LIVE</button>
       <button role="tab" id="tab-chron" aria-controls="p-chron" aria-selected="true">CHRONICLES</button>
       <button role="tab" id="tab-notes" aria-controls="p-notes" aria-selected="false">FIELD NOTES</button>
+      <button role="tab" id="tab-gallery" aria-controls="p-gallery" aria-selected="false">GALLERY</button>
+      <button role="tab" id="tab-stats" aria-controls="p-stats" aria-selected="false">STATS</button>
     </nav>
   </div>
 </header>
@@ -970,6 +988,42 @@ footer a{color:var(--gold-dim)}
     <!-- Single-event field guide, deep-linkable via ?event=<slug> -->
     <div id="notesDetail" hidden></div>
   </section>
+
+  <!-- ================= GALLERY ================= -->
+  <section class="panel" id="p-gallery" role="tabpanel" aria-labelledby="tab-gallery" hidden>
+    <div class="card" style="margin-bottom:18px">
+      <h2>The <span class="accent">Gallery</span></h2>
+      <p class="desc">Every photo on record, from every tournament &mdash; search by name, event,
+        year or caption. Sourced from the same media file every event's Field Notes page draws
+        from, so a photo added there shows up here too.</p>
+    </div>
+    <div class="filters">
+      <span class="lab">SEARCH</span>
+      <input type="text" id="galSearch" class="chat-input" style="max-width:240px" placeholder="Name, event, caption&hellip;" autocomplete="off">
+      <span class="lab">EVENT</span>
+      <select id="galEvent" class="chat-input" style="max-width:200px"><option value="">All events</option></select>
+      <span class="lab">YEAR</span>
+      <div id="galYearChips" style="display:flex;gap:8px;flex-wrap:wrap"></div>
+    </div>
+    <div id="galGrid"></div>
+  </section>
+
+  <!-- ================= STATS ================= -->
+  <section class="panel" id="p-stats" role="tabpanel" aria-labelledby="tab-stats" hidden>
+    <!-- Roster of every competitor who's ever played; clicking one opens their card. -->
+    <div id="statsIndex">
+      <div class="card" style="margin-bottom:18px">
+        <h2>Player <span class="accent">Stats</span></h2>
+        <p class="desc">Lifetime numbers for every competitor who's ever teed it up at a Darwin
+          Decathlon &mdash; tournaments played, titles, and how they stack up event by event.
+          Built from the same scorecards as Chronicles, so the numbers always match.</p>
+      </div>
+      <div class="guide-grid" id="statsGrid"></div>
+    </div>
+
+    <!-- Single-player card, deep-linkable via ?player=<slug> -->
+    <div id="statsDetail" hidden></div>
+  </section>
 </main>
 
 <footer>
@@ -1008,7 +1062,8 @@ else { sessionStorage.setItem('ddIntroSeen','1');
   setTimeout(kill,3600); }
 
 /* ---------- tabs (with #hash deep-linking) ---------- */
-const TABS=[['tab-live','p-live','live'],['tab-chron','p-chron','chronicles'],['tab-notes','p-notes','notes']];
+const TABS=[['tab-live','p-live','live'],['tab-chron','p-chron','chronicles'],['tab-notes','p-notes','notes'],
+  ['tab-gallery','p-gallery','gallery'],['tab-stats','p-stats','stats']];
 function selectTab(tb,push){
   TABS.forEach(([t2,p2])=>{
     const on = t2===tb;
@@ -1026,10 +1081,13 @@ TABS.forEach(([tb])=>document.getElementById(tb).addEventListener('click',()=>se
 (function fromHash(){
   const h=(location.hash||'').replace('#','').toLowerCase();
   const hit=TABS.find(x=>x[2]===h);
-  // ?event=<slug> deep-links straight into a single event's field guide.
+  // ?event=<slug> deep-links straight into a single event's field guide;
+  // ?player=<slug> does the same for a Stats card.
   const ev=new URLSearchParams(location.search).get('event');
-  selectTab(ev ? 'tab-notes' : (hit?hit[0]:'tab-chron'), false);
+  const pl=new URLSearchParams(location.search).get('player');
+  selectTab(ev ? 'tab-notes' : pl ? 'tab-stats' : (hit?hit[0]:'tab-chron'), false);
   if(ev) requestAnimationFrame(()=>openGuide(ev,false));
+  else if(pl) requestAnimationFrame(()=>openStatsCard(pl,false));
 })();
 addEventListener('hashchange',()=>{
   const h=(location.hash||'').replace('#','').toLowerCase();
@@ -1744,17 +1802,11 @@ function renderCA(){
   const host=$('#caChart'); host.innerHTML='';
   const legendBox=$('#caLegend'); legendBox.innerHTML='';
 
-  // finishes[player] = [{year, place, known}]
+  // finishes[player] = [{year, place}] - sourced from PLAYERS (see
+  // buildPlayerStats()) so a title star drawn here and a title counted on
+  // the Stats tab can never drift apart.
   const finishes={};
-  D.tournaments.forEach(t=>{
-    rankedPlayers(t).forEach((r,i)=>{
-      (finishes[r.name]=finishes[r.name]||[]).push({year:t.year,place:i+1});
-    });
-  });
-  D.knownChampions.forEach(c=>{
-    if(D.tournaments.some(t=>t.year===c.year)) return;   // already have full data
-    (finishes[c.name]=finishes[c.name]||[]).push({year:c.year,place:1});
-  });
+  Object.values(PLAYERS).forEach(p=>{ finishes[p.name]=p.finishes; });
 
   const years=[...new Set(
     D.knownChampions.map(c=>c.year).concat(D.tournaments.map(t=>t.year))
@@ -2047,6 +2099,57 @@ function buildGuide(){
   return reg;
 }
 const GUIDE = buildGuide();
+
+/* Lifetime, per-player stats - built once so the Stats tab's baseball cards
+   and the Chronicles Career Arc chart draw from the exact same numbers
+   instead of each computing their own copy and risking drift. `finishes`
+   uses the same place=1-is-a-title definition Career Arc has always used;
+   it's just hoisted out of renderCA() now instead of rebuilt inline. */
+function buildPlayerStats(){
+  const stats={};
+  const get=name=>stats[name]||(stats[name]={name,slug:slugify(name),finishes:[]});
+
+  D.tournaments.forEach(t=>{
+    rankedPlayers(t).forEach((r,i)=>{
+      get(r.name).finishes.push({year:t.year,place:i+1,total:r.total});
+    });
+  });
+  D.knownChampions.forEach(c=>{
+    if(D.tournaments.some(t=>t.year===c.year)) return;   // already have full data
+    get(c.name).finishes.push({year:c.year,place:1,total:c.points});
+  });
+
+  Object.values(stats).forEach(p=>{
+    p.finishes.sort((a,b)=>a.year-b.year);
+    p.years=p.finishes.map(f=>f.year);
+    p.tournaments=p.finishes.length;
+    p.titles=p.finishes.filter(f=>f.place===1).length;
+    p.bestFinish=Math.min(...p.finishes.map(f=>f.place));
+    p.avgFinish=+(p.finishes.reduce((s,f)=>s+f.place,0)/p.finishes.length).toFixed(2);
+    const totals=p.finishes.map(f=>f.total).filter(v=>v!=null);
+    p.careerAvgPts = totals.length ? +(totals.reduce((a,b)=>a+b,0)/totals.length).toFixed(2) : null;
+
+    // Per-event titles and best average, mined from the already-built GUIDE
+    // rather than re-scanning raw tournament data.
+    p.eventTitles=Object.values(GUIDE)
+      .filter(g=>g.winCount[p.name])
+      .map(g=>({event:g.name,slug:g.slug,wins:g.winCount[p.name]}))
+      .sort((a,b)=>b.wins-a.wins);
+    let best=null;
+    Object.values(GUIDE).forEach(g=>{
+      const row=g.playerAvg.find(x=>x.player===p.name);
+      if(row && (!best || row.avg>best.avg)) best={event:g.name,slug:g.slug,avg:row.avg,n:row.n};
+    });
+    p.bestEvent=best;
+
+    // Every photo this player is tagged in, newest first - same source and
+    // sort order Field Notes' photosFor() uses.
+    p.photos=(window.DD_MEDIA||[]).filter(m=>(m.people||[]).includes(p.name))
+      .sort((a,b)=>(b.year||0)-(a.year||0));
+  });
+  return stats;
+}
+const PLAYERS = buildPlayerStats();
 
 function renderFieldNotes(){
   const grid=$('#guideGrid'); if(!grid) return; grid.innerHTML='';
@@ -2472,9 +2575,211 @@ function renderVenueMap(){
   });
 }
 
+/* ================= Gallery: search/filter over every photo on record =======
+   Same window.DD_MEDIA that Field Notes' photosFor() reads, just without the
+   single-event constraint - one dataset, two views. */
+const GAL_FILTERS = {q:'', event:'', year:'ALL'};
+
+function galleryPhotos(){
+  const q=GAL_FILTERS.q.trim().toLowerCase();
+  return (window.DD_MEDIA||[]).map(m=>({...m, canonEvent:canonical(m.event)}))
+    .filter(m=>{
+      if(GAL_FILTERS.event && m.canonEvent!==GAL_FILTERS.event) return false;
+      if(GAL_FILTERS.year!=='ALL' && m.year!==GAL_FILTERS.year) return false;
+      if(!q) return true;
+      const hay=[m.canonEvent,m.caption,m.venue,...(m.people||[])].filter(Boolean).join(' ').toLowerCase();
+      return hay.includes(q);
+    })
+    .sort((a,b)=>(b.year||0)-(a.year||0));
+}
+
+function renderGalGrid(){
+  const box=$('#galGrid'); if(!box) return;
+  const photos=galleryPhotos();
+  if(!photos.length){ box.innerHTML='<div class="gphotos">No photos match your filters.</div>'; return; }
+  box.innerHTML=`<div class="gallery">${photos.map(m=>{
+    const g=GUIDE[m.canonEvent];
+    const people=(m.people||[]).map(name=>{
+      const p=PLAYERS[name];
+      return p ? `<a href="?player=${p.slug}#stats" data-goplayer="${p.slug}">${name}</a>` : name;
+    }).join(', ');
+    return `<figure class="shot">
+      <img src="${m.file}" alt="${m.caption||m.canonEvent}" loading="lazy"
+           onerror="this.closest('.shot').remove()">
+      <figcaption>
+        ${m.caption||''}
+        <span class="shotmeta">
+          ${g?`<a href="?event=${g.slug}#notes" data-goevent="${g.slug}">${m.canonEvent}</a>`:m.canonEvent}
+          ${[m.year,m.venue].filter(Boolean).join(' &middot; ')?` &middot; ${[m.year,m.venue].filter(Boolean).join(' &middot; ')}`:''}
+          ${people?` &middot; ${people}`:''}
+        </span>
+      </figcaption>
+    </figure>`;
+  }).join('')}</div>`;
+  box.querySelectorAll('[data-goevent]').forEach(a=>a.onclick=e=>{
+    e.preventDefault(); document.getElementById('tab-notes').click(); openGuide(a.dataset.goevent,true);
+  });
+  box.querySelectorAll('[data-goplayer]').forEach(a=>a.onclick=e=>{
+    e.preventDefault(); document.getElementById('tab-stats').click(); openStatsCard(a.dataset.goplayer,true);
+  });
+}
+
+function renderGallery(){
+  const evSel=$('#galEvent');
+  if(evSel && evSel.options.length<=1){
+    Object.values(GUIDE).sort((a,b)=>a.name.localeCompare(b.name)).forEach(g=>{
+      const o=document.createElement('option'); o.value=g.name; o.textContent=g.name;
+      evSel.appendChild(o);
+    });
+    evSel.onchange=()=>{ GAL_FILTERS.event=evSel.value; renderGalGrid(); };
+  }
+  const chipBox=$('#galYearChips');
+  if(chipBox && !chipBox.children.length){
+    const mk=(label,val)=>{
+      const b=document.createElement('button'); b.type='button'; b.className='chip';
+      b.textContent=label; b.setAttribute('aria-pressed',String(GAL_FILTERS.year===val));
+      b.onclick=()=>{
+        GAL_FILTERS.year=val;
+        chipBox.querySelectorAll('.chip').forEach(c=>c.setAttribute('aria-pressed','false'));
+        b.setAttribute('aria-pressed','true');
+        renderGalGrid();
+      };
+      return b;
+    };
+    chipBox.appendChild(mk('ALL','ALL'));
+    D.tournaments.forEach(t=>chipBox.appendChild(mk(String(t.year),t.year)));
+  }
+  const search=$('#galSearch');
+  if(search && !search.dataset.wired){
+    search.dataset.wired='1';
+    search.oninput=()=>{ GAL_FILTERS.q=search.value; renderGalGrid(); };
+  }
+  renderGalGrid();
+}
+
+/* ================= Stats: lifetime baseball-card view per player ========= */
+const initials = name => name.split(' ').filter(Boolean).map(w=>w[0]).join('').slice(0,2).toUpperCase();
+
+/* Roster order: most titles first, then most tournaments, then name - same
+   tiebreak convention as guideOrder(). */
+function statsOrder(){
+  return Object.values(PLAYERS).sort((a,b)=>
+    b.titles-a.titles || b.tournaments-a.tournaments || a.name.localeCompare(b.name));
+}
+
+function renderStatsIndex(){
+  const grid=$('#statsGrid'); if(!grid) return; grid.innerHTML='';
+  statsOrder().forEach(p=>{
+    const photo=p.photos[0];
+    const d=document.createElement('button'); d.type='button'; d.className='guide-card';
+    d.innerHTML=`${p.titles?`<span class="active-badge">${p.titles}&times; CHAMP</span>`:''}
+      ${photo?`<img src="${photo.file}" alt="${p.name}" loading="lazy">`
+             :`<div class="pcard-noimg">${initials(p.name)}</div>`}
+      <div class="gname">${p.name}</div>
+      <div class="gmeta">${p.tournaments} tournament${p.tournaments===1?'':'s'} &middot; best finish ${ordinal(p.bestFinish)}</div>
+      <div class="gyears">${p.years.join(' · ')}</div>`;
+    d.onclick=()=>openStatsCard(p.slug,true);
+    grid.appendChild(d);
+  });
+}
+
+function closeStatsCard(push){
+  $('#statsDetail').hidden=true; $('#statsIndex').hidden=false;
+  if(push) history.replaceState(null,'','#stats');
+}
+
+function openStatsCard(slug,push){
+  const p=Object.values(PLAYERS).find(x=>x.slug===slug);
+  if(!p){ closeStatsCard(false); return; }
+  const order=statsOrder(), pi=order.findIndex(x=>x.slug===p.slug);
+  const prev=order[(pi-1+order.length)%order.length];
+  const next=order[(pi+1)%order.length];
+  const box=$('#statsDetail');
+  $('#statsIndex').hidden=true; box.hidden=false;
+  if(push) history.replaceState(null,'',`?player=${slug}#stats`);
+
+  const st=(k,v,s)=>`<div class="gstat"><div class="k">${k}</div><div class="v">${v}</div>${s?`<div class="s">${s}</div>`:''}</div>`;
+  const photo=p.photos[0];
+  const titleYears=p.finishes.filter(f=>f.place===1).map(f=>f.year).join(', ');
+
+  const navBar=`
+    <div class="gnav">
+      <button class="gnavbtn" data-goplayer="${prev.slug}" title="${prev.name}">
+        <span class="dir">&larr; PREV</span><span class="nm">${prev.name}</span></button>
+      <button class="gback" id="sback">All players</button>
+      <button class="gnavbtn right" data-goplayer="${next.slug}" title="${next.name}">
+        <span class="dir">NEXT &rarr;</span><span class="nm">${next.name}</span></button>
+    </div>`;
+
+  const rows=p.finishes.map(f=>{
+    const t=D.tournaments.find(x=>x.year===f.year);
+    return `<tr><td>${f.year}</td>
+      <td>${f.place===1?'<b style="color:var(--gold)">1st (Champion)</b>':ordinal(f.place)}</td>
+      <td>${f.total!=null?f.total:'&mdash;'}</td>
+      <td>${t?t.players.length:'&mdash;'}</td></tr>`;
+  }).join('');
+
+  box.innerHTML=`
+    ${navBar}
+    <div class="card" style="text-align:center;margin-bottom:18px">
+      ${photo?`<img src="${photo.file}" alt="${p.name}" style="max-width:220px;border-radius:12px;margin-bottom:12px">`
+             :`<div class="pcard-noimg" style="width:120px;height:120px;font-size:38px;margin:0 auto 12px">${initials(p.name)}</div>`}
+      <h2 style="margin:0">${p.name}</h2>
+      <div class="gyears" style="margin-top:6px">${p.years.join(' · ')}</div>
+    </div>
+
+    <div class="gstats">
+      ${st('TOURNAMENTS',p.tournaments)}
+      ${st('TITLES',p.titles,titleYears)}
+      ${st('BEST FINISH',ordinal(p.bestFinish))}
+      ${st('CAREER AVG PTS',p.careerAvgPts!=null?p.careerAvgPts:'&mdash;')}
+      ${st('BEST EVENT',p.bestEvent?p.bestEvent.event:'&mdash;',p.bestEvent?`avg ${p.bestEvent.avg} pts, ${p.bestEvent.n} appearances`:'')}
+    </div>
+
+    ${p.eventTitles.length?`
+    <div class="gsection">
+      <h3>Event titles</h3>
+      <p style="font-size:14.5px;color:var(--ink-2);line-height:1.7">
+        ${p.eventTitles.map(e=>`<a href="?event=${e.slug}#notes" data-goevent="${e.slug}">${e.event}</a> (${e.wins}&times;)`).join(', ')}
+      </p>
+    </div>` : ''}
+
+    <div class="gsection">
+      <h3>Tournament history</h3>
+      <div class="tblwrap"><table class="dv">
+        <thead><tr><th>Year</th><th>Finish</th><th>Points</th><th>Field</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table></div>
+    </div>
+
+    ${p.photos.length?`
+    <div class="gsection">
+      <h3>Photos</h3>
+      <div class="gallery">${p.photos.map(m=>{
+        const g=GUIDE[canonical(m.event)];
+        return `<figure class="shot">
+          <img src="${m.file}" alt="${m.caption||p.name}" loading="lazy" onerror="this.closest('.shot').remove()">
+          <figcaption>
+            ${m.caption||''}
+            <span class="shotmeta">${g?`<a href="?event=${g.slug}#notes" data-goevent="${g.slug}">${g.name}</a>`:canonical(m.event)}${m.year?` &middot; ${m.year}`:''}</span>
+          </figcaption>
+        </figure>`;
+      }).join('')}</div>
+    </div>` : ''}
+    ${navBar}`;
+
+  box.querySelectorAll('#sback').forEach(b=>b.onclick=()=>closeStatsCard(true));
+  box.querySelectorAll('[data-goplayer]').forEach(b=>b.onclick=()=>openStatsCard(b.dataset.goplayer,true));
+  box.querySelectorAll('[data-goevent]').forEach(a=>a.onclick=e=>{
+    e.preventDefault(); document.getElementById('tab-notes').click(); openGuide(a.dataset.goevent,true);
+  });
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
 function renderAll(){
   renderTicker(); renderHero(); renderTiles();
   renderWP(); renderCA(); renderMoments(); renderVenueMap(); renderFieldNotes(); renderLiveSegs();
+  renderGallery(); renderStatsIndex();
 }
 renderAll();
 addEventListener('resize',()=>{ if(venueMap) venueMap.invalidateSize(); });

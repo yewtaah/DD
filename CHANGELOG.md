@@ -5,6 +5,33 @@ semver (`MAJOR.MINOR.PATCH`) tracked in `VERSION` — this file started life at 
 continuing the "v2.0" the site already called itself in `CLAUDE.md`; nothing before that
 was formally versioned.
 
+## 2.3.0 — 2026-08-16
+
+### Added
+- **Gallery** tab: search and filter every photo on record (free-text search
+  across caption/event/venue/people, event dropdown, year chips). Reads the
+  same `window.DD_MEDIA` that Field Notes' `photosFor()` already draws from —
+  one dataset, two views, so a photo added to `data/media.js` shows up in
+  both automatically.
+- **Stats** tab: a lifetime "baseball card" per player — tournaments played,
+  titles, best finish, career average points, best event, full
+  tournament-by-tournament history, event titles, and their tagged photos.
+  Deep-linkable via `?player=<slug>#stats`, mirroring Field Notes'
+  `?event=<slug>#notes`.
+- `buildPlayerStats()` hoists per-player lifetime numbers (`PLAYERS`) out of
+  the Chronicles Career Arc chart, which used to compute its own copy inline.
+  Career Arc now reads from the same `PLAYERS` registry the Stats tab uses,
+  so a title star on the chart and a title counted on a player's card can
+  never drift apart.
+
+### Scope notes
+- Gallery and Stats are read-only views over the existing static data
+  (`data/tournaments.js`, `data/media.js`) — they do not yet pull in
+  moderator-approved uploads from the `dd-media` Lambda/Aurora pipeline
+  built for issue #11. That's the same "public gallery still reads
+  `data/media.js`" follow-up noted in 2.2.0 below, now shared by two tabs
+  instead of one.
+
 ## 2.2.0 — 2026-08-15
 
 ### Added
