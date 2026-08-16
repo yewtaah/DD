@@ -101,13 +101,24 @@ def _check_admin(body_or_params):
 
 
 def _resolve_event(slug):
+    """Resolves against `events` alone, not `tournament_events` - the latter
+    only has rows for the live-scorekeeping pilot (Golden Tee, Corn Hole), so
+    joining through it made every other event 404 as "Unknown event" even
+    though `events` itself lists all 17 canonical events. A photo upload
+    isn't tied to a specific tournament occurrence the way a live scorecard
+    entry is, so tournament_event_id/tournament_id are left NULL (both are
+    nullable on `media`) unless a pilot row happens to exist - same as an
+    undated photo in data/media.js (year: null)."""
     rows = _rows(_sql(
-        """SELECT te.tournament_event_id, te.tournament_id
-           FROM tournament_events te
-           JOIN events e ON e.event_id = te.event_id
-           WHERE e.slug = :slug
-           ORDER BY te.tournament_id DESC
-           LIMIT 1""",
+        """SELECT e.event_id,
+                  (SELECT te.tournament_event_id FROM tournament_events te
+                   WHERE te.event_id = e.event_id
+                   ORDER BY te.tournament_id DESC LIMIT 1) AS tournament_event_id,
+                  (SELECT te.tournament_id FROM tournament_events te
+                   WHERE te.event_id = e.event_id
+                   ORDER BY te.tournament_id DESC LIMIT 1) AS tournament_id
+           FROM events e
+           WHERE e.slug = :slug""",
         [_param("slug", slug)],
     ))
     return rows[0] if rows else None

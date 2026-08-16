@@ -259,6 +259,19 @@ follows the same AWS pattern as live scorekeeping instead.
   first-hand building `dd-media` — the vision call failed with
   `ValidationException: The provided model identifier is invalid.` until the
   full ID was hardcoded in `aws/lambda/media/index.py`.
+- **A fourth gotcha: `tournament_events` is sparse, not a full mirror of
+  `data/tournaments.js`.** `_resolve_event()` originally joined through
+  `tournament_events` to find an event by slug, but that table only has rows
+  for the live-scorekeeping pilot (Golden Tee, Corn Hole) — the full
+  6-tournament/17-event history in `data/tournaments.js` was never imported
+  into the relational schema (see "Data architecture" in `CLAUDE.md`: the DB
+  schema is "not implemented yet" as the flat files' backing store). Every
+  upload for any of the other 15 events 404'd as "Unknown event" until this
+  was fixed to resolve against `events` alone and leave
+  `tournament_event_id`/`tournament_id` NULL when no pilot row exists — same
+  as an undated photo in `data/media.js` (`year: null`). Watch for this again
+  if anything else starts joining through `tournament_events` expecting full
+  historical coverage.
 
 Not built yet, on purpose: the public Field Notes gallery still reads
 `data/media.js`, not the `media` table — wiring that up is real scope on its
