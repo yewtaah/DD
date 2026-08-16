@@ -30,7 +30,7 @@ SECRET_ARN = os.environ["SECRET_ARN"]
 DATABASE_NAME = os.environ.get("DATABASE_NAME", "ddlive")
 MEDIA_BUCKET = os.environ["MEDIA_BUCKET"]
 ADMIN_SECRET_ARN = os.environ["ADMIN_SECRET_ARN"]
-BEDROCK_MODEL_ID = "us.anthropic.claude-haiku-4-5"
+BEDROCK_MODEL_ID = "us.anthropic.claude-haiku-4-5-20251001-v1:0"
 
 MAX_IMAGE_BYTES = 8 * 1024 * 1024
 ALLOWED_EXTENSIONS = {".jpg": "jpeg", ".jpeg": "jpeg", ".png": "png", ".webp": "webp"}
