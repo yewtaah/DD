@@ -182,11 +182,14 @@ def import_venues(venues):
         existing = rows(sql("SELECT venue_id FROM venues WHERE name = :n", [param("n", v["name"])]))
         if existing:
             continue
+        # PII BOUNDARY (see CLAUDE.md): never import a street address for a
+        # private residence, even if one somehow ends up in the source file.
+        address = None if v.get("private") else v.get("address")
         sql(
-            """INSERT INTO venues (name, city, latitude, longitude, geo_precision, is_private_residence)
-               VALUES (:name, :city, :lat, :lon, :prec, :priv)""",
+            """INSERT INTO venues (name, address, city, latitude, longitude, geo_precision, is_private_residence)
+               VALUES (:name, :address, :city, :lat, :lon, :prec, :priv)""",
             [
-                param("name", v["name"]), param("city", v.get("city")),
+                param("name", v["name"]), param("address", address), param("city", v.get("city")),
                 param("lat", v.get("lat")), param("lon", v.get("lon")),
                 param("prec", v["precision"]), param("priv", v["private"]),
             ],

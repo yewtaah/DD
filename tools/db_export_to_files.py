@@ -195,7 +195,7 @@ HEADER_MEDIA = f"""/*
 # ---------------------------------------------------------------------------
 def fetch_venues():
     vs = rows(sql(
-        """SELECT venue_id, name, city, latitude, longitude, geo_precision, is_private_residence
+        """SELECT venue_id, name, address, city, latitude, longitude, geo_precision, is_private_residence
            FROM venues ORDER BY venue_id"""
     ))
     out = []
@@ -211,8 +211,13 @@ def fetch_venues():
                JOIN tournaments t ON t.tournament_id=te.tournament_id
                WHERE te.venue_id=:vid AND t.tournament_type='decathlon' ORDER BY e.name""",
             [param("vid", v["venue_id"])]))]
+        # PII BOUNDARY (see CLAUDE.md): a private residence's street address
+        # must NEVER be published, even if one is ever set in the database -
+        # this check is deliberately redundant with "don't put one there in
+        # the first place" so a future DB edit can't silently leak one.
+        address = None if v["is_private_residence"] else v["address"]
         out.append({
-            "name": v["name"], "city": v["city"],
+            "name": v["name"], "address": address, "city": v["city"],
             "lat": float(v["latitude"]) if v["latitude"] is not None else None,
             "lon": float(v["longitude"]) if v["longitude"] is not None else None,
             "precision": v["geo_precision"], "private": bool(v["is_private_residence"]),

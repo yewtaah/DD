@@ -402,6 +402,31 @@ INSERT INTO events (name, slug, icon_asset, scoring_direction, is_active) VALUES
     ('Field Goal Kicking', 'field-goal-kicking', 'images/badges/badge-FieldGoal.webp',   'high', FALSE),
     ('Go Karts',           'go-karts',           'images/badges/badge-GoKarts.webp',     'high', FALSE);
 
+-- Reference data: every venue ever used, matching data/tournaments.js's
+-- venues[] array exactly (this is the DB-as-system-of-record seed for it -
+-- see tools/db_export_to_files.py, which regenerates that array from this
+-- table plus derived years/events). Addresses are only ever set here for
+-- confirmed PUBLIC business venues. Bateman House and Vacek Ranch are
+-- private residences and MUST NEVER get an address value, no matter what
+-- source turns one up later - see the PII BOUNDARY note in CLAUDE.md and
+-- data/tournaments.js's header. Both tools/db_import_from_files.py and
+-- tools/db_export_to_files.py additionally guard against this in code;
+-- this comment is the same rule stated a third time on purpose.
+INSERT INTO venues (name, address, city, latitude, longitude, geo_precision, is_private_residence) VALUES
+    ('American Shooting Centers', '16500 Westheimer Pkwy, Houston, TX 77082', 'Houston, TX', 29.7444, -95.6564, 'rooftop', FALSE),
+    ('George Bush Park', NULL, 'Houston, TX', 29.7480, -95.6690, 'parcel', FALSE),
+    ('West Oaks Little League', NULL, 'Houston, TX', 29.7430, -95.6690, 'rooftop', FALSE),
+    ('Rosenberger Construction', '21501 Park Row Blvd #300, Katy, TX 77449', 'Katy, TX', 29.7877, -95.7433, 'rooftop', FALSE),
+    ('Cinco Ranch High School', NULL, 'Katy, TX', 29.7314, -95.7737, 'rooftop', FALSE),
+    ('WFDD Park', NULL, 'Katy, TX', 29.7310, -95.7760, 'parcel', FALSE),
+    ('TopGolf Houston (I-10)', '1030 Memorial Brook Blvd, Houston, TX 77084', 'Houston, TX', 29.7853, -95.6635, 'rooftop', FALSE),
+    ('Beck Jr. High', NULL, 'Katy, TX', 29.7443, -95.7526, 'rooftop', FALSE),
+    -- Private residence - locality precision only, no address, on purpose.
+    ('Bateman House', NULL, 'Katy, TX', 29.7440, -95.7600, 'locality', TRUE),
+    -- Private property - locality precision only, no address, on purpose.
+    ('Vacek Ranch', NULL, 'Texas Hill Country', 29.8100, -97.0800, 'locality', TRUE),
+    ('Stars Sports Bar', '414 W Grand Pkwy S #190, Katy, TX 77494', 'Katy, TX', NULL, NULL, 'unknown', FALSE);
+
 -- The live scorekeeping trial - a standalone, non-decathlon tournament row so
 -- live-entered scores have somewhere real to attach to. Excluded from
 -- standings/win-count views by tournament_type, so it never inflates a
