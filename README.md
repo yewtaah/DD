@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="https://raw.githubusercontent.com/yewtaah/DD/main/images/DD6Logo.png" alt="Darwin Decathlon" width="190">
+<img src="https://raw.githubusercontent.com/yewtaah/DD/main/images/DarwinDecathlonLive.webp" alt="Darwin Decathlon" width="190">
 
 # THE DARWIN DECATHLON
 
