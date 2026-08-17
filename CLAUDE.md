@@ -11,10 +11,13 @@ server-side component (`api/`): a Q&A chatbot backend, duplicated as an Azure
 Function and an AWS Lambda so it can run on either of the two clouds the site
 is deployed to in parallel — see **Deployment**, below.
 
-- `index.html` — the whole v2.0 "LIVE" site: three tabs (DD Live, Chronicles, Field
-  Notes) in one file, self-contained `<style>` and `<script>` blocks, no framework, no
-  external JS dependencies. Charts in Chronicles are hand-built SVG (`el()` helper
-  around `document.createElementNS`), not a charting library.
+- `index.html` — the whole v2.0 "LIVE" site: five tabs (DD Live, Chronicles, Field
+  Notes, Gallery, Stats) in one file, self-contained `<style>` and `<script>` blocks,
+  no framework, no external JS dependencies. Charts in Chronicles are hand-built SVG
+  (`el()` helper around `document.createElementNS`), not a charting library. Gallery
+  (search/filter over every photo) and Stats (a lifetime "baseball card" per player)
+  are pure client-side views over the same `window.DD_DATA`/`DD_MEDIA` globals every
+  other tab reads — no separate data source, no new network calls.
 - `Weather.html` — the one surviving v1 page, built on the HTML5 UP "Stellar" template
   (`assets/css/main.css`). It's a standalone 3-day-forecast widget with no equivalent
   in `index.html`, so it wasn't retired with the rest of the v1 event pages (see below).
@@ -25,8 +28,16 @@ is deployed to in parallel — see **Deployment**, below.
 - `api/` — the chatbot backend that answers tournament Q&A in the DD Live tab.
   Grounds itself only in `data/tournaments.js`, fetched live from whichever cloud is
   serving it (see [`DEPLOYMENT.md`](DEPLOYMENT.md)) — never the gitignored CSVs.
-- `tools/*.py` — one-off Pillow scripts (`badge-key.py`, `optimize-images.py`) for
-  image prep, run manually, not part of any pipeline.
+- `aws/lambda/` — the AWS-only backends with no Azure equivalent: `scorekeeper`
+  (live scorekeeping writes) and `media` (photo upload + AI-drafted captions +
+  moderation gate). Both talk to the Aurora Postgres cluster via the RDS Data API.
+  See [`DEPLOYMENT.md`](DEPLOYMENT.md).
+- `admin/media-review.html` — unlinked (URL-only), password-gated moderation page
+  for photo uploads. Approve/reject, edit the AI-drafted caption, tag people by hand.
+- `tools/*.py` — run-manually scripts, not part of any pipeline: `badge-key.py` /
+  `optimize-images.py` for image prep, and `db_import_from_files.py` /
+  `db_export_to_files.py` for the database (see "Data architecture" below —
+  these two are how `data/*.js` actually gets edited now).
 
 ## Deployment
 
@@ -75,16 +86,35 @@ in this order:
    event, keyed by **canonical event name**.
 3. `data/media.js` → media captions/tags, keyed the same way.
 
+That much hasn't changed. What has: **as of 2026-08-17, these three files are
+generated, not hand-edited.** The Aurora Postgres cluster (`dd-live-scoring`,
+`data/schema.sql`) is the actual system of record now. To fix a wrong score, a
+typo'd caption, or a missing rule, edit the database and run
+`python tools/db_export_to_files.py` — it rewrites all three files from the DB and
+leaves each one's hand-written header comment (PII boundary, provenance notes)
+untouched, only the data body is regenerated. **Don't hand-edit the data body of
+these three files directly** — the next export will silently overwrite it.
+`tools/db_import_from_files.py` is the reverse direction, a one-time backfill run
+once to get the DB caught up to what the files had; it's not part of the normal
+workflow going forward. Both scripts write real IAM-credentialed DB traffic, so if
+an agent tries to run them and is blocked, that's a deliberate guardrail (see
+`DEPLOYMENT.md`) — bundle the fix into a script and hand it to a human to run,
+same as any other live-DB mutation in this repo.
+
 **Canonical event names matter.** Renamed events get folded onto one canonical key
 across all three files — e.g. always `"Shuriken"` (never "Chinese Stars"),
 `"Shooting Gallery"` (never ".22 Shoot"), `"Long Drive"` (never "Long Golf Ball").
 `people` tags in `media.js` must exactly match a player name in `tournaments.js`, or
 the field guide's auto-generated commentary for that photo silently doesn't fire.
+This still holds with the DB as source — `events.name`/`events.slug` are the
+canonical key there too, and `tools/db_import_from_files.py`'s player/venue/event
+matching is exact-name-only by design (never auto-creates on a near-miss).
 
-`data/schema.sql` describes a normalized DB schema (tournaments/players/events/
-venues/results/media) that the flat-file data above is meant to eventually back
-onto — not implemented yet. `data/*.template.csv` are the tracked, dummy-data
-examples of that schema shape.
+`data/schema.sql` describes the normalized DB schema (tournaments/players/events/
+venues/results/media) the flat-file data above is generated from — implemented as
+of 2026-08-17 (see the export-pipeline paragraph above). `data/*.template.csv` are
+the tracked, dummy-data examples of that schema shape; the real gitignored CSVs
+were never the DB's data source and remain irrelevant to this pipeline.
 
 ### The PII boundary — the one rule that overrides normal instincts here
 
@@ -114,21 +144,29 @@ between what's published and what's gitignored:
 
 - **Printed totals win.** Several historical scorecards have a printed Total that
   doesn't match the sum of visible cells (flagged via `sumsCleanly:false` in
-  `tournaments.js`). The printed number is kept as authoritative and the
-  discrepancy is documented, not "corrected." Don't recompute these.
+  `tournaments.js`, `tournament_point_overrides` in the DB). The printed number is
+  kept as authoritative and the discrepancy is documented, not "corrected." Don't
+  recompute these.
 - **Simulated data must stay labeled as simulated.** Win-probability figures in
   Chronicles are retrospective Monte Carlo output, not recorded historical odds —
   never present or generate them as if they were tracked live.
-- Unverified claims live in `data/UNVERIFIED-claims.md` / `data/roster-discrepancies.md`
-  rather than being silently deleted or silently trusted.
+- **Nothing on the site hedges.** Scott made a deliberate call (2026-08-17) that
+  the site never presents data as "unverified" or "a claim pending confirmation" —
+  if something is genuinely unknown, ask him directly and record his answer as
+  definitive, rather than shipping a hedge like "(unconfirmed)" into published
+  content. `data/data-provenance.md` records sourcing and past corrections as
+  settled history, not open questions; `data/roster-discrepancies.md` is private
+  roster/contact bookkeeping (never surfaced on the site) and can still flag things
+  for his review, but public-facing data itself should read as fact.
 
 ## Routing / state in index.html
 
-- Tabs are `#live` / `#chronicles` / `#notes`, driven by `location.hash` and a
-  `TABS` array — see `selectTab()`.
+- Tabs are `#live` / `#chronicles` / `#notes` / `#gallery` / `#stats`, driven by
+  `location.hash` and a `TABS` array — see `selectTab()`.
 - `?year=2019` or `?year=ALL` deep-links Chronicles to a specific tournament or
   all-time view; `?event=<slug>#notes` deep-links Field Notes straight into one
-  event's guide via `openGuide()`.
+  event's guide via `openGuide()`; `?player=<slug>#stats` does the same for a
+  Stats card via `openStatsCard()`.
 - `staticwebapp.config.json` 301-redirects the old `/live` and `/live/*` paths to
   `/` (the v2 site used to be served from `/live/`) and blocks `/data/*.csv` from
   being served (404) even though the templates are static files in the deployed

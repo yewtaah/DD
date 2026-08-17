@@ -105,17 +105,17 @@ Historical figures are transcribed from original scorecards and cross-checked ag
 second source wherever one exists. Two conventions:
 
 1. **Printed totals win.** Where a scorecard's printed Total disagrees with the sum of
-   its own visible cells — which happens in 2018, 2019, 2022 and 2023 — the printed
-   total is treated as authoritative, because it is what the tournament actually
-   published. Discrepancies are documented, not silently corrected.
+   its own visible cells — which happens in 2015, 2018, 2019, 2022 and 2023 — the
+   printed total is treated as authoritative, because it is what the tournament
+   actually published. Discrepancies are documented, not silently corrected.
 2. **Simulated figures are labeled as such.** The win-probability charts in Chronicles are
    **retrospective Monte Carlo simulations, not recorded odds.** Nobody tracked live win
    probability at any tournament. The shape is derived from real scores; the percentages
    are model output and are labeled that way wherever they appear.
 
-Claims that failed verification are recorded in
-[`data/UNVERIFIED-claims.md`](data/UNVERIFIED-claims.md) rather than deleted, so the
-same bad numbers don't get re-imported later.
+Full sourcing, including a bad third-party AI summary that got several numbers
+wrong, is recorded in [`data/data-provenance.md`](data/data-provenance.md) rather
+than deleted, so the same bad numbers don't get re-imported later.
 
 ---
 

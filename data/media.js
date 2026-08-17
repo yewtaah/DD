@@ -30,7 +30,7 @@
  * GENERATED FILE - DO NOT HAND-EDIT THE DATA BELOW.
  * The database (dd-live-scoring) is the system of record. Fix an error
  * there, then regenerate: python tools/db_export_to_files.py
- * Last generated: 2026-08-17 10:19
+ * Last generated: 2026-08-17 10:48
  */
 
 window.DD_MEDIA = [

@@ -12,6 +12,14 @@
 ![Tournaments](https://img.shields.io/badge/tournaments-6-3987e5?style=for-the-badge)
 ![Champions](https://img.shields.io/badge/champions-5-199e70?style=for-the-badge)
 
+<sub>The site itself, in its own colors:</sub>
+
+![DD Live](https://img.shields.io/badge/DD_LIVE-38d9f0?style=flat-square)
+![Chronicles](https://img.shields.io/badge/CHRONICLES-e8b33a?style=flat-square)
+![Field Notes](https://img.shields.io/badge/FIELD_NOTES-c9a227?style=flat-square)
+![Gallery](https://img.shields.io/badge/GALLERY-e8869a?style=flat-square)
+![Stats](https://img.shields.io/badge/STATS-28d17c?style=flat-square)
+
 <img src="images/Ron.jpg" alt="The Ron trophy" width="320">
 
 *The "Ron" &mdash; Manifestation of Victory*
@@ -57,7 +65,7 @@ the title went to a sudden-death washers duel. The wind, by all accounts, decide
 <div align="center">
 <img src="images/Darwin2015Conacher.png" alt="2015 champion Andy Conacher" width="440">
 </div>
-The detailed scorecard above shows how Conacher lit up the competition in the first 5 events, then just crusised on to victory in the first tournament from 2015.
+The detailed scorecard above shows how Conacher lit up the competition in the first 5 events, then just cruised on to victory in the first tournament from 2015.
 
 
 ## The Events
@@ -108,7 +116,7 @@ high-scoring star and took the 10 points for top ninja. He was wearing sneakers.
 Three eras, three homes.
 
 **Katy & West Houston (2015 &ndash; 2019).** The tournament was scattered across the
-suburbs &mdash; skeet at American Shooting Center, home run derby at George Bush Park
+suburbs &mdash; skeet at American Shooting Centers, home run derby at George Bush Park
 and later West Oaks Little League, TopGolf out on I-10, field goals at Cinco Ranch
 High School, and everything else in the Bateman backyard. In 2019 Rosenberger
 Construction opened up their office for a Friday night of washers and shuffleboard,
@@ -178,15 +186,23 @@ Some things the data turned up:
 ## Repository Layout
 
 ```
-├── index.html                # the site (darwindecathlon.com) - DD Live / Chronicles / Field Notes
+├── index.html                # the site - DD Live / Chronicles / Field Notes / Gallery / Stats
+├── admin/media-review.html   # unlinked, password-gated photo moderation page
 ├── staticwebapp.config.json  # Azure Static Web Apps routing, headers, redirects
 ├── agent/                    # Natasha, the AI virtual spectator & PR director
 ├── api/                      # Azure Functions chat backend (Claude via Azure AI Foundry)
+├── aws/lambda/               # AWS-only backends: scorekeeper (live scoring),
+│                             #   media (photo upload + AI captions + moderation)
 ├── data/                     # publishable tournament data + schema + CSV templates
 │   ├── tournaments.js        # every result, 2015-2023 (names + scores only)
 │   ├── media.js              # photo captions and people tags
-│   ├── schema.sql            # tournaments, players, events, venues, results, media
+│   ├── event-notes.js        # per-event rules/blurb prose
+│   ├── schema.sql            # tournaments, players, events, venues, results, media -
+│   │                         #   the system of record; the three files above are
+│   │                         #   generated from it, not hand-edited
 │   └── *.template.csv        # dummy-data examples of every table
+├── tools/                    # run-manually scripts: image prep, and
+│                             #   db_import_from_files.py / db_export_to_files.py
 ├── images/                   # logos, event badges, banners, tournament photos
 └── Weather.html              # standalone 3-day forecast widget; not superseded by /live/
 ```
@@ -200,7 +216,8 @@ fallback, reachable at its own `*.azurestaticapps.net` hostname. Both chatbot
 backends (AWS Lambda + Bedrock, Azure Functions + AI Foundry) ground every
 answer in the same `data/tournaments.js`, fetched live rather than bundled,
 so there's exactly one source of truth regardless of which cloud answers a
-request.
+request — and that file is itself generated from an Aurora Postgres database,
+not hand-maintained (see [`DEPLOYMENT.md`](DEPLOYMENT.md#database-as-system-of-record-new-in-240)).
 
 Full architecture, request-flow diagrams, and a resource-by-resource
 comparison of both clouds: **[`DEPLOYMENT.md`](DEPLOYMENT.md)**.
@@ -224,8 +241,9 @@ Every historical figure here is transcribed from an original scorecard and
 cross-checked against a second source. Where a scorecard's printed total disagrees
 with the sum of its own cells, **the printed total wins** and the discrepancy is
 documented rather than quietly corrected. See
-[`data/UNVERIFIED-claims.md`](data/UNVERIFIED-claims.md) for the full verification
-log &mdash; including the claims that didn't survive it.
+[`data/data-provenance.md`](data/data-provenance.md) for full sourcing &mdash;
+including a bad third-party AI summary that got several numbers wrong, recorded
+there so it doesn't get re-imported later.
 
 ### License
 
