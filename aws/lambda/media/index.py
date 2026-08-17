@@ -217,12 +217,13 @@ def handle_upload(body):
     caption, activity = _draft_caption(image_bytes, image_format, _known_activities())
 
     media_id = _rows(_sql(
-        """INSERT INTO media (tournament_id, tournament_event_id, blob_url, uploaded_by,
+        """INSERT INTO media (tournament_id, tournament_event_id, event_id, blob_url, uploaded_by,
                                upload_source, caption, status)
-           VALUES (:tid, :teid, :url, :who, 'qr_feed', :caption, 'pending')
+           VALUES (:tid, :teid, :eid, :url, :who, 'qr_feed', :caption, 'pending')
            RETURNING media_id""",
         [
             _param("tid", tevent["tournament_id"]), _param("teid", tevent["tournament_event_id"]),
+            _param("eid", tevent["event_id"]),
             _param("url", media_key), _param("who", uploader_name), _param("caption", caption),
         ],
     ))[0]["media_id"]
@@ -241,8 +242,9 @@ def handle_get_pending(params):
     if not _check_admin(params):
         return _response(401, {"error": "Wrong password"})
     rows = _rows(_sql(
-        """SELECT media_id, blob_url, caption, uploaded_by, created_at
-           FROM media WHERE status = 'pending' ORDER BY created_at ASC"""
+        """SELECT m.media_id, m.blob_url, m.caption, m.uploaded_by, m.created_at, e.name AS event_name
+           FROM media m LEFT JOIN events e ON e.event_id = m.event_id
+           WHERE m.status = 'pending' ORDER BY m.created_at ASC"""
     ))
     tag_rows = _rows(_sql(
         """SELECT mt.media_id, mt.tag_type, mt.tag_value
