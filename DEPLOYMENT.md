@@ -259,24 +259,111 @@ follows the same AWS pattern as live scorekeeping instead.
   first-hand building `dd-media` — the vision call failed with
   `ValidationException: The provided model identifier is invalid.` until the
   full ID was hardcoded in `aws/lambda/media/index.py`.
-- **A fourth gotcha: `tournament_events` is sparse, not a full mirror of
+- **A fourth gotcha: `tournament_events` was sparse, not a full mirror of
   `data/tournaments.js`.** `_resolve_event()` originally joined through
-  `tournament_events` to find an event by slug, but that table only has rows
-  for the live-scorekeeping pilot (Golden Tee, Corn Hole) — the full
-  6-tournament/17-event history in `data/tournaments.js` was never imported
-  into the relational schema (see "Data architecture" in `CLAUDE.md`: the DB
-  schema is "not implemented yet" as the flat files' backing store). Every
-  upload for any of the other 15 events 404'd as "Unknown event" until this
-  was fixed to resolve against `events` alone and leave
-  `tournament_event_id`/`tournament_id` NULL when no pilot row exists — same
-  as an undated photo in `data/media.js` (`year: null`). Watch for this again
-  if anything else starts joining through `tournament_events` expecting full
-  historical coverage.
+  `tournament_events` to find an event by slug, but at the time that table
+  only had rows for the live-scorekeeping pilot (Golden Tee, Corn Hole) — the
+  full 6-tournament/17-event history in `data/tournaments.js` hadn't been
+  imported into the relational schema yet (see the "Database as system of
+  record" section below — it has been since). Every upload for any of the
+  other 15 events 404'd as "Unknown event" until this was fixed to resolve
+  against `events` alone and leave `tournament_event_id`/`tournament_id` NULL
+  when no pilot row exists — same as an undated photo in `data/media.js`
+  (`year: null`). Watch for this again if anything else starts joining
+  through `tournament_events` expecting full historical coverage.
 
-Not built yet, on purpose: the public Field Notes gallery still reads
-`data/media.js`, not the `media` table — wiring that up is real scope on its
-own (per the issue's own phrasing, that's meant to happen "once uploads
-work," as a follow-up once approved rows exist to query).
+Not built yet, on purpose: the public Field Notes gallery and the Gallery tab
+(added later, same session as the section below) both still read
+`data/media.js`, not the `media` table directly — wiring the public site to
+query approved uploads live is real scope on its own (per the issue's own
+phrasing, that's meant to happen "once uploads work," as a follow-up once
+approved rows exist to query). What changed since this was first written:
+`data/media.js` itself is now DB-generated (see below), so an approved
+upload *can* reach the public site — via `tools/db_export_to_files.py` and a
+normal commit — just not automatically or in real time yet.
+
+---
+
+## Database as system of record (new in 2.4.0)
+
+Until this, `data/tournaments.js`, `data/media.js`, and `data/event-notes.js`
+were hand-maintained, and the relational schema (`data/schema.sql`) existed
+but was never backfilled — only reference data (`events`) and the
+live-scorekeeping pilot's two rows lived in it. That's flipped: the Aurora
+cluster is now the actual system of record for tournament history, event
+profiles, and photos. Fix an error once, in the database, and it propagates
+everywhere instead of needing to be found and fixed in three separate files.
+
+```mermaid
+flowchart LR
+    DB[("Aurora: dd-live-scoring\ntournaments · players · results\nvenues · events · media")]
+    Export["tools/db_export_to_files.py\n(run manually, whenever the DB changes)"]
+    Files["data/tournaments.js\ndata/media.js\ndata/event-notes.js"]
+    Git["git commit + push"]
+    Deploy["existing static-deploy pipeline\n(Amplify + Azure GitHub Actions,\nboth unchanged)"]
+
+    DB --> Export --> Files --> Git --> Deploy
+```
+
+- **`data/schema.sql` gained additive-only columns** to close every gap
+  between the relational shape and what the flat files actually carried:
+  `tournaments.title`/`subtitle`/`dates_label`/`max_points`/`sums_cleanly`/
+  `co_champion_player_id`, a new `tournament_point_overrides` table (the
+  `sumsCleanly:false` printed-total mechanism — `results.points_awarded`
+  summed is *not* always the right number, see `CLAUDE.md`'s data-integrity
+  conventions), per-event schedule fields on `tournament_events`
+  (`event_short_label`/`event_day`/`event_time_label`/`event_clock_minutes`,
+  what feeds the win-probability chart's time axis), `events.notes_blurb`/
+  `notes_rules`/`notes_snafu`/`notes_savior`/`notes_source` (event-notes.js's
+  content — per-EVENT, not per-year, so it lives on `events` and is distinct
+  from `tournament_events.rules_text` etc., which is the separate per-year
+  "N variants on record" feature), and `media.event_id`/`venue_id` (a photo
+  keeps a durable link to its event even with no specific tournament
+  occurrence). Also seeds real venue rows (all 11, with confirmed street
+  addresses for the four that are public businesses) so a from-scratch
+  deploy in another environment isn't missing them — see the warning in that
+  seed's own comment before ever re-running it against a live database that
+  already has this data; `venues.name` has no unique constraint.
+- **`tools/db_import_from_files.py`** — the one-time backfill, already run.
+  Doesn't parse `data/tournaments.js`/`media.js`/`event-notes.js` as JSON
+  (they're JS — `t:17.5*60` is a real expression, not a numeral, so a
+  JSON/regex parser silently breaks on it). Launches headless Edge against a
+  tiny local harness page that `<script src>`s the same three files
+  `index.html` uses, lets the browser's own engine evaluate them, and reads
+  the result back as real JSON. From there, plain `boto3` `rds-data` inserts
+  with the same exact-name-match philosophy `aws/lambda/media/index.py`
+  already uses for participant tagging — never auto-create a player/venue
+  from a near-miss.
+- **`tools/db_export_to_files.py`** — the ongoing workflow. Regenerates all
+  three files from the live DB, keeping each file's hand-written header
+  (PII boundary, data-provenance notes) verbatim and only rebuilding the
+  data body. Doesn't commit or push — that's still a normal, reviewed git
+  step. Output is clean `json.dumps`-style JS (quoted keys) rather than the
+  original hand-authored unquoted-key style, so the *first* regeneration of
+  a file is a large diff even where no value changed; after that, diffs
+  track real data changes only.
+- **Real data bugs found and fixed during the first real run**, worth
+  knowing about if the numbers on the site ever look off relative to memory:
+  2015 was marked `sumsCleanly:true` with no override even though
+  `data/roster-discrepancies.md` already documented a 0.5-point printed-vs-
+  summed gap for four players — only the champion's hero-stat number
+  happened to be hardcoded correctly, the other three were silently wrong
+  everywhere else on the site. And three venue-name mismatches (e.g.
+  "American Shooting Center" vs. the canonical "American Shooting Centers")
+  were invisible before because nothing had ever cross-referenced those
+  strings against each other — the DB's exact-match venue linkage surfaced
+  them immediately.
+- **Same guardrail as everything else touching the live DB**: schema
+  migrations and bulk imports are blocked for an agent to run directly
+  (see the classifier note under Live scorekeeping, above) — bundle the SQL
+  into a script and hand it to a human. Both `tools/db_*.py` scripts are
+  meant to be run by a human with real AWS credentials, not executed
+  autonomously.
+
+Nothing about `index.html`'s runtime behavior changed — it still loads three
+static `<script src>` files with no server round-trip for tournament data,
+same zero-build architecture as always. Only where those three files *come
+from* changed.
 
 ---
 
@@ -360,9 +447,13 @@ flowchart LR
 Both chatbot backends are, deliberately, thin wrappers: neither bundles a
 copy of the tournament data at deploy time, both fetch it fresh from their
 own live static hosting on every cold start. There is exactly one source of
-truth for scores, standings, and champions — the git-tracked files in
-`data/` — and it's impossible for the two clouds' chatbots to answer
-differently unless one of them is running stale deployed code.
+truth **for what's deployed** — the git-tracked files in `data/` — and it's
+impossible for the two clouds' chatbots to answer differently unless one of
+them is running stale deployed code. As of 2026-08-17 those git-tracked files
+are themselves generated from a further upstream source of truth, the Aurora
+DB (see "Database as system of record" above) — this diagram is still
+accurate for the chat backends' request-time behavior, just one hop short of
+where a data fix actually originates now.
 
 ## Rebuilding or tearing either one down
 

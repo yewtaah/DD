@@ -25,7 +25,7 @@
  * GENERATED FILE - DO NOT HAND-EDIT THE DATA BELOW.
  * The database (dd-live-scoring) is the system of record. Fix an error
  * there, then regenerate: python tools/db_export_to_files.py
- * Last generated: 2026-08-17 10:19
+ * Last generated: 2026-08-17 10:48
  */
 
 window.DD_DATA = {
@@ -215,6 +215,21 @@ window.DD_DATA = {
         "Darts",
         "Golden Tee",
         "Shuffle Board"
+      ]
+    },
+    {
+      "name": "K1 Speed",
+      "address": null,
+      "city": "Katy / Houston, TX",
+      "lat": null,
+      "lon": null,
+      "precision": "unknown",
+      "private": false,
+      "years": [
+        2018
+      ],
+      "events": [
+        "Go Karts"
       ]
     }
   ],
@@ -591,7 +606,7 @@ window.DD_DATA = {
           "name": "Go Karts",
           "short": "Go Karts",
           "day": "Day 2",
-          "venue": null,
+          "venue": "K1 Speed",
           "icon": "images/badges/badge-GoKarts.webp",
           "basis": "Fastest lap",
           "snafu": null

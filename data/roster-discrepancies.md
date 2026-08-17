@@ -38,18 +38,16 @@ Two sources disagree:
 work address is ~11 years old and he may well have changed employers.
 **Needs a human decision — I did not overwrite it.**
 
-## FLAG 2 — "Vacek" on the 2018 scorecard is ambiguous
+## FLAG 2 — "Vacek" on the 2018 scorecard (resolved 2026-08-17)
 
 The 2018 results sheet lists **surnames only**. It shows one `Vacek`, finishing
 3rd on 67 points. Both **Duane Vacek** and **Dan Vacek** are historical
-players, so the surname alone does not resolve it.
-
-`live/data/tournaments.js` records this as **Duane Vacek**. That is plausible
-— Duane appears in 2019 and Dan's first confirmed appearance is also 2019 —
-but the 2018 scorecard itself does not prove it. Inherited, not verified.
-The same ambiguity applies to `Brown`, `Kloss` and `Register` on that sheet,
-though those are unambiguous in practice since no second Brown/Kloss/Register
-has ever played.
+players, so the surname alone didn't resolve it on paper — confirmed directly
+by Scott instead: it was **Duane Vacek**. `data/tournaments.js` already
+recorded it that way; this just makes it definitive rather than inherited.
+The same surname-only ambiguity applies to `Brown`, `Kloss` and `Register` on
+that sheet, though those were never actually in question since no second
+Brown/Kloss/Register has ever played.
 
 ## FLAG 3 — Five players have no contact information anywhere
 
@@ -82,27 +80,44 @@ to double as an invite list.
 Officials, not competitors — no roster impact, but they hint at attendees who
 never made a scorecard.
 
-## FLAG 6 — `data/results.csv` still only holds 2015
+## FLAG 6 — `data/results.csv` still only holds 2015 (superseded, see below)
 
 `results.csv` carries per-event rows for 2015 only (10 players × 10 events).
-The other five tournaments are fully populated in `live/data/tournaments.js`
-but have never been loaded into the CSV/DB path. `UNVERIFIED-claims.md`
-describes 2019/2021/2022 as needing visual transcription — **that work now
-appears to be done** in `tournaments.js`. Out of scope for this pass; the
-roster is complete regardless.
+At the time this was written, the other five tournaments were fully populated
+in `data/tournaments.js` but had never been loaded into the CSV/DB path.
+`data/data-provenance.md` (then `UNVERIFIED-claims.md`) described 2019/2021/2022
+as needing visual transcription — that work turned out to already be done in
+`tournaments.js`.
 
-## NOTE — 2015 totals, printed vs. computed (not a new issue)
+**Update:** the DB, not the CSV, is now the durable store for this. All six
+tournaments' per-event results were imported into the live Aurora database
+(`tournaments`/`results`/`tournament_events` tables) via
+`tools/db_import_from_files.py`, and the values round-tripped correctly on
+export back to `tournaments.js` (see `tools/db_export_to_files.py`) — a
+second, independent validation pass that this flag's "that work now appears
+to be done" assessment was correct. `results.csv` itself remains
+2015-only and gitignored; it's no longer the thing that matters here.
+
+## NOTE — 2015 totals, printed vs. computed (fixed 2026-08-17)
 
 `DD1 Scorecard.pdf` prints Conacher **74**, Bateman **54**, Murrill **42**,
 Perkins **35**. `DarwinDecathlon.xlsx` computes the same rows as **73.5**,
 **53.5**, **41.5**, **34.5** — exactly 0.5 lower.
 
 This is the source of the "consistently 0.5 low" pattern that
-`UNVERIFIED-claims.md` attributes to a bad third-party AI synthesis. The
+`data/data-provenance.md` attributes to a bad third-party AI synthesis. The
 synthesis was most likely reading the **spreadsheet**, not the scorecard.
-Per existing project policy the **printed total wins**, so 74 stands and no
-change is needed — but the log's framing of that source as simply "wrong"
-could be softened to "read the wrong artifact".
+
+Per existing project policy the **printed total wins** — but when this note
+was originally written, that policy hadn't actually been applied to 2015 in
+`data/tournaments.js`: the file marked 2015 `sumsCleanly:true` with no
+override, so three of these four players (everyone but the champion, whose
+hero-stat number happened to be hardcoded separately) were silently showing
+the computed **0.5-low** total everywhere on the live site — standings,
+Career Arc, Chronicles. "No change is needed" was wrong; the change just
+hadn't been made yet. Fixed via `tournament_point_overrides` in the DB
+(2015 is now `sumsCleanly:false` with all four printed totals recorded),
+propagated to `data/tournaments.js` via `tools/db_export_to_files.py`.
 
 ---
 

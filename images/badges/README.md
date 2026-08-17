@@ -86,14 +86,11 @@ TopGolf source is closer, 437x560), against a 512 target — mostly a ~1.9x
 upscale. It holds up at tile size and will look soft on a high-DPI screen.
 Exporting at 512 would fix it for free.
 
-**Banners are two of seventeen.** `banner-Skeet.webp` and `banner-CornHole.webp`
-exist; the other 15 events fall back to the plain "no banner" gradient on their
-Field Notes page.
-
 ## Banner theme split
 
-Confirmed by the two banners that exist: the backdrop follows the same
-brass/steel split as the badge frame.
+All 17 events now have a photo banner (`index.html`'s `BANNERS` map covers every
+canonical event name; nothing falls back to the plain gradient anymore). The
+backdrop follows the same brass/steel split as the badge frame:
 
 - **Individual events (brass badge) → Texas hill country.** `banner-Skeet.webp`
   is the reference: the badge rendered as a wooden sign staked in a Vacek Ranch
