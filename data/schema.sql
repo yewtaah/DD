@@ -44,7 +44,18 @@ CREATE TABLE events (
     icon_asset          VARCHAR(200) NULL,   -- e.g. 'images/badges/badge-Skeet.webp'
     scoring_direction   VARCHAR(10) NOT NULL DEFAULT 'high'  -- 'high' = highest raw_score wins, 'low' = lowest wins
         CHECK (scoring_direction IN ('high','low')),
-    is_active           BOOLEAN NOT NULL DEFAULT TRUE
+    is_active           BOOLEAN NOT NULL DEFAULT TRUE,
+    -- The event's general profile (data/event-notes.js) - NOT year-specific,
+    -- unlike tournament_events.rules_text/snafu_text/savior_text above, which
+    -- are a separate, per-year-variant feature (the field guide's "N variants
+    -- on record" section). This is the one blurb/rules/snafu/savior set shown
+    -- as the event's own briefing, regardless of which year is being viewed.
+    notes_blurb          TEXT NULL,
+    notes_rules           JSONB NULL,   -- array of rule-bullet strings
+    notes_snafu            TEXT NULL,
+    notes_savior            TEXT NULL,
+    notes_source             VARCHAR(20) NULL
+        CHECK (notes_source IN ('v1 page','2015 deck','unrecorded'))
 );
 -- NOTE: whether an event is played in pairs is deliberately NOT stored here.
 -- It changes year to year - Shuffleboard was an individual event in 2015 but a
@@ -113,7 +124,45 @@ CREATE TABLE tournaments (
     end_date              DATE NULL,
     location              VARCHAR(200) NULL,
     champion_player_id     INT NULL REFERENCES players(player_id),
+    -- Set only on the one tournament (2022) with a tied championship - the
+    -- printed record credits both. NULL everywhere else.
+    co_champion_player_id   INT NULL REFERENCES players(player_id),
+    -- Display-only framing carried over from data/tournaments.js, e.g.
+    -- title='1st Annual Darwin Decathlon', subtitle='Man-Ness Competition'.
+    -- `name` above stays the short internal label (matches its existing
+    -- 'Golden Tee Scorekeeping Trial' usage); these are what the site shows.
+    title                  VARCHAR(150) NULL,
+    subtitle               VARCHAR(150) NULL,
+    -- Free-text display string, e.g. 'July 31 - August 1, 2015' or just
+    -- '2018' for years where only the year is known. Deliberately NOT split
+    -- into start_date/end_date - the source precision is inconsistent across
+    -- years (some are exact date ranges, some are year-only), and forcing
+    -- that into two real DATE columns would either invent a date that isn't
+    -- known or lose the range. Read verbatim by Chronicles' DATES stat.
+    dates_label              VARCHAR(100) NULL,
+    -- Total points on offer that year - NOT always 100. 2018 had only 8
+    -- players, so each event split 52 points instead of the usual 55.
+    max_points              NUMERIC(6,2) NULL,
+    -- FALSE means at least one player's printed scorecard total doesn't equal
+    -- the sum of their event cells (2018 Murrill: prints 81, cells sum to
+    -- 80.5). The printed total is authoritative and is never "corrected" by
+    -- recomputing - see tournament_point_overrides below, which is what wins
+    -- over SUM(results.points_awarded) whenever this is FALSE.
+    sums_cleanly             BOOLEAN NOT NULL DEFAULT TRUE,
     notes                 TEXT NULL
+);
+
+-- Printed final-total overrides, populated only for tournaments where
+-- sums_cleanly = FALSE. Anything reading a player's tournament total must
+-- prefer a matching row here over SUM(results.points_awarded) - that sum is
+-- what the printed total deliberately does NOT always match, and "printed
+-- totals win" is a deliberate project policy, not a bug to fix by
+-- recomputing (see CLAUDE.md's data-integrity conventions).
+CREATE TABLE tournament_point_overrides (
+    tournament_id        INT NOT NULL REFERENCES tournaments(tournament_id),
+    player_id             INT NOT NULL REFERENCES players(player_id),
+    total_points           NUMERIC(6,2) NOT NULL,
+    PRIMARY KEY (tournament_id, player_id)
 );
 
 -- One row per event actually played at a given tournament (order, date, and
@@ -130,6 +179,22 @@ CREATE TABLE tournament_events (
     rules_text             TEXT NULL,
     snafu_text             TEXT NULL,
     savior_text             TEXT NULL,
+    -- Schedule/display fields for this specific year's running of the event -
+    -- feeds the win-probability chart's time axis and the field-guide's event
+    -- tiles. Only some years recorded real clock times (2015, 2019); others
+    -- only know the day, so event_clock_minutes stays NULL there rather than
+    -- inventing a time.
+    event_short_label       VARCHAR(30) NULL,   -- e.g. 'Skeet', 'Derby'
+    event_day                VARCHAR(20) NULL,   -- e.g. 'Fri', 'Sat', 'Day 1'
+    event_time_label          VARCHAR(20) NULL,   -- e.g. '5:30pm', display-only
+    event_clock_minutes        NUMERIC(6,2) NULL,  -- minutes since midnight, when known
+    -- Read by the field guide's "Debut year" / "First on record" insight -
+    -- TRUE the one year an event was brand new (e.g. Disc Golf in 2019).
+    is_debut                 BOOLEAN NOT NULL DEFAULT FALSE,
+    -- Not read by any current rendering code, but present in the source data
+    -- (2023 only, e.g. 'Bateman') and kept so a DB export round-trips without
+    -- silently dropping it.
+    game_master               VARCHAR(100) NULL,
     notes                  TEXT NULL,
     CONSTRAINT uq_tournament_event UNIQUE (tournament_id, event_id)
 );
@@ -229,6 +294,12 @@ CREATE TABLE media (
     media_id              INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     tournament_id           INT NULL REFERENCES tournaments(tournament_id),
     tournament_event_id     INT NULL REFERENCES tournament_events(tournament_event_id),
+    -- Which event/venue this photo is of, independent of a specific year -
+    -- most photos (data/media.js entries with year: null, and any upload for
+    -- an event with no live-scorekeeping tournament_event row) have no
+    -- tournament_event_id to derive this from otherwise.
+    event_id                 INT NULL REFERENCES events(event_id),
+    venue_id                 INT NULL REFERENCES venues(venue_id),
     blob_url                 VARCHAR(500) NOT NULL,
     taken_at                 TIMESTAMPTZ NULL,
     uploaded_by               VARCHAR(200) NULL,
@@ -330,6 +401,31 @@ INSERT INTO events (name, slug, icon_asset, scoring_direction, is_active) VALUES
     ('TopGolf',            'topgolf',            'images/badges/badge-TopGolf.webp',     'high', FALSE),
     ('Field Goal Kicking', 'field-goal-kicking', 'images/badges/badge-FieldGoal.webp',   'high', FALSE),
     ('Go Karts',           'go-karts',           'images/badges/badge-GoKarts.webp',     'high', FALSE);
+
+-- Reference data: every venue ever used, matching data/tournaments.js's
+-- venues[] array exactly (this is the DB-as-system-of-record seed for it -
+-- see tools/db_export_to_files.py, which regenerates that array from this
+-- table plus derived years/events). Addresses are only ever set here for
+-- confirmed PUBLIC business venues. Bateman House and Vacek Ranch are
+-- private residences and MUST NEVER get an address value, no matter what
+-- source turns one up later - see the PII BOUNDARY note in CLAUDE.md and
+-- data/tournaments.js's header. Both tools/db_import_from_files.py and
+-- tools/db_export_to_files.py additionally guard against this in code;
+-- this comment is the same rule stated a third time on purpose.
+INSERT INTO venues (name, address, city, latitude, longitude, geo_precision, is_private_residence) VALUES
+    ('American Shooting Centers', '16500 Westheimer Pkwy, Houston, TX 77082', 'Houston, TX', 29.7444, -95.6564, 'rooftop', FALSE),
+    ('George Bush Park', NULL, 'Houston, TX', 29.7480, -95.6690, 'parcel', FALSE),
+    ('West Oaks Little League', NULL, 'Houston, TX', 29.7430, -95.6690, 'rooftop', FALSE),
+    ('Rosenberger Construction', '21501 Park Row Blvd #300, Katy, TX 77449', 'Katy, TX', 29.7877, -95.7433, 'rooftop', FALSE),
+    ('Cinco Ranch High School', NULL, 'Katy, TX', 29.7314, -95.7737, 'rooftop', FALSE),
+    ('WFDD Park', NULL, 'Katy, TX', 29.7310, -95.7760, 'parcel', FALSE),
+    ('TopGolf Houston (I-10)', '1030 Memorial Brook Blvd, Houston, TX 77084', 'Houston, TX', 29.7853, -95.6635, 'rooftop', FALSE),
+    ('Beck Jr. High', NULL, 'Katy, TX', 29.7443, -95.7526, 'rooftop', FALSE),
+    -- Private residence - locality precision only, no address, on purpose.
+    ('Bateman House', NULL, 'Katy, TX', 29.7440, -95.7600, 'locality', TRUE),
+    -- Private property - locality precision only, no address, on purpose.
+    ('Vacek Ranch', NULL, 'Texas Hill Country', 29.8100, -97.0800, 'locality', TRUE),
+    ('Stars Sports Bar', '414 W Grand Pkwy S #190, Katy, TX 77494', 'Katy, TX', NULL, NULL, 'unknown', FALSE);
 
 -- The live scorekeeping trial - a standalone, non-decathlon tournament row so
 -- live-entered scores have somewhere real to attach to. Excluded from

@@ -109,7 +109,7 @@ function renderPending(items){
     <div class="card" data-id="${item.media_id}">
       <img src="${item.preview_url}" alt="Pending photo" loading="lazy">
       <div class="meta">
-        <div class="who">Submitted by ${item.uploaded_by||'unknown'} &middot; ${new Date(item.created_at).toLocaleString()}</div>
+        <div class="who"><strong>${item.event_name||'Unknown event'}</strong> &middot; submitted by ${item.uploaded_by||'unknown'} &middot; ${new Date(item.created_at).toLocaleString()}</div>
         ${activity ? `<div class="tag">AI guess: ${activity.value}</div>` : ''}
         <textarea class="caption-input" placeholder="Caption">${item.caption||''}</textarea>
         <input type="text" class="people-input" placeholder="People in this photo (comma-separated)"
