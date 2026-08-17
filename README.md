@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="images/DD6Logo.png" alt="Darwin Decathlon" width="190">
+<img src="https://raw.githubusercontent.com/yewtaah/DD/main/images/DD6Logo.png" alt="Darwin Decathlon" width="190">
 
 # THE DARWIN DECATHLON
 
@@ -20,7 +20,7 @@
 ![Gallery](https://img.shields.io/badge/GALLERY-e8869a?style=flat-square)
 ![Stats](https://img.shields.io/badge/STATS-28d17c?style=flat-square)
 
-<img src="images/Ron.jpg" alt="The Ron trophy" width="320">
+<img src="https://raw.githubusercontent.com/yewtaah/DD/main/images/Ron.jpg" alt="The Ron trophy" width="320">
 
 *The "Ron" &mdash; Manifestation of Victory*
 
@@ -63,7 +63,7 @@ That last rule is why no two tournaments have ever been the same.
 the title went to a sudden-death washers duel. The wind, by all accounts, decided it.*
 
 <div align="center">
-<img src="images/Darwin2015Conacher.png" alt="2015 champion Andy Conacher" width="440">
+<img src="https://raw.githubusercontent.com/yewtaah/DD/main/images/Darwin2015Conacher.png" alt="2015 champion Andy Conacher" width="440">
 </div>
 The detailed scorecard above shows how Conacher lit up the competition in the first 5 events, then just cruised on to victory in the first tournament from 2015.
 
@@ -75,9 +75,9 @@ The lineup rotates every year at the champion's discretion. Over six tournaments
 
 <div align="center">
 
-<img src="images/D2-Skeet.png" width="74"> <img src="images/D2-HomeRunDerby.png" width="74"> <img src="images/D2-Washers.png" width="74"> <img src="images/D2-DiscGolf.png" width="74"> <img src="images/D2-KanJam.png" width="74"> <img src="images/D2-Cornhole.png" width="74">
+<img src="https://raw.githubusercontent.com/yewtaah/DD/main/images/D2-Skeet.png" width="74"> <img src="https://raw.githubusercontent.com/yewtaah/DD/main/images/D2-HomeRunDerby.png" width="74"> <img src="https://raw.githubusercontent.com/yewtaah/DD/main/images/D2-Washers.png" width="74"> <img src="https://raw.githubusercontent.com/yewtaah/DD/main/images/D2-DiscGolf.png" width="74"> <img src="https://raw.githubusercontent.com/yewtaah/DD/main/images/D2-KanJam.png" width="74"> <img src="https://raw.githubusercontent.com/yewtaah/DD/main/images/D2-Cornhole.png" width="74">
 
-<img src="images/D2-BeerPong.png" width="74"> <img src="images/D2-Shuriken.png" width="74"> <img src="images/D2-TopGolf.png" width="74"> <img src="images/D2-FieldGoalKicking.png" width="74"> <img src="images/D2-Shuffleboard.png" width="74"> <img src="images/D2-GoldenTee.png" width="74">
+<img src="https://raw.githubusercontent.com/yewtaah/DD/main/images/D2-BeerPong.png" width="74"> <img src="https://raw.githubusercontent.com/yewtaah/DD/main/images/D2-Shuriken.png" width="74"> <img src="https://raw.githubusercontent.com/yewtaah/DD/main/images/D2-TopGolf.png" width="74"> <img src="https://raw.githubusercontent.com/yewtaah/DD/main/images/D2-FieldGoalKicking.png" width="74"> <img src="https://raw.githubusercontent.com/yewtaah/DD/main/images/D2-Shuffleboard.png" width="74"> <img src="https://raw.githubusercontent.com/yewtaah/DD/main/images/D2-GoldenTee.png" width="74">
 
 </div>
 
@@ -98,14 +98,14 @@ high-scoring star and took the 10 points for top ninja. He was wearing sneakers.
 
 <table>
 <tr>
-<td align="center"><img src="images/Skeet.jpg" width="250"><br><sub><b>Skeet</b> &mdash; always first</sub></td>
-<td align="center"><img src="images/HomeRunDerby.jpg" width="250"><br><sub><b>Home Run Derby</b></sub></td>
-<td align="center"><img src="images/Shuriken.jpg" width="250"><br><sub><b>Shuriken</b> &mdash; exiled, then pardoned</sub></td>
+<td align="center"><img src="https://raw.githubusercontent.com/yewtaah/DD/main/images/Skeet.jpg" width="250"><br><sub><b>Skeet</b> &mdash; always first</sub></td>
+<td align="center"><img src="https://raw.githubusercontent.com/yewtaah/DD/main/images/HomeRunDerby.jpg" width="250"><br><sub><b>Home Run Derby</b></sub></td>
+<td align="center"><img src="https://raw.githubusercontent.com/yewtaah/DD/main/images/Shuriken.jpg" width="250"><br><sub><b>Shuriken</b> &mdash; exiled, then pardoned</sub></td>
 </tr>
 <tr>
-<td align="center"><img src="images/DiscGolf.jpg" width="250"><br><sub><b>Disc Golf</b> &mdash; new for 2019</sub></td>
-<td align="center"><img src="images/GoKarts.jpg" width="250"><br><sub><b>Go Karts</b> &mdash; 2018 only</sub></td>
-<td align="center"><img src="images/Washers.jpg" width="250"><br><sub><b>Washers</b> &mdash; settled a title</sub></td>
+<td align="center"><img src="https://raw.githubusercontent.com/yewtaah/DD/main/images/DiscGolf.jpg" width="250"><br><sub><b>Disc Golf</b> &mdash; new for 2019</sub></td>
+<td align="center"><img src="https://raw.githubusercontent.com/yewtaah/DD/main/images/GoKarts.jpg" width="250"><br><sub><b>Go Karts</b> &mdash; 2018 only</sub></td>
+<td align="center"><img src="https://raw.githubusercontent.com/yewtaah/DD/main/images/Washers.jpg" width="250"><br><sub><b>Washers</b> &mdash; settled a title</sub></td>
 </tr>
 </table>
 
@@ -130,7 +130,7 @@ and compete. It also made a few things possible that a suburban cul-de-sac never
 could, throwing stars chief among them.
 
 <div align="center">
-<img src="images/DarwinTopGolf2018.jpg" alt="The 2018 field at TopGolf" width="640">
+<img src="https://raw.githubusercontent.com/yewtaah/DD/main/images/DarwinTopGolf2018.jpg" alt="The 2018 field at TopGolf" width="640">
 <br><sub>The 2018 field at TopGolf</sub>
 </div>
 
@@ -177,7 +177,7 @@ Some things the data turned up:
   as found, uncorrected.
 
 <div align="center">
-<img src="images/DarwinDecathlon2023FinalScorecard.png" alt="2023 final scorecard" width="740">
+<img src="https://raw.githubusercontent.com/yewtaah/DD/main/images/DarwinDecathlon2023FinalScorecard.png" alt="2023 final scorecard" width="740">
 <br><sub>The 2023 final scorecard</sub>
 </div>
 
