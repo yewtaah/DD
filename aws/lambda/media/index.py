@@ -1,9 +1,11 @@
 import base64
 import json
 import os
+import time
 import uuid
 
 import boto3
+from botocore.exceptions import ClientError
 
 # Photo upload API for the Darwin Decathlon Field Notes gallery (issue #11).
 # Fronts the same Aurora Serverless v2 Postgres cluster as dd-scorekeeper (see
@@ -43,6 +45,16 @@ _bedrock = boto3.client("bedrock-runtime")
 
 _admin_password_cache = None
 
+# The cluster auto-pauses to zero capacity when idle (MinCapacity=0, see
+# DEPLOYMENT.md). The first Data API call after a pause kicks off a resume
+# that takes ~15 seconds, and until it completes calls fail with
+# DatabaseResumingException (or, transiently, DatabaseUnavailableException).
+# Retry through that window instead of failing the upload or moderation
+# action outright. Budget stays under API Gateway's hard 30-second
+# integration timeout - callers see one slow request, not an error.
+_RESUME_RETRY_SECONDS = 20
+_RESUME_ERROR_CODES = {"DatabaseResumingException", "DatabaseUnavailableException"}
+
 
 def _sql(text, params=None):
     kwargs = dict(
@@ -54,7 +66,15 @@ def _sql(text, params=None):
     )
     if params:
         kwargs["parameters"] = params
-    return _rds.execute_statement(**kwargs)
+    deadline = time.monotonic() + _RESUME_RETRY_SECONDS
+    while True:
+        try:
+            return _rds.execute_statement(**kwargs)
+        except ClientError as err:
+            code = err.response.get("Error", {}).get("Code")
+            if code not in _RESUME_ERROR_CODES or time.monotonic() >= deadline:
+                raise
+            time.sleep(2)
 
 
 def _param(name, value):
