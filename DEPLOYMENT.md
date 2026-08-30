@@ -166,6 +166,25 @@ the site reads from.
   calls: no VPC networking needed by either the schema migration or the
   application Lambda, just IAM-authenticated HTTPS. Full schema:
   [`data/schema.sql`](data/schema.sql).
+- **The cluster auto-pauses to zero capacity when idle** (2026-08-30):
+  scaling config is `MinCapacity=0` / `MaxCapacity=2` ACUs with
+  `SecondsUntilAutoPause=3600`. At the original floor of 0.5 ACU the idle
+  cluster billed ~$1.44/day (~$44/month) around the clock for a database
+  that's actually written a few times a year; at zero it bills storage only
+  (well under $1/month). The trade: the first Data API request after a
+  pause triggers a ~15-second resume, during which calls fail with
+  `DatabaseResumingException`. Every Data API call site retries through
+  that window — the `_sql()` helpers in both Lambdas (capped at 20 seconds,
+  under API Gateway's hard 30-second integration timeout) and the `sql()`
+  helpers in both `tools/db_*.py` scripts (a generous 120 seconds, since a
+  human at a terminal is the caller). If a request outlives the Lambda-side
+  budget anyway, the site's live-score viewers already fail soft and
+  recover on the next interaction. The hour-long pause timer (vs. the
+  5-minute default) is deliberate: during an event day the cluster stays
+  warm through mid-event lulls, and it still pauses overnight and for the
+  ~360 days a year nothing touches it. Nothing on the site polls the
+  database on a schedule — every `/api/scorekeeper` and `/api/media` fetch
+  is user-initiated — so nothing holds it awake.
 - **Lambda + API Gateway** at `/api/scorekeeper` (`aws/lambda/scorekeeper`),
   proxied through the same Amplify-rewrite pattern as `/api/chat`. Routes:
   `GET /event`, `GET /scores`, `POST /login`, `POST /scores/golden-tee`,

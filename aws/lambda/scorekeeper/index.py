@@ -3,8 +3,10 @@ import hmac
 import json
 import os
 import secrets
+import time
 
 import boto3
+from botocore.exceptions import ClientError
 
 # Live scorekeeping API for the Darwin Decathlon site. Fronts the Aurora
 # Serverless v2 Postgres cluster (see data/schema.sql, DEPLOYMENT.md) via the
@@ -28,6 +30,17 @@ DATABASE_NAME = os.environ.get("DATABASE_NAME", "ddlive")
 
 _rds = boto3.client("rds-data")
 
+# The cluster auto-pauses to zero capacity when idle (MinCapacity=0, see
+# DEPLOYMENT.md). The first Data API call after a pause kicks off a resume
+# that takes ~15 seconds, and until it completes calls fail with
+# DatabaseResumingException (or, transiently, DatabaseUnavailableException).
+# Retry through that window instead of surfacing a one-off 500 to the
+# scorekeeper. Budget stays under API Gateway's hard 30-second integration
+# timeout; the frontend's soft-fail handling covers the rare request that
+# outlives it.
+_RESUME_RETRY_SECONDS = 20
+_RESUME_ERROR_CODES = {"DatabaseResumingException", "DatabaseUnavailableException"}
+
 
 def _sql(text, params=None):
     kwargs = dict(
@@ -39,7 +52,15 @@ def _sql(text, params=None):
     )
     if params:
         kwargs["parameters"] = params
-    return _rds.execute_statement(**kwargs)
+    deadline = time.monotonic() + _RESUME_RETRY_SECONDS
+    while True:
+        try:
+            return _rds.execute_statement(**kwargs)
+        except ClientError as err:
+            code = err.response.get("Error", {}).get("Code")
+            if code not in _RESUME_ERROR_CODES or time.monotonic() >= deadline:
+                raise
+            time.sleep(2)
 
 
 def _param(name, value):

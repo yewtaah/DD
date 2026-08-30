@@ -26,8 +26,10 @@ Usage: python tools/db_export_to_files.py
 import datetime
 import json
 import os
+import time
 
 import boto3
+from botocore.exceptions import ClientError
 
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 REGION = "us-east-1"
@@ -37,13 +39,30 @@ DATABASE = "ddlive"
 
 _rds = boto3.client("rds-data", region_name=REGION)
 
+# The cluster auto-pauses to zero capacity when idle (MinCapacity=0, see
+# DEPLOYMENT.md), so the first query of a run usually lands mid-resume and
+# fails with DatabaseResumingException until the ~15-second wake-up
+# completes. Retry through it - this script is run by a human at a
+# terminal, so the budget is generous rather than gateway-constrained.
+_RESUME_RETRY_SECONDS = 120
+_RESUME_ERROR_CODES = {"DatabaseResumingException", "DatabaseUnavailableException"}
+
 
 def sql(text, params=None):
     kwargs = dict(resourceArn=CLUSTER_ARN, secretArn=SECRET_ARN, database=DATABASE,
                    sql=text, includeResultMetadata=True)
     if params:
         kwargs["parameters"] = params
-    return _rds.execute_statement(**kwargs)
+    deadline = time.monotonic() + _RESUME_RETRY_SECONDS
+    while True:
+        try:
+            return _rds.execute_statement(**kwargs)
+        except ClientError as err:
+            code = err.response.get("Error", {}).get("Code")
+            if code not in _RESUME_ERROR_CODES or time.monotonic() >= deadline:
+                raise
+            print("  ...database is resuming from auto-pause, retrying...")
+            time.sleep(3)
 
 
 def param(name, value):
