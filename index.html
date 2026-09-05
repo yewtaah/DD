@@ -1064,6 +1064,11 @@ else { sessionStorage.setItem('ddIntroSeen','1');
 /* ---------- tabs (with #hash deep-linking) ---------- */
 const TABS=[['tab-live','p-live','live'],['tab-chron','p-chron','chronicles'],['tab-notes','p-notes','notes'],
   ['tab-gallery','p-gallery','gallery'],['tab-stats','p-stats','stats']];
+let lastTrackedSlug=null;
+function trackView(path,title){
+  if(typeof gtag!=='function') return;
+  gtag('event','page_view',{page_location:location.origin+path,page_path:path,page_title:title});
+}
 function selectTab(tb,push){
   TABS.forEach(([t2,p2])=>{
     const on = t2===tb;
@@ -1075,6 +1080,10 @@ function selectTab(tb,push){
   document.body.dataset.seg = slug==='chronicles' ? 'chron' : slug;
   if(push && slug) history.replaceState(null,'','#'+slug);
   if(tb==='tab-chron') requestAnimationFrame(renderAll);
+  if(slug && slug!==lastTrackedSlug){
+    lastTrackedSlug=slug;
+    trackView('/#'+slug,'Darwin Decathlon - '+slug);
+  }
 }
 TABS.forEach(([tb])=>document.getElementById(tb).addEventListener('click',()=>selectTab(tb,true)));
 
@@ -1125,6 +1134,7 @@ if(toChron) toChron.addEventListener('click',()=>document.getElementById('tab-ch
     input.value='';
     input.disabled=true;
     sendBtn.disabled=true;
+    if(typeof gtag==='function') gtag('event','chat_message_sent',{event_category:'tournament_qa'});
     try{
       const res=await fetch('/api/chat',{
         method:'POST',
@@ -1135,8 +1145,10 @@ if(toChron) toChron.addEventListener('click',()=>document.getElementById('tab-ch
       if(!res.ok) throw new Error(data.error||'Request failed');
       addMsg('bot',data.reply);
       chatHistory.push({role:'assistant',content:data.reply});
+      if(typeof gtag==='function') gtag('event','chat_reply_received',{event_category:'tournament_qa'});
     }catch(err){
       addMsg('error',"Couldn't get an answer just now — try again in a bit.");
+      if(typeof gtag==='function') gtag('event','chat_error',{event_category:'tournament_qa'});
     }finally{
       input.disabled=false;
       sendBtn.disabled=false;
@@ -1434,7 +1446,8 @@ let ISOLATE = null;                 // player name or null
     b.className='chip'; b.textContent=label; b.setAttribute('aria-pressed',String(YEAR===val));
     b.onclick=()=>{ YEAR=val; ISOLATE=null;
       box.querySelectorAll('.chip').forEach(c=>c.setAttribute('aria-pressed','false'));
-      b.setAttribute('aria-pressed','true'); renderAll(); };
+      b.setAttribute('aria-pressed','true'); renderAll();
+      if(typeof gtag==='function') gtag('event','select_content',{content_type:'tournament_year',item_id:String(val)}); };
     box.appendChild(b);
   };
   D.tournaments.forEach(t=>mk(String(t.year),t.year));
@@ -2237,6 +2250,7 @@ function guideOrder(){
 function openGuide(slug,push){
   const g=Object.values(GUIDE).find(x=>x.slug===slug);
   if(!g){ closeGuide(false); return; }
+  trackView('/?event='+slug+'#notes','Darwin Decathlon - Field Notes - '+g.name);
   const order=guideOrder(), gi=order.findIndex(x=>x.slug===g.slug);
   const prev=order[(gi-1+order.length)%order.length];   // wraps, so it never dead-ends
   const next=order[(gi+1)%order.length];
@@ -2691,6 +2705,7 @@ function closeStatsCard(push){
 function openStatsCard(slug,push){
   const p=Object.values(PLAYERS).find(x=>x.slug===slug);
   if(!p){ closeStatsCard(false); return; }
+  trackView('/?player='+slug+'#stats','Darwin Decathlon - Stats - '+p.name);
   const order=statsOrder(), pi=order.findIndex(x=>x.slug===p.slug);
   const prev=order[(pi-1+order.length)%order.length];
   const next=order[(pi+1)%order.length];
